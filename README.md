@@ -9,3 +9,6 @@ This project is not really tidy. Some of the files is useless but not deleted, s
 ## useful *.h files
 * hapticsDemoClass.h
 * proficio_2dBalistic.h
+
+## download command 
+$ git clone https://github.com/chenguangsmy/proficio_working.git
