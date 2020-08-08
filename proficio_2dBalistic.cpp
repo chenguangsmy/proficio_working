@@ -14,9 +14,9 @@
  */
 
 #include "proficio_2dBalistic.h"  
-#include "/home/robot/src/Proficio_Systems/magnitude.h"
-#include "/home/robot/src/Proficio_Systems/normalize.h"
-#include "/home/robot/rg2/include/RTMA_config.h"
+#include "/home/cleave/src/Proficio_Systems/magnitude.h"
+#include "/home/cleave/src/Proficio_Systems/normalize.h"
+#include "/home/cleave/rg2/include/RTMA_config.h"
 #include <unistd.h>
 
 #include "recordTrajectory.h"

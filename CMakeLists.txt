@@ -3,8 +3,8 @@ project(Proficio_External)
 
 ## proficio_toolbox
 find_package(Proficio REQUIRED)
-include_directories(${PROFICIO_INCLUDE_DIRS})
-link_directories(${PROFICIO_LIBRARY_DIRS})
+include_directories(${PROFICIO_INCLUDE_DIRS} ${RTMA_INCLUDES_DIR})
+link_directories(${PROFICIO_LIBRARY_DIRS} /usr/bin)
 add_definitions(${PROFICIO_DEFINITIONS} -g -DUSE_LINUX -pthread)
 
 set(GCC_COVERAGE_COMPILE_FLAGS "-frounding-math")
