@@ -49,102 +49,74 @@ include CMakeFiles/Proficio_External.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/Proficio_External.dir/flags.make
 
-CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o: CMakeFiles/Proficio_External.dir/flags.make
-CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o: proficio_2dBalistic.cpp
+CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: CMakeFiles/Proficio_External.dir/flags.make
+CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: wam_2dBalistic.cpp
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/cleave/proficio_working/CMakeFiles $(CMAKE_PROGRESS_1)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o -c /home/cleave/proficio_working/proficio_2dBalistic.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o -c /home/cleave/proficio_working/wam_2dBalistic.cpp
 
-CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/cleave/proficio_working/proficio_2dBalistic.cpp > CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.i
+CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.i"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/cleave/proficio_working/wam_2dBalistic.cpp > CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.i
 
-CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/cleave/proficio_working/proficio_2dBalistic.cpp -o CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.s
+CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.s"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/cleave/proficio_working/wam_2dBalistic.cpp -o CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.s
 
-CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o.requires:
-.PHONY : CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o.requires
+CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o.requires:
+.PHONY : CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o.requires
 
-CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o.provides: CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o.requires
-	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o.provides.build
-.PHONY : CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o.provides
+CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o.provides: CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o.requires
+	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o.provides.build
+.PHONY : CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o.provides
 
-CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o.provides.build: CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o
+CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o.provides.build: CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o
 
 # Object files for target Proficio_External
 Proficio_External_OBJECTS = \
-"CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o"
+"CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o"
 
 # External object files for target Proficio_External
 Proficio_External_EXTERNAL_OBJECTS =
 
-proficio_2dBalistic: CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o
-proficio_2dBalistic: CMakeFiles/Proficio_External.dir/build.make
-proficio_2dBalistic: /usr/lib/libCGAL_Core.so
-proficio_2dBalistic: /usr/lib/libCGAL.so
-proficio_2dBalistic: /usr/lib/x86_64-linux-gnu/libgmpxx.so
-proficio_2dBalistic: /usr/lib/x86_64-linux-gnu/libmpfr.so
-proficio_2dBalistic: /usr/lib/x86_64-linux-gnu/libgmp.so
-proficio_2dBalistic: /usr/lib/libboost_thread-mt.so
-proficio_2dBalistic: /usr/lib/libboost_system-mt.so
-proficio_2dBalistic: /usr/lib/libboost_thread-mt.so
-proficio_2dBalistic: /usr/lib/libboost_python.so
-proficio_2dBalistic: /usr/lib/libnative.so
-proficio_2dBalistic: /usr/lib/libxenomai.so
-proficio_2dBalistic: /usr/lib/librtdm.so
-proficio_2dBalistic: /usr/lib/libpython2.7.so
-proficio_2dBalistic: /usr/lib/libboost_system-mt.so
-proficio_2dBalistic: /usr/lib/libboost_python.so
-proficio_2dBalistic: /usr/lib/libnative.so
-proficio_2dBalistic: /usr/lib/libxenomai.so
-proficio_2dBalistic: /usr/lib/librtdm.so
-proficio_2dBalistic: /usr/lib/libpython2.7.so
-proficio_2dBalistic: CMakeFiles/Proficio_External.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX executable proficio_2dBalistic"
+wam_2dBalistic: CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o
+wam_2dBalistic: CMakeFiles/Proficio_External.dir/build.make
+wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libboost_system.so
+wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libboost_thread.so
+wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libboost_python.so
+wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libpthread.so
+wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libpython2.7.so
+wam_2dBalistic: CMakeFiles/Proficio_External.dir/link.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX executable wam_2dBalistic"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/Proficio_External.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
-CMakeFiles/Proficio_External.dir/build: proficio_2dBalistic
+CMakeFiles/Proficio_External.dir/build: wam_2dBalistic
 .PHONY : CMakeFiles/Proficio_External.dir/build
 
 # Object files for target Proficio_External
 Proficio_External_OBJECTS = \
-"CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o"
+"CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o"
 
 # External object files for target Proficio_External
 Proficio_External_EXTERNAL_OBJECTS =
 
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: CMakeFiles/Proficio_External.dir/build.make
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/libCGAL_Core.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/libCGAL.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/x86_64-linux-gnu/libgmpxx.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/x86_64-linux-gnu/libmpfr.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/x86_64-linux-gnu/libgmp.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/libboost_thread-mt.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/libboost_system-mt.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/libboost_thread-mt.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/libboost_python.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/libnative.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/libxenomai.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/librtdm.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/libpython2.7.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/libboost_system-mt.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/libboost_python.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/libnative.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/libxenomai.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/librtdm.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: /usr/lib/libpython2.7.so
-CMakeFiles/CMakeRelink.dir/proficio_2dBalistic: CMakeFiles/Proficio_External.dir/relink.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX executable CMakeFiles/CMakeRelink.dir/proficio_2dBalistic"
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: CMakeFiles/Proficio_External.dir/build.make
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libboost_system.so
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libboost_thread.so
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libboost_python.so
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libpthread.so
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libpython2.7.so
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: CMakeFiles/Proficio_External.dir/relink.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX executable CMakeFiles/CMakeRelink.dir/wam_2dBalistic"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/Proficio_External.dir/relink.txt --verbose=$(VERBOSE)
 
 # Rule to relink during preinstall.
-CMakeFiles/Proficio_External.dir/preinstall: CMakeFiles/CMakeRelink.dir/proficio_2dBalistic
+CMakeFiles/Proficio_External.dir/preinstall: CMakeFiles/CMakeRelink.dir/wam_2dBalistic
 .PHONY : CMakeFiles/Proficio_External.dir/preinstall
 
-CMakeFiles/Proficio_External.dir/requires: CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o.requires
+CMakeFiles/Proficio_External.dir/requires: CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o.requires
 .PHONY : CMakeFiles/Proficio_External.dir/requires
 
 CMakeFiles/Proficio_External.dir/clean:

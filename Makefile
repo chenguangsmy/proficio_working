@@ -147,29 +147,29 @@ Proficio_External/preinstall:
 	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/preinstall
 .PHONY : Proficio_External/preinstall
 
-proficio_2dBalistic.o: proficio_2dBalistic.cpp.o
-.PHONY : proficio_2dBalistic.o
+wam_2dBalistic.o: wam_2dBalistic.cpp.o
+.PHONY : wam_2dBalistic.o
 
 # target to build an object file
-proficio_2dBalistic.cpp.o:
-	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o
-.PHONY : proficio_2dBalistic.cpp.o
+wam_2dBalistic.cpp.o:
+	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o
+.PHONY : wam_2dBalistic.cpp.o
 
-proficio_2dBalistic.i: proficio_2dBalistic.cpp.i
-.PHONY : proficio_2dBalistic.i
+wam_2dBalistic.i: wam_2dBalistic.cpp.i
+.PHONY : wam_2dBalistic.i
 
 # target to preprocess a source file
-proficio_2dBalistic.cpp.i:
-	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.i
-.PHONY : proficio_2dBalistic.cpp.i
+wam_2dBalistic.cpp.i:
+	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.i
+.PHONY : wam_2dBalistic.cpp.i
 
-proficio_2dBalistic.s: proficio_2dBalistic.cpp.s
-.PHONY : proficio_2dBalistic.s
+wam_2dBalistic.s: wam_2dBalistic.cpp.s
+.PHONY : wam_2dBalistic.s
 
 # target to generate assembly for a file
-proficio_2dBalistic.cpp.s:
-	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.s
-.PHONY : proficio_2dBalistic.cpp.s
+wam_2dBalistic.cpp.s:
+	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.s
+.PHONY : wam_2dBalistic.cpp.s
 
 # Help Target
 help:
@@ -183,9 +183,9 @@ help:
 	@echo "... install/local"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
-	@echo "... proficio_2dBalistic.o"
-	@echo "... proficio_2dBalistic.i"
-	@echo "... proficio_2dBalistic.s"
+	@echo "... wam_2dBalistic.o"
+	@echo "... wam_2dBalistic.i"
+	@echo "... wam_2dBalistic.s"
 .PHONY : help
 
 

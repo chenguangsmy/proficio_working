@@ -1,9 +1,9 @@
 FILE(REMOVE_RECURSE
-  "CMakeFiles/Proficio_External.dir/proficio_2dBalistic.cpp.o"
-  "proficio_2dBalistic.pdb"
-  "proficio_2dBalistic"
-  "proficio_2dBalistic.pdb"
-  "CMakeFiles/CMakeRelink.dir/proficio_2dBalistic"
+  "CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o"
+  "wam_2dBalistic.pdb"
+  "wam_2dBalistic"
+  "wam_2dBalistic.pdb"
+  "CMakeFiles/CMakeRelink.dir/wam_2dBalistic"
 )
 
 # Per-language clean rules from dependency scanning.

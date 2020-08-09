@@ -18,7 +18,7 @@
 #include "/home/robot/rg2/include/RTMA_config.h"
 #include <unistd.h>
 
-#include <RTMA/RTMA.h>
+#include "/home/robot/RTMA/include/RTMA.h"
 #include "movingBurt.h"
 #include "ballisticForce.h"
 
@@ -50,14 +50,14 @@
 #include <barrett/config.h>
 #include <barrett/systems.h>
 #include <barrett/exception.h>
-#include <proficio/systems/utilities.h>
+//#include <proficio/systems/utilities.h>
 #include <barrett/products/product_manager.h>
 
 // Networking
 #include <netinet/in.h>
 #include <sys/types.h>
 
-#include <proficio/systems/utilities.h>
+//#include <proficio/systems/utilities.h>
 
 extern const char* remote_host;
 extern bool forceMet;
@@ -127,12 +127,12 @@ class HapticsDemo {
   cf_type curForces;
 
   barrett::systems::Callback<boost::tuple<cp_type, cv_type>, cf_type> haptics;
-  proficio::systems::JointTorqueSaturation<DOF> jtsat;
-  proficio::systems::UserGravityCompensation<DOF>* user_grav_comp_;
+  //proficio::systems::JointTorqueSaturation<DOF> jtsat;
+  //proficio::systems::UserGravityCompensation<DOF>* user_grav_comp_;
   barrett::systems::Summer<jt_type, 3> jtSum;
   v_type dampingConstants;
   jv_type velocityLimits;
-  proficio::systems::JointVelocitySaturation<DOF> velsat;
+  //proficio::systems::JointVelocitySaturation<DOF> velsat;
 
   barrett::systems::modXYZ<cp_type> invpos;
   barrett::systems::modXYZ<cf_type> invforce;
@@ -152,25 +152,25 @@ class HapticsDemo {
   /***************************************************************************************
   *  Initialization Method 
   **************************************************************************************/
-  HapticsDemo(barrett::systems::Wam<DOF>& wam_arm, barrett::ProductManager& pm,
-              proficio::systems::UserGravityCompensation<DOF>* ugc)
-      : wam(wam_arm),
+  HapticsDemo(barrett::systems::Wam<DOF>& wam_arm, barrett::ProductManager& pm
+//              , proficio::systems::UserGravityCompensation<DOF>* ugc)
+      ): wam(wam_arm),
         product_manager_(pm),
         slen(sizeof(si_server)),
         jtLimits(55.0),
         haptics(hapticCalc),
-        jtsat(jtLimits),
-        user_grav_comp_(ugc),
+//        jtsat(jtLimits),
+//        user_grav_comp_(ugc),
         jtSum("+++"),
         dampingConstants(20.0),
         velocityLimits(2.4),
-        velsat(dampingConstants, velocityLimits),
+//        velsat(dampingConstants, velocityLimits),
         jvFiltFreq(20.0),
         cvFiltFreq(20.0),
         sumForces(0.0) {
     dampingConstants[2] = 10.0;
     dampingConstants[0] = 30.0;
-    velsat.setDampingConstant(dampingConstants);
+//    velsat.setDampingConstant(dampingConstants);
 
     // line up coordinate axis with python visualization
     invpos.negX();
@@ -256,9 +256,9 @@ void connectForces() {
   
   BARRETT_UNITS_FIXED_SIZE_TYPEDEFS;
   barrett::systems::connect(wam.kinematicsBase.kinOutput, cf_tf2jt.kinInput);
-  barrett::systems::connect(wam.jpOutput, user_grav_comp_->input);
+//  barrett::systems::connect(wam.jpOutput, user_grav_comp_->input);
   barrett::systems::connect(wam.jvOutput, jvFilter.input);
-  barrett::systems::connect(jvFilter.output, velsat.input);
+//  barrett::systems::connect(jvFilter.output, velsat.input);
   //barrett::systems::connect(wam.toolPosition.output, invpos.input);
   //barrett::systems::connect(invpos.output, tuple_grouper.getInput<0>());
   barrett::systems::connect(wam.toolPosition.output, tuple_grouper.getInput<0>()); //dont invert position
@@ -271,10 +271,13 @@ void connectForces() {
   barrett::systems::connect(cvFilter.output, tuple_grouper.getInput<1>());  // dont invert velocity
   barrett::systems::connect(tuple_grouper.output, haptics.input);
   barrett::systems::connect(cf_tf2jt.output, jtSum.getInput(0));
-  barrett::systems::connect(user_grav_comp_->output, jtSum.getInput(1));
-  barrett::systems::connect(velsat.output, jtSum.getInput(2));
-  barrett::systems::connect(jtSum.output, jtsat.input);
-  barrett::systems::connect(jtsat.output, wam.input);
+ // barrett::systems::connect(user_grav_comp_->output, jtSum.getInput(1));
+  barrett::systems::connect(wam.jpOutput, jtSum.getInput(1));
+//  barrett::systems::connect(velsat.output, jtSum.getInput(2));
+  barrett::systems::connect(jvFilter.output, jtSum.getInput(2));
+//  barrett::systems::connect(jtSum.output, jtsat.input);
+  barrett::systems::connect(jtSum.output, wam.input);
+//  barrett::systems::connect(jtsat.output, wam.input);
 }
 
 };

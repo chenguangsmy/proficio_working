@@ -13,7 +13,7 @@
 #include "/home/robot/rg2/include/RTMA_config.h"
 #include <unistd.h>
 
-#include <RTMA/RTMA.h>
+#include "/home/robot/RTMA/include/RTMA.h"
 
 #include <string>
 #include <signal.h>
@@ -43,14 +43,14 @@
 #include <barrett/config.h>
 #include <barrett/systems.h>
 #include <barrett/exception.h>
-#include <proficio/systems/utilities.h>
+//#include <proficio/systems/utilities.h>
 #include <barrett/products/product_manager.h>
 
 // Networking
 #include <netinet/in.h>
 #include <sys/types.h>
 
-#include <proficio/systems/utilities.h>
+//#include <proficio/systems/utilities.h>
 
 BARRETT_UNITS_FIXED_SIZE_TYPEDEFS;
 BARRETT_UNITS_TYPEDEFS(6);
