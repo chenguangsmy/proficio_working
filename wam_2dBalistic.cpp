@@ -13,7 +13,7 @@
  * 
  */
 
-#include "proficio_2dBalistic.h"  
+#include "wam_2dBalistic.h"  
 //#include "/home/robot/src/Proficio_Systems/magnitude.h"
 //#include "/home/robot/src/Proficio_Systems/normalize.h"
 #include "/home/robot/rg2/include/RTMA_config.h"
@@ -45,7 +45,7 @@
 #include <barrett/config.h>
 
 //#include <proficio/systems/utilities.h>
-
+#include <barrett/standard_main_function.h>
 #define BARRETT_SMF_VALIDATE_ARGS
 
 //#include <proficio/standard_proficio_main.h>
@@ -60,7 +60,7 @@ barrett::systems::ExposedOutput<v_type> message;
 
 bool forceMet = false;
 //cp_type center_pos(0.50, -0.120, 0.250);
-cp_type center_pos(0.5, -0.120, 0.250);
+cp_type center_pos(0.0, 0.0, 0.0);
 
 
 // end mutex
@@ -147,21 +147,23 @@ void * moveRobot(void *arguments)
 
 
 /*****************************************************************************************
- * proficio_main
+ * wam_main
  *
  * Run experiment in BURT robot
  ****************************************************************************************/
 template <size_t DOF>
-//int proficio_main(int argc, char** argv, barrett::ProductManager& product_manager_, barrett::systems::Wam<DOF>& wam, const Config& side) {
 int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, barrett::systems::Wam<DOF>& wam){
-  BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
+  printf("Begining of the main function!\n");  //
   
+  BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
+
   // Initializing RTMA
   RTMA_Module mod( 62, 0); //MID_BURT_ROBOT
   try
   {
     mod.DisconnectFromMMM();
     mod.ConnectToMMM((char *)"192.168.2.48:7112");
+    printf("RTMA connected!\n");  //
   }
   catch( exception &e)
 	{
@@ -172,7 +174,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   mod.Subscribe( MT_TASK_STATE_CONFIG );
   mod.Subscribe( MT_MOVE_HOME );
   mod.Subscribe( MT_SAMPLE_GENERATED );
-
+  printf("Module Supscription succeed!\n");  //
   // Instantiate robot
 //  std::string fname = "calibration_data/wam3/";
 //  if (side == LEFT) {  // Left Config
@@ -183,12 +185,17 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 //  proficio::systems::UserGravityCompensation<DOF> user_grav_comp_(barrett::EtcPathRelative(fname).c_str());
 //  user_grav_comp_.setGainZero();
 //HapticsDemo<DOF> haptics_demo(wam, product_manager_, &user_grav_comp_);
+  // gravity compensation
+  wam.gravityCompensate();
+  printf("Gravity Compensation Finished!\n");  //
   HapticsDemo<DOF> haptics_demo(wam, product_manager_);
-  if (!haptics_demo.setupNetworking()) {
+  printf("Construction finished return main!");
+//  if (!haptics_demo.setupNetworking()) return 1; //for debugging haptics demo function
+    if (!haptics_demo.init()) {
+      printf("hptics_demo init failure!");
     return 1;
   }
-  if (!haptics_demo.init()) return 1;
-
+  printf("Haptics Innitiation Started!\n");  //
 //  instantiate Systems
 //  NetworkHaptics<DOF> nh(product_manager_.getExecutionManager(), remote_host, &user_grav_comp_);
   NetworkHaptics<DOF> nh(product_manager_.getExecutionManager(), remote_host);

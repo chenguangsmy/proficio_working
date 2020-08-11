@@ -112,32 +112,33 @@ class HapticsDemo {
   barrett::ProductManager& product_manager_;
 
   /* Network Parameters */
-  struct sockaddr_in si_server;
-  int port, sock, i, slen;
-  char* buf;
-  char* srv_addr;
+//  struct sockaddr_in si_server;
+//  int port, sock, slen;
+//  char* buf;
+//  char* srv_addr;
 
-  jt_type jtLimits;
+  /* Wam joint parameters */
+  // jt_type jtLimits;
   barrett::systems::TupleGrouper<cp_type, cv_type> tuple_grouper;
 
   barrett::systems::ToolForceToJointTorques<DOF> cf_tf2jt;
 
   cf_type net_force;
-  jp_type init_joint_pos;
-  cf_type curForces;
+  //jp_type init_joint_pos;
+  //cf_type curForces;
 
   barrett::systems::Callback<boost::tuple<cp_type, cv_type>, cf_type> haptics;
   //proficio::systems::JointTorqueSaturation<DOF> jtsat;
   //proficio::systems::UserGravityCompensation<DOF>* user_grav_comp_;
-  barrett::systems::Summer<jt_type, 3> jtSum;
-  v_type dampingConstants;
-  jv_type velocityLimits;
+  //barrett::systems::Summer<jt_type, 2> jtSum;
+  //v_type dampingConstants;
+  //jv_type velocityLimits;
   //proficio::systems::JointVelocitySaturation<DOF> velsat;
 
-  barrett::systems::modXYZ<cp_type> invpos;
-  barrett::systems::modXYZ<cf_type> invforce;
-  barrett::systems::modXYZ<cv_type> invvel;
-  barrett::systems::modXYZ<cv_type> invvelSat;
+  //barrett::systems::modXYZ<cp_type> invpos;
+  //barrett::systems::modXYZ<cf_type> invforce;
+  //barrett::systems::modXYZ<cv_type> invvel;
+  //barrett::systems::modXYZ<cv_type> invvelSat;
 
   jv_type jvFiltFreq;
   cv_type cvFiltFreq;
@@ -155,37 +156,41 @@ class HapticsDemo {
   HapticsDemo(barrett::systems::Wam<DOF>& wam_arm, barrett::ProductManager& pm
 //              , proficio::systems::UserGravityCompensation<DOF>* ugc)
       ): wam(wam_arm),
-        product_manager_(pm),
-        slen(sizeof(si_server)),
-        jtLimits(55.0),
+        product_manager_(pm),//{
+     //   slen(sizeof(si_server)),
+     //   jtLimits(55.0),
         haptics(hapticCalc),
 //        jtsat(jtLimits),
 //        user_grav_comp_(ugc),
-        jtSum("+++"),
-        dampingConstants(20.0),
-        velocityLimits(2.4),
+//        jtSum("++"),
+    //    dampingConstants(20.0),
+    //    velocityLimits(2.4),
 //        velsat(dampingConstants, velocityLimits),
         jvFiltFreq(20.0),
         cvFiltFreq(20.0),
         sumForces(0.0) {
-    dampingConstants[2] = 10.0;
-    dampingConstants[0] = 30.0;
+    printf("Sstart construction function \n");
+//    dampingConstants[2] = 10.0;
+//    dampingConstants[0] = 30.0;
 //    velsat.setDampingConstant(dampingConstants);
-
+    
     // line up coordinate axis with python visualization
-    invpos.negX();
-    invpos.negY();
-    invpos.xOffset(1);
-    invpos.yOffset(-0.27);
-    //invpos.zOffset(-0.2); 
-    invforce.negX();
-    invforce.negY();
-    invvel.negX();
-    invvel.negY();
-    invvelSat.negX();
-    invvelSat.negY();
+    //invpos.negX();
+    //invpos.negY();
+    //invpos.xOffset(1);
+    //invpos.yOffset(-0.27);
+    //invpos.zOffset(-0.2);
+    //invforce.negX();
+    //invforce.negY();
+    //invvel.negX();
+    //invvel.negY();
+    //invvelSat.negX();
+    //invvelSat.negY();
     jvFilter.setLowPass(jvFiltFreq);
     cvFilter.setLowPass(cvFiltFreq);
+    wam.idle();
+    
+    printf("End construction function \n");
   }
 
 
@@ -194,15 +199,19 @@ class HapticsDemo {
  ****************************************************************************************/
 //template <size_t DOF>
 bool init() {
+  printf("Sstart initialization function \n");
   wam.gravityCompensate();
+  printf("Start to have a limitation here: \n");
   product_manager_.getSafetyModule()->setVelocityLimit(2.5);  // Was 2.5 (Hongwei, 9/5/2019)
   product_manager_.getSafetyModule()->setTorqueLimit(4.5);    // Was 4.5 (Hongwei, 9/5/2019)
 
+  printf("Mmiddle moveto center \n");
   wam.moveTo(center_pos);
-
+  printf("Ffinished move to center \n");
   barrett::btsleep(5);
 
   wam.idle();
+  printf("Begin idle \n");
   return true;
 }
 
@@ -211,6 +220,7 @@ bool init() {
  ****************************************************************************************/
 //template <size_t DOF>
 void setCenter(cp_type newCenter) {
+  printf("Enter function: setCenter.");
   center_pos = newCenter;
 }
 
@@ -219,6 +229,7 @@ void setCenter(cp_type newCenter) {
  ****************************************************************************************/
 //template <size_t DOF>
 void setForceMet(bool wasMet) {
+  printf("Enter function: setForceMet.");
   forceMet = wasMet;
 }
 
@@ -227,7 +238,9 @@ void setForceMet(bool wasMet) {
  * 
  ****************************************************************************************/
 //template <size_t DOF>
+/*
 bool setupNetworking() {
+  printf("Enter function: setupNetworking.");
   buf = new char[1024];
   srv_addr = new char[16];
   memset(srv_addr, 0, 16);
@@ -247,11 +260,13 @@ bool setupNetworking() {
   return true;
 }
 
+*/
 /*****************************************************************************************
  *
  * **************************************************************************************/
 //template <size_t DOF>
 void connectForces() {
+    printf("Enter function: connectForces.");
   barrett::systems::modXYZ<cp_type> mod_axes;
   
   BARRETT_UNITS_FIXED_SIZE_TYPEDEFS;
@@ -270,13 +285,14 @@ void connectForces() {
   //barrett::systems::connect(invvel.output, tuple_grouper.getInput<1>());
   barrett::systems::connect(cvFilter.output, tuple_grouper.getInput<1>());  // dont invert velocity
   barrett::systems::connect(tuple_grouper.output, haptics.input);
-  barrett::systems::connect(cf_tf2jt.output, jtSum.getInput(0));
- // barrett::systems::connect(user_grav_comp_->output, jtSum.getInput(1));
-  barrett::systems::connect(wam.jpOutput, jtSum.getInput(1));
+//  barrett::systems::connect(cf_tf2jt.output, jtSum.getInput(0));
+  barrett::systems::connect(cf_tf2jt.output, wam.input);
+//  barrett::systems::connect(user_grav_comp_->output, jtSum.getInput(1));
+//  barrett::systems::connect(wam.jpOutput, jtSum.getInput(1));
 //  barrett::systems::connect(velsat.output, jtSum.getInput(2));
-  barrett::systems::connect(jvFilter.output, jtSum.getInput(2));
+//  barrett::systems::connect(jvFilter.output, jtSum.getInput(2));
 //  barrett::systems::connect(jtSum.output, jtsat.input);
-  barrett::systems::connect(jtSum.output, wam.input);
+//  barrett::systems::connect(jtSum.output, wam.input);
 //  barrett::systems::connect(jtsat.output, wam.input);
 }
 
