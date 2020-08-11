@@ -49,8 +49,9 @@
 #include <barrett/systems/abstract/single_io.h>
 #include <barrett/thread/disable_secondary_mode_warning.h>
 #include <barrett/units.h>
+#include <barrett/math.h>
 
-#include <proficio/systems/utilities.h>          // NOLINT(build/include_order)
+//#include <proficio/systems/utilities.h>          // NOLINT(build/include_order)
 
 
 template <size_t DOF>
@@ -74,14 +75,14 @@ class NetworkHaptics
    */
   explicit NetworkHaptics(barrett::systems::ExecutionManager* exec_manager,
                           const char* remote_host,
-                          proficio::systems::UserGravityCompensation<DOF>* gc,
+//                          proficio::systems::UserGravityCompensation<DOF>* gc,
                           int port_src = 5557, int port_dest = 5556,
                           const std::string& sys_name = "NetworkHaptics")
       : barrett::systems::SingleIO<v_type, boost::tuple<double, v_type> >(
             sys_name),
         sock_(-1),
-        curr_vel_(0.0),
-        user_grav_comp_(gc) {
+        curr_vel_(0.0){
+ //       user_grav_comp_(gc) {
     int err;
     long flags;
     int buflen;
@@ -221,7 +222,7 @@ class NetworkHaptics
   int sock_;
   v_type curr_vel_;
   boost::tuple<double, v_type> tuple_msg_;
-  proficio::systems::UserGravityCompensation<DOF>* user_grav_comp_;
+  // proficio::systems::UserGravityCompensation<DOF>* user_grav_comp_;
 
   /** Send current velocity. Get user gravity compensation message
    *  and set/increment/decrement the gain as specified
@@ -235,12 +236,13 @@ class NetworkHaptics
       barrett::thread::DisableSecondaryModeWarning dsmw;
       send(sock_, curr_vel_.data(), SIZE_OF_MSG, 0);
       recv(sock_, &tuple_msg_, SIZE_OF_MSG_RECV, 0);
-      if (tuple_msg_.get<0>() == 0)
+/*      if (tuple_msg_.get<0>() == 0)
         user_grav_comp_->setGainZero();
       else if (tuple_msg_.get<0>() == 1)
         user_grav_comp_->incrementGain();
       else if (tuple_msg_.get<0>() == 2)
         user_grav_comp_->decrementGain();
+        */
     }
     outputValue->setData(&tuple_msg_);
   }

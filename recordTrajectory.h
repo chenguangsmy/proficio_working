@@ -15,8 +15,8 @@
 #include <boost/tuple/tuple.hpp>
 
 #include <barrett/detail/stl_utils.h>  // waitForEnter()
-#include <barrett/math.h>
 #include <barrett/units.h>
+#include <barrett/math.h>
 #include <barrett/systems.h>
 #include <barrett/log.h>
 #include <barrett/products/product_manager.h>

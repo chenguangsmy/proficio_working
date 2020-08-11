@@ -7,8 +7,8 @@
  * 
  */
 
-#include "/home/robot/src/Proficio_Systems/magnitude.h"
-#include "/home/robot/src/Proficio_Systems/normalize.h"
+#include "/home/cleave/src/Proficio_Systems/magnitude.h"
+#include "/home/cleave/src/Proficio_Systems/normalize.h"
 #include "/home/robot/rg2/include/RTMA_config.h"
 #include <unistd.h>
 
@@ -47,9 +47,7 @@
 
 // Networking
 #include <netinet/in.h>
-#include <sys/types.h>
-
-#include <proficio/systems/utilities.h>
+#include <sys/types.h>HapticObjecttems/utilities.h>
 
 BARRETT_UNITS_FIXED_SIZE_TYPEDEFS;
 BARRETT_UNITS_TYPEDEFS(6);

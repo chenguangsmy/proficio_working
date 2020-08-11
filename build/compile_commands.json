@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/cleave/proficio_working/build",
+  "command": "/usr/bin/c++   -DUSE_LINUX -D_GNU_SOURCE -D_REENTRANT -D__XENO__ -g -I/usr/local/include -I/usr/include/xenomai -I/usr/include/eigen2    -Wall -pipe -g -pthread -frounding-math -o CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o -c /home/cleave/proficio_working/wam_2dBalistic.cpp",
+  "file": "/home/cleave/proficio_working/wam_2dBalistic.cpp"
+}
+]
