@@ -1,4 +1,4 @@
-# Install script for directory: /home/cleave/proficio_working
+# Install script for directory: /home/robot/proficio_working
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -33,19 +33,27 @@ IF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 ENDIF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/cleave/proficio_working/wam_2dBalistic")
-  IF (CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
-    message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
-  ENDIF (CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
-  IF (CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
-    message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
-  ENDIF (CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
-FILE(INSTALL DESTINATION "/home/cleave/proficio_working" TYPE EXECUTABLE FILES "/home/cleave/proficio_working/CMakeFiles/CMakeRelink.dir/wam_2dBalistic")
+  IF(EXISTS "$ENV{DESTDIR}/home/robot/proficio_working/wam_2dBalistic" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}/home/robot/proficio_working/wam_2dBalistic")
+    FILE(RPATH_CHECK
+         FILE "$ENV{DESTDIR}/home/robot/proficio_working/wam_2dBalistic"
+         RPATH "")
+  ENDIF()
+  list(APPEND CPACK_ABSOLUTE_DESTINATION_FILES
+   "/home/robot/proficio_working/wam_2dBalistic")
+FILE(INSTALL DESTINATION "/home/robot/proficio_working" TYPE EXECUTABLE FILES "/home/robot/proficio_working/wam_2dBalistic")
+  IF(EXISTS "$ENV{DESTDIR}/home/robot/proficio_working/wam_2dBalistic" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}/home/robot/proficio_working/wam_2dBalistic")
+    FILE(RPATH_REMOVE
+         FILE "$ENV{DESTDIR}/home/robot/proficio_working/wam_2dBalistic")
+    IF(CMAKE_INSTALL_DO_STRIP)
+      EXECUTE_PROCESS(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}/home/robot/proficio_working/wam_2dBalistic")
+    ENDIF(CMAKE_INSTALL_DO_STRIP)
+  ENDIF()
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  execute_process(COMMAND chown -R : /home/cleave/proficio_working)
+  execute_process(COMMAND chown -R : /home/robot/proficio_working)
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
 
 IF(CMAKE_INSTALL_COMPONENT)
@@ -54,7 +62,7 @@ ELSE(CMAKE_INSTALL_COMPONENT)
   SET(CMAKE_INSTALL_MANIFEST "install_manifest.txt")
 ENDIF(CMAKE_INSTALL_COMPONENT)
 
-FILE(WRITE "/home/cleave/proficio_working/${CMAKE_INSTALL_MANIFEST}" "")
+FILE(WRITE "/home/robot/proficio_working/${CMAKE_INSTALL_MANIFEST}" "")
 FOREACH(file ${CMAKE_INSTALL_MANIFEST_FILES})
-  FILE(APPEND "/home/cleave/proficio_working/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
+  FILE(APPEND "/home/robot/proficio_working/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
 ENDFOREACH(file)

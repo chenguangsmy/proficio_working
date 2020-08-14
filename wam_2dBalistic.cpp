@@ -60,7 +60,7 @@ barrett::systems::ExposedOutput<v_type> message;
 
 bool forceMet = false;
 //cp_type center_pos(0.50, -0.120, 0.250);
-cp_type center_pos(0.0, 0.0, 0.0);
+cp_type center_pos(-0.03, -0.32, 0.6);
 
 
 // end mutex
@@ -73,7 +73,7 @@ pthread_mutex_t rmLock;
  ****************************************************************************************/
 bool validate_args(int argc, char** argv) {
   if (argc != 2) {
-    remote_host = "127.0.0.1";
+    remote_host = "127.0.0.1";  //actually this IP is local host
     printf("Defaulting to 127.0.0.1\n");
   } else {
     remote_host = argv[1];
@@ -154,7 +154,7 @@ void * moveRobot(void *arguments)
 template <size_t DOF>
 int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, barrett::systems::Wam<DOF>& wam){
   printf("Begining of the main function!\n");  //
-  
+  if (!validate_args(argc, argv)) return -1; // if not get right input, end.
   BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
 
   // Initializing RTMA
@@ -187,19 +187,18 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 //HapticsDemo<DOF> haptics_demo(wam, product_manager_, &user_grav_comp_);
   // gravity compensation
   wam.gravityCompensate();
-  printf("Gravity Compensation Finished!\n");  //
+  wam.moveTo(center_pos);
   HapticsDemo<DOF> haptics_demo(wam, product_manager_);
-  printf("Construction finished return main!");
+
 //  if (!haptics_demo.setupNetworking()) return 1; //for debugging haptics demo function
     if (!haptics_demo.init()) {
       printf("hptics_demo init failure!");
     return 1;
   }
-  printf("Haptics Innitiation Started!\n");  //
-//  instantiate Systems
 //  NetworkHaptics<DOF> nh(product_manager_.getExecutionManager(), remote_host, &user_grav_comp_);
   NetworkHaptics<DOF> nh(product_manager_.getExecutionManager(), remote_host);
   message.setValue(msg_tmp);
+
   barrett::systems::forceConnect(message.output, nh.input);
   haptics_demo.connectForces();
   cout << "Connected Forces" << endl;
@@ -220,7 +219,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   pthread_join(rtmaThread, NULL );
   // pthread_join(robotMoverThread, NULL );
 
-  cout << "Finished trial" << endl;
+  cout << "Finished trials" << endl;
   barrett::btsleep(0.1);
 
   mod.DisconnectFromMMM();

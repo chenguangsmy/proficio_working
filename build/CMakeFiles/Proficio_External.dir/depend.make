@@ -5,9 +5,9 @@ CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: ../ballisticForce.h
 CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: ../burtRTMA.h
 CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: ../hapticsDemoClass.h
 CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: ../movingBurt.h
-CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: ../proficio_2dBalistic.h
 CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: ../recordTrajectory.h
 CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: ../wam_2dBalistic.cpp
+CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: ../wam_2dBalistic.h
 CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: /home/robot/RTMA/include/OS_defines.h
 CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: /home/robot/RTMA/include/RTMA.h
 CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: /home/robot/RTMA/include/RTMA_types.h
@@ -155,6 +155,7 @@ CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: /usr/local/include/barret
 CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: /usr/local/include/barrett/products/puck_group.h
 CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: /usr/local/include/barrett/products/safety_module.h
 CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: /usr/local/include/barrett/products/tactile_puck.h
+CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: /usr/local/include/barrett/standard_main_function.h
 CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: /usr/local/include/barrett/systems.h
 CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: /usr/local/include/barrett/systems/abstract/controller.h
 CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o: /usr/local/include/barrett/systems/abstract/conversion.h

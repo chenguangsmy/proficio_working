@@ -11,6 +11,9 @@ SET(CMAKE_CXX_COMPILER_ID "GNU")
 # Preprocessor definitions for this target.
 SET(CMAKE_TARGET_DEFINITIONS
   "USE_LINUX"
+  "_GNU_SOURCE"
+  "_REENTRANT"
+  "__XENO__"
   )
 
 # Targets to which this target links.
@@ -20,9 +23,8 @@ SET(CMAKE_TARGET_LINKED_INFO_FILES
 # The include file search paths:
 SET(CMAKE_C_TARGET_INCLUDE_PATH
   "/usr/local/include"
-  "/usr/include/eigen3"
+  "/usr/include/xenomai"
   "/usr/include/eigen2"
-  "/usr/local/include/barrett"
   )
 SET(CMAKE_CXX_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
 SET(CMAKE_Fortran_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})

@@ -85,6 +85,9 @@ wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libboost_system.so
 wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libboost_thread.so
 wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libboost_python.so
 wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libpthread.so
+wam_2dBalistic: /usr/lib/libnative.so
+wam_2dBalistic: /usr/lib/libxenomai.so
+wam_2dBalistic: /usr/lib/librtdm.so
 wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libpython2.7.so
 wam_2dBalistic: CMakeFiles/Proficio_External.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX executable wam_2dBalistic"
@@ -107,6 +110,9 @@ CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libboost_sy
 CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libboost_thread.so
 CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libboost_python.so
 CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libpthread.so
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/libnative.so
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/libxenomai.so
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/librtdm.so
 CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libpython2.7.so
 CMakeFiles/CMakeRelink.dir/wam_2dBalistic: CMakeFiles/Proficio_External.dir/relink.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX executable CMakeFiles/CMakeRelink.dir/wam_2dBalistic"

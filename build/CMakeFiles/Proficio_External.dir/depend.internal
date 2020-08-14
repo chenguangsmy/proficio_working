@@ -6,9 +6,9 @@ CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o
  /home/cleave/proficio_working/burtRTMA.h
  /home/cleave/proficio_working/hapticsDemoClass.h
  /home/cleave/proficio_working/movingBurt.h
- /home/cleave/proficio_working/proficio_2dBalistic.h
  /home/cleave/proficio_working/recordTrajectory.h
  /home/cleave/proficio_working/wam_2dBalistic.cpp
+ /home/cleave/proficio_working/wam_2dBalistic.h
  /home/robot/RTMA/include/OS_defines.h
  /home/robot/RTMA/include/RTMA.h
  /home/robot/RTMA/include/RTMA_types.h
@@ -156,6 +156,7 @@ CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o
  /usr/local/include/barrett/products/puck_group.h
  /usr/local/include/barrett/products/safety_module.h
  /usr/local/include/barrett/products/tactile_puck.h
+ /usr/local/include/barrett/standard_main_function.h
  /usr/local/include/barrett/systems.h
  /usr/local/include/barrett/systems/abstract/controller.h
  /usr/local/include/barrett/systems/abstract/conversion.h

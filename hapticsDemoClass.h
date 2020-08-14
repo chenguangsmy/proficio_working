@@ -93,6 +93,12 @@ cf_type hapticCalc(boost::tuple<cp_type, cv_type> haptics_tuple) {
     net_force[0] -= damping * wam_vel[0];  // Damping portion
     net_force[1] -= damping * wam_vel[1];
   }
+ else
+  {
+    /* shame for force met! */
+    printf("Force Met! Force Set to 0!");
+  }
+  
 
   return net_force;
 }
@@ -130,7 +136,7 @@ class HapticsDemo {
   barrett::systems::Callback<boost::tuple<cp_type, cv_type>, cf_type> haptics;
   //proficio::systems::JointTorqueSaturation<DOF> jtsat;
   //proficio::systems::UserGravityCompensation<DOF>* user_grav_comp_;
-  //barrett::systems::Summer<jt_type, 2> jtSum;
+  barrett::systems::Summer<jt_type, 2> jtSum;
   //v_type dampingConstants;
   //jv_type velocityLimits;
   //proficio::systems::JointVelocitySaturation<DOF> velsat;
@@ -162,14 +168,13 @@ class HapticsDemo {
         haptics(hapticCalc),
 //        jtsat(jtLimits),
 //        user_grav_comp_(ugc),
-//        jtSum("++"),
+          jtSum("++"),
     //    dampingConstants(20.0),
     //    velocityLimits(2.4),
 //        velsat(dampingConstants, velocityLimits),
         jvFiltFreq(20.0),
         cvFiltFreq(20.0),
         sumForces(0.0) {
-    printf("Sstart construction function \n");
 //    dampingConstants[2] = 10.0;
 //    dampingConstants[0] = 30.0;
 //    velsat.setDampingConstant(dampingConstants);
@@ -189,8 +194,6 @@ class HapticsDemo {
     jvFilter.setLowPass(jvFiltFreq);
     cvFilter.setLowPass(cvFiltFreq);
     wam.idle();
-    
-    printf("End construction function \n");
   }
 
 
@@ -199,19 +202,16 @@ class HapticsDemo {
  ****************************************************************************************/
 //template <size_t DOF>
 bool init() {
-  printf("Sstart initialization function \n");
+  //printf("Sstart initialization function \n");
   wam.gravityCompensate();
-  printf("Start to have a limitation here: \n");
   product_manager_.getSafetyModule()->setVelocityLimit(2.5);  // Was 2.5 (Hongwei, 9/5/2019)
   product_manager_.getSafetyModule()->setTorqueLimit(4.5);    // Was 4.5 (Hongwei, 9/5/2019)
 
-  printf("Mmiddle moveto center \n");
   wam.moveTo(center_pos);
-  printf("Ffinished move to center \n");
-  barrett::btsleep(5);
+  barrett::btsleep(0.5);
 
   wam.idle();
-  printf("Begin idle \n");
+  //printf("Begin idle \n");
   return true;
 }
 
@@ -286,13 +286,14 @@ void connectForces() {
   barrett::systems::connect(cvFilter.output, tuple_grouper.getInput<1>());  // dont invert velocity
   barrett::systems::connect(tuple_grouper.output, haptics.input);
 //  barrett::systems::connect(cf_tf2jt.output, jtSum.getInput(0));
-  barrett::systems::connect(cf_tf2jt.output, wam.input);
+//  barrett::systems::connect(cf_tf2jt.output, wam.input);
+  barrett::systems::connect(cf_tf2jt.output, jtSum.getInput(0));
 //  barrett::systems::connect(user_grav_comp_->output, jtSum.getInput(1));
-//  barrett::systems::connect(wam.jpOutput, jtSum.getInput(1));
+  barrett::systems::connect(wam.gravity.output, jtSum.getInput(1));
 //  barrett::systems::connect(velsat.output, jtSum.getInput(2));
 //  barrett::systems::connect(jvFilter.output, jtSum.getInput(2));
 //  barrett::systems::connect(jtSum.output, jtsat.input);
-//  barrett::systems::connect(jtSum.output, wam.input);
+  barrett::systems::connect(jtSum.output, wam.input);
 //  barrett::systems::connect(jtsat.output, wam.input);
 }
 
