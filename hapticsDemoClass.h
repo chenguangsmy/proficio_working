@@ -66,6 +66,7 @@ extern cp_type center_pos;
 #ifndef HAPTICS_STUFF
 #define HAPTICS_STUFF
 
+bool hapticCalcForcemetShow = false; // Cleave debug
 /*****************************************************************************************
  *  Initialization Method 
  ****************************************************************************************/
@@ -92,11 +93,18 @@ cf_type hapticCalc(boost::tuple<cp_type, cv_type> haptics_tuple) {
 
     net_force[0] -= damping * wam_vel[0];  // Damping portion
     net_force[1] -= damping * wam_vel[1];
+    if (!hapticCalcForcemetShow) {
+      printf("Force Not Met! \n");
+      hapticCalcForcemetShow = true; // not show again
+    }
   }
  else
   {
-    /* shame for force met! */
-    printf("Force Met! Force Set to 0!");
+    /* display for force met! */
+    if (hapticCalcForcemetShow) {
+      printf("Force Met! Force Set to 0! \n");
+      hapticCalcForcemetShow = false; // not show again
+    }
   }
   
 
@@ -286,14 +294,14 @@ void connectForces() {
   barrett::systems::connect(cvFilter.output, tuple_grouper.getInput<1>());  // dont invert velocity
   barrett::systems::connect(tuple_grouper.output, haptics.input);
 //  barrett::systems::connect(cf_tf2jt.output, jtSum.getInput(0));
-//  barrett::systems::connect(cf_tf2jt.output, wam.input);
-  barrett::systems::connect(cf_tf2jt.output, jtSum.getInput(0));
+  barrett::systems::connect(cf_tf2jt.output, wam.input);
+//  barrett::systems::connect(cf_tf2jt.output, jtSum.getInput(0));
 //  barrett::systems::connect(user_grav_comp_->output, jtSum.getInput(1));
-  barrett::systems::connect(wam.gravity.output, jtSum.getInput(1));
+//  barrett::systems::connect(wam.gravity.output, jtSum.getInput(1));
 //  barrett::systems::connect(velsat.output, jtSum.getInput(2));
 //  barrett::systems::connect(jvFilter.output, jtSum.getInput(2));
 //  barrett::systems::connect(jtSum.output, jtsat.input);
-  barrett::systems::connect(jtSum.output, wam.input);
+//  barrett::systems::connect(jtSum.output, wam.input);
 //  barrett::systems::connect(jtsat.output, wam.input);
 }
 

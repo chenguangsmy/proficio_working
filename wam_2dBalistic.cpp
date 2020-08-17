@@ -213,10 +213,12 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 
   //Start threads
   pthread_create(&rtmaThread, NULL, &responderWrapper<DOF>, (void *)&args);
+  printf("RTMA thread created! \n");
   pthread_create(&robotMoverThread, NULL, &moveRobot<DOF>, (void *)&args);
-
+  printf("robotMoverThread created! \n");
   // Wait for threads to finish
   pthread_join(rtmaThread, NULL );
+  printf("The RTMA thread joined! \n");
   // pthread_join(robotMoverThread, NULL );
 
   cout << "Finished trials" << endl;
