@@ -97,6 +97,34 @@ wam_2dBalistic: CMakeFiles/Proficio_External.dir/link.txt
 CMakeFiles/Proficio_External.dir/build: wam_2dBalistic
 .PHONY : CMakeFiles/Proficio_External.dir/build
 
+<<<<<<< HEAD
+=======
+# Object files for target Proficio_External
+Proficio_External_OBJECTS = \
+"CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o"
+
+# External object files for target Proficio_External
+Proficio_External_EXTERNAL_OBJECTS =
+
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: CMakeFiles/Proficio_External.dir/build.make
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libboost_system.so
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libboost_thread.so
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libboost_python.so
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libpthread.so
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/libnative.so
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/libxenomai.so
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/librtdm.so
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: /usr/lib/x86_64-linux-gnu/libpython2.7.so
+CMakeFiles/CMakeRelink.dir/wam_2dBalistic: CMakeFiles/Proficio_External.dir/relink.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX executable CMakeFiles/CMakeRelink.dir/wam_2dBalistic"
+	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/Proficio_External.dir/relink.txt --verbose=$(VERBOSE)
+
+# Rule to relink during preinstall.
+CMakeFiles/Proficio_External.dir/preinstall: CMakeFiles/CMakeRelink.dir/wam_2dBalistic
+.PHONY : CMakeFiles/Proficio_External.dir/preinstall
+
+>>>>>>> 20479182f148e860131f1d5af5d95ca6303ecf5a
 CMakeFiles/Proficio_External.dir/requires: CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o.requires
 .PHONY : CMakeFiles/Proficio_External.dir/requires
 

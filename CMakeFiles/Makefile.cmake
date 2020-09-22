@@ -12,8 +12,11 @@ SET(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/2.8.12.2/CMakeSystem.cmake"
   "CMakeLists.txt"
   "/usr/local/share/barrett/barrett-config.cmake"
+<<<<<<< HEAD
   "/usr/share/cmake-2.8/Modules/CMakeCCompiler.cmake.in"
   "/usr/share/cmake-2.8/Modules/CMakeCCompilerABI.c"
+=======
+>>>>>>> 20479182f148e860131f1d5af5d95ca6303ecf5a
   "/usr/share/cmake-2.8/Modules/CMakeCInformation.cmake"
   "/usr/share/cmake-2.8/Modules/CMakeCXXCompiler.cmake.in"
   "/usr/share/cmake-2.8/Modules/CMakeCXXCompilerABI.cpp"
@@ -29,12 +32,16 @@ SET(CMAKE_MAKEFILE_DEPENDS
   "/usr/share/cmake-2.8/Modules/CMakeFindBinUtils.cmake"
   "/usr/share/cmake-2.8/Modules/CMakeGenericSystem.cmake"
   "/usr/share/cmake-2.8/Modules/CMakeParseArguments.cmake"
+<<<<<<< HEAD
   "/usr/share/cmake-2.8/Modules/CMakeParseImplicitLinkInfo.cmake"
   "/usr/share/cmake-2.8/Modules/CMakeSystem.cmake.in"
   "/usr/share/cmake-2.8/Modules/CMakeSystemSpecificInformation.cmake"
   "/usr/share/cmake-2.8/Modules/CMakeTestCCompiler.cmake"
   "/usr/share/cmake-2.8/Modules/CMakeTestCXXCompiler.cmake"
   "/usr/share/cmake-2.8/Modules/CMakeTestCompilerCommon.cmake"
+=======
+  "/usr/share/cmake-2.8/Modules/CMakeSystemSpecificInformation.cmake"
+>>>>>>> 20479182f148e860131f1d5af5d95ca6303ecf5a
   "/usr/share/cmake-2.8/Modules/CMakeUnixFindMake.cmake"
   "/usr/share/cmake-2.8/Modules/Compiler/GNU-C.cmake"
   "/usr/share/cmake-2.8/Modules/Compiler/GNU-CXX.cmake"
@@ -42,8 +49,11 @@ SET(CMAKE_MAKEFILE_DEPENDS
   "/usr/share/cmake-2.8/Modules/FindCurses.cmake"
   "/usr/share/cmake-2.8/Modules/FindPackageHandleStandardArgs.cmake"
   "/usr/share/cmake-2.8/Modules/FindPackageMessage.cmake"
+<<<<<<< HEAD
   "/usr/share/cmake-2.8/Modules/MultiArchCross.cmake"
   "/usr/share/cmake-2.8/Modules/Platform/Linux-CXX.cmake"
+=======
+>>>>>>> 20479182f148e860131f1d5af5d95ca6303ecf5a
   "/usr/share/cmake-2.8/Modules/Platform/Linux-GNU-C.cmake"
   "/usr/share/cmake-2.8/Modules/Platform/Linux-GNU-CXX.cmake"
   "/usr/share/cmake-2.8/Modules/Platform/Linux-GNU.cmake"

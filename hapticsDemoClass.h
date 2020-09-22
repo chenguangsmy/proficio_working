@@ -98,7 +98,11 @@ cf_type hapticCalc(boost::tuple<cp_type, cv_type> haptics_tuple) {
       hapticCalcForcemetShow = true; // not show again
     }
   }
+<<<<<<< HEAD
 // else
+=======
+ else
+>>>>>>> 20479182f148e860131f1d5af5d95ca6303ecf5a
   {
     /* display for force met! */
     if (hapticCalcForcemetShow) {
