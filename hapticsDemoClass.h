@@ -86,7 +86,7 @@ cf_type hapticCalc(boost::tuple<cp_type, cv_type> haptics_tuple) {
 //  net_force[0] = 0;
 //  net_force[1] = 0;
   // Resist deformation in the x-y directions
-//  if (!forceMet)
+  if (!forceMet)
   {
     net_force[0] = stiffness * (center_pos[0] - wam_pos[0]);  // Spring Portion
     net_force[1] = stiffness * (center_pos[1] - wam_pos[1]);
@@ -98,11 +98,7 @@ cf_type hapticCalc(boost::tuple<cp_type, cv_type> haptics_tuple) {
       hapticCalcForcemetShow = true; // not show again
     }
   }
-<<<<<<< HEAD
-// else
-=======
  else
->>>>>>> 20479182f148e860131f1d5af5d95ca6303ecf5a
   {
     /* display for force met! */
     if (hapticCalcForcemetShow) {

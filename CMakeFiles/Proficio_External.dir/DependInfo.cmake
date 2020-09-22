@@ -24,11 +24,7 @@ SET(CMAKE_TARGET_LINKED_INFO_FILES
 SET(CMAKE_C_TARGET_INCLUDE_PATH
   "/usr/local/include"
   "/usr/include/xenomai"
-<<<<<<< HEAD
   "/usr/include/eigen3"
-=======
-  "/usr/include/eigen2"
->>>>>>> 20479182f148e860131f1d5af5d95ca6303ecf5a
   )
 SET(CMAKE_CXX_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
 SET(CMAKE_Fortran_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
