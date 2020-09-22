@@ -93,7 +93,7 @@ class NetworkHaptics
     v_type zero_v(0.0);
     tuple_msg_.get<1>() = zero_v;
     tuple_msg_.get<0>() = 10;
-
+    printf("STP1\n");
     /* Create socket */
     sock_ = socket(PF_INET, SOCK_DGRAM, 0);
     if (sock_ == -1) { 
@@ -137,7 +137,7 @@ class NetworkHaptics
     {
       ctor_error_handler("Could not set reuse.", __func__);
     }
-
+    printf("STP2\n");
     /* Set up the bind address */
     bind_addr.sin_family = AF_INET;
     bind_addr.sin_port = htons(port_src);
@@ -192,6 +192,7 @@ class NetworkHaptics
     if (exec_manager != NULL) {
       exec_manager->startManaging(*this);
     }
+    printf("STP3\n");
   }
 
   virtual ~NetworkHaptics() {

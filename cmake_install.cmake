@@ -33,6 +33,12 @@ IF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 ENDIF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+  IF(EXISTS "$ENV{DESTDIR}/home/cleave/proficio_working/wam_2dBalistic" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}/home/cleave/proficio_working/wam_2dBalistic")
+    FILE(RPATH_CHECK
+         FILE "$ENV{DESTDIR}/home/cleave/proficio_working/wam_2dBalistic"
+         RPATH "")
+  ENDIF()
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
    "/home/cleave/proficio_working/wam_2dBalistic")
   IF (CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
@@ -41,7 +47,15 @@ IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspeci
   IF (CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   ENDIF (CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
-FILE(INSTALL DESTINATION "/home/cleave/proficio_working" TYPE EXECUTABLE FILES "/home/cleave/proficio_working/CMakeFiles/CMakeRelink.dir/wam_2dBalistic")
+FILE(INSTALL DESTINATION "/home/cleave/proficio_working" TYPE EXECUTABLE FILES "/home/cleave/proficio_working/wam_2dBalistic")
+  IF(EXISTS "$ENV{DESTDIR}/home/cleave/proficio_working/wam_2dBalistic" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}/home/cleave/proficio_working/wam_2dBalistic")
+    FILE(RPATH_REMOVE
+         FILE "$ENV{DESTDIR}/home/cleave/proficio_working/wam_2dBalistic")
+    IF(CMAKE_INSTALL_DO_STRIP)
+      EXECUTE_PROCESS(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}/home/cleave/proficio_working/wam_2dBalistic")
+    ENDIF(CMAKE_INSTALL_DO_STRIP)
+  ENDIF()
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")

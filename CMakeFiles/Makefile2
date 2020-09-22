@@ -78,15 +78,6 @@ CMakeFiles/Proficio_External.dir/rule: cmake_check_build_system
 Proficio_External: CMakeFiles/Proficio_External.dir/rule
 .PHONY : Proficio_External
 
-# Pre-install relink rule for target.
-CMakeFiles/Proficio_External.dir/preinstall:
-	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/preinstall
-.PHONY : CMakeFiles/Proficio_External.dir/preinstall
-
-# Prepare target for install.
-preinstall: CMakeFiles/Proficio_External.dir/preinstall
-.PHONY : preinstall
-
 # clean rule for target.
 CMakeFiles/Proficio_External.dir/clean:
 	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/clean

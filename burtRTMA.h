@@ -79,7 +79,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 {
   cf_type cforce;
   bool wamLocked = false;
-  
+  bool read_rlt = false;
   
   bool freeMoving = false; //TODO: THIS SHOULD BE FALSE
   bool sendData = true;
@@ -97,8 +97,14 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   while (true)  // Allow the user to stop and resume with pendant buttons
   {
     // Read Messages
-    mod.ReadMessage( &Consumer_M);
-
+    read_rlt = mod.ReadMessage( &Consumer_M, 0.1);
+  /*  if (read_rlt) {
+      printf("Msg readed! \n");
+    }
+    else {
+      printf("No Msg can be read in this 0.1s\n");
+    };
+    */
     // Send Position Data
     if (Consumer_M.msg_type == MT_SAMPLE_GENERATED && sendData)
     {
@@ -155,6 +161,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       CMessage M( MT_BURT_STATUS );
       M.SetData( &burt_status_data, sizeof(burt_status_data) );
       mod.SendMessage( &M );
+      printf("M data has beed sent! \n"); 
     }
 
     // Task State config, set force
@@ -201,9 +208,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
             wam.moveTo(wam.getToolPosition());
             wamLocked = true;
           }
-          /*
-          target[1] = task_state_data.target[0];
-          target[0] = task_state_data.target[1];
+          /*monkey_centerget[0] = task_state_data.target[1];
           target[2] = task_state_data.target[2];
           cout << "Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
 
@@ -212,7 +217,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         default:
           break;
       }      
-      cout << monkey_center << endl;
     }
 
     // Have Burt move in steps toward home postion
