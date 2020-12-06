@@ -56,9 +56,8 @@
 
 template <size_t DOF>
 class NetworkHaptics
-    : public barrett::systems::SingleIO<
-          barrett::math::Vector<6>::type,
-          boost::tuple<double, barrett::math::Vector<6>::type> > {
+  //  : public barrett::systems::SingleIO<barrett::math::Vector<6>::type, boost::tuple<double, barrett::math::Vector<6>::type> > {
+    : public barrett::systems::SingleIO<barrett::math::Vector<6>::type, boost::tuple<double, barrett::math::Vector<6>::type> > {
   BARRETT_UNITS_TYPEDEFS(6);
 
  public:
@@ -83,6 +82,7 @@ class NetworkHaptics
         sock_(-1),
         curr_vel_(0.0){
  //       user_grav_comp_(gc) {
+    printf("Networkhaptics:: start initializing!\n");
     int err;
     long flags;
     int buflen;
@@ -93,7 +93,7 @@ class NetworkHaptics
     v_type zero_v(0.0);
     tuple_msg_.get<1>() = zero_v;
     tuple_msg_.get<0>() = 10;
-    printf("STP1\n");
+
     /* Create socket */
     sock_ = socket(PF_INET, SOCK_DGRAM, 0);
     if (sock_ == -1) { 
@@ -137,7 +137,7 @@ class NetworkHaptics
     {
       ctor_error_handler("Could not set reuse.", __func__);
     }
-    printf("STP2\n");
+
     /* Set up the bind address */
     bind_addr.sin_family = AF_INET;
     bind_addr.sin_port = htons(port_src);
@@ -163,6 +163,7 @@ class NetworkHaptics
         case ENOTDIR: errResp = (char *)"Path prefix not directory"; break;
         case EROFS: errResp = (char *)"Socket in read only file system"; break;
       }
+
       //(barrett::logMessage("(NetworkHaptics::NetworkHaptics): Ctor failed %s: Could not bind to socket on port %d") % __func__ % port_src).raise<std::runtime_error>();
       barrett::logMessage(
         "(NetworkHaptics::NetworkHaptics): Ctor failed %s: Couldn't "
@@ -172,8 +173,13 @@ class NetworkHaptics
 
     /* Set up the other guy's address */
     their_addr.sin_family = AF_INET; // address family...
+
     their_addr.sin_port = htons(port_dest); //unsigned short from host to network byte order
-    err = !inet_pton(AF_INET, remote_host, &their_addr.sin_addr); // convert IP to human readable address
+
+    // execution faliure next line! need some fixation!!! 
+    printf("remote host: %s\n", remote_host);
+    err = !inet_pton(AF_INET, remote_host, &their_addr.sin_addr.s_addr); // convert IP to human readable address
+
     if (err) {
       barrett::logMessage(
           "(NetworkHaptics::NetworkHaptics): Constructor failed %s: "
@@ -192,7 +198,6 @@ class NetworkHaptics
     if (exec_manager != NULL) {
       exec_manager->startManaging(*this);
     }
-    printf("STP3\n");
   }
 
   virtual ~NetworkHaptics() {

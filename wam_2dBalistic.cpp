@@ -9,7 +9,7 @@
  * 
  * moveAstep -> moves the burt one step toward a position
  * 
- * Author(s): Ivana Stevens 2019
+ * Author(s): Ivana Stevens 2019, Chenguang Z. 2020
  * 
  */
 
@@ -21,8 +21,9 @@
 
 #include "recordTrajectory.h"
 #include "movingBurt.h"
-#include "hapticsDemoClass.h"
+// #include "hapticsDemoClass.h"
 #include "burtRTMA.h"
+#include "CustomClass.h"
 
 #include "/home/robot/RTMA/include/RTMA.h"
 
@@ -49,7 +50,17 @@
 #define BARRETT_SMF_VALIDATE_ARGS
 
 //#include <proficio/standard_proficio_main.h>
+typedef typename ::barrett::math::Matrix<4,4> Matrix_4x4; //self-def matrix type
+typedef typename ::barrett::math::Matrix<4,1> Matrix_4x1; //self-def matrix type
+typedef typename ::barrett::math::Matrix<2,1> Matrix_2x1; //self-def matrix type
+typedef typename ::barrett::math::Matrix<3,4> Matrix_3x4; //self-def matrix type
+typedef typename ::barrett::math::Matrix<3,3> Matrix_3x3; //self-def matrix type
+typedef typename ::barrett::math::Matrix<6,3, void> Matrix_6x3xv; //self-def matrix type
+typedef typename ::barrett::math::Matrix<3,1> Matrix_3x1; //self-def matrix type
+typedef typename ::barrett::math::Matrix<6,4> Matrix_6x4; //self-def matrix type
 
+using namespace barrett;
+using detail::waitForEnter;
 
 //BARRETT_UNITS_FIXED_SIZE_TYPEDEFS;
 //BARRETT_UNITS_TYPEDEFS(10);
@@ -59,8 +70,8 @@ v_type msg_tmp;
 barrett::systems::ExposedOutput<v_type> message;
 
 bool forceMet = false;
-//cp_type center_pos(0.50, -0.120, 0.250);
-cp_type center_pos(-0.03, -0.32, 0.6);
+//const jp_type center_pos1(-1.5, 0, 0, 1.5);
+cp_type center_pos(-0.448, -0.418, 0.010);
 
 
 // end mutex
@@ -89,16 +100,16 @@ struct arg_struct {
   cp_type system_center;
   RTMA_Module &mod;
   barrett::ProductManager& product_manager;
-  HapticsDemo<DOF>& ball;
+  ControllerWarper<DOF>& cw;
   arg_struct(barrett::systems::Wam<DOF>& wam,
               cp_type system_center,
               RTMA_Module &mod,
               barrett::ProductManager& product_manager,
-              HapticsDemo<DOF>& ball) : wam(wam), 
+              ControllerWarper<DOF>& cw) : wam(wam), 
                 system_center(system_center), 
                 mod(mod), 
                 product_manager(product_manager),
-                ball(ball) {}
+                cw(cw) {}
 };
 
 
@@ -109,7 +120,7 @@ template <size_t DOF>
 void * responderWrapper(void *arguments)
 {
   struct arg_struct<DOF> *args = (arg_struct<DOF> *)arguments;
-  respondToRTMA(args->wam, args->system_center, args->mod, args->ball);
+  respondToRTMA(args->wam, args->system_center, args->mod, args->cw);
   return NULL;
 }
 
@@ -175,41 +186,61 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   mod.Subscribe( MT_MOVE_HOME );
   mod.Subscribe( MT_SAMPLE_GENERATED );
   printf("Module Supscription succeed!\n");  //
-  // Instantiate robot
-//  std::string fname = "calibration_data/wam3/";
-//  if (side == LEFT) {  // Left Config
-//    fname = fname + "LeftConfig.txt";
-//  } else if (side == RIGHT) {
-//    fname = fname + "RightConfig.txt";
-//  }
-//  proficio::systems::UserGravityCompensation<DOF> user_grav_comp_(barrett::EtcPathRelative(fname).c_str());
-//  user_grav_comp_.setGainZero();
-//HapticsDemo<DOF> haptics_demo(wam, product_manager_, &user_grav_comp_);
-  // gravity compensation
+
   wam.gravityCompensate();
-  wam.moveTo(center_pos);
-  HapticsDemo<DOF> haptics_demo(wam, product_manager_);
+  // wam.moveTo(center_pos);
+  // set a series of initial value for the CustomController;
+  Matrix_4x4 K_q00;
+	Matrix_4x4 K_q01;
+	Matrix_3x3 K_x00;
+	jp_type input_q_000;
+	cp_type input_x_000;
+
+	K_q00(0,0) = 10;
+	K_q00(1,1) = 10;
+	K_q00(2,2) = 10;
+	K_q00(3,3) = 20;
+	K_x00(0,0) = 100;
+	K_x00(1,1) = 100;
+	K_x00(2,2) = 100;
+
+	K_q01(0,0) = 10;
+	K_q01(1,1) = 10;
+	K_q01(2,2) = 10;
+	K_q01(3,3) = 0;
+
+	input_q_000[0] =-1.581;
+	input_q_000[1] =-0.035;
+	input_q_000[2] =-0.034;
+	input_q_000[3] = 1.521;
+	input_x_000[0] =-0.448;
+	input_x_000[1] =-0.418;
+	input_x_000[2] = 0.010;
+
+  ControllerWarper<DOF> cw1(product_manager_, wam, K_q00, K_x00, input_q_000,input_x_000); 
+
+  // HapticsDemo<DOF> haptics_demo(wam, product_manager_);
 
 //  if (!haptics_demo.setupNetworking()) return 1; //for debugging haptics demo function
-    if (!haptics_demo.init()) {
+    if (!cw1.init()) {
       printf("hptics_demo init failure!");
     return 1;
   }
 //  NetworkHaptics<DOF> nh(product_manager_.getExecutionManager(), remote_host, &user_grav_comp_);
-  NetworkHaptics<DOF> nh(product_manager_.getExecutionManager(), remote_host);
+  // NetworkHaptics<DOF> nh(product_manager_.getExecutionManager(), remote_host);
   message.setValue(msg_tmp);
 
-  barrett::systems::forceConnect(message.output, nh.input);
-  haptics_demo.connectForces();
+  // barrett::systems::forceConnect(message.output, nh.input);
+  cw1.connectForces();
   cout << "Connected Forces" << endl;
 
-  haptics_demo.ftOn = false;
+  //  ... haptics_demo.ftOn = false; // what this line aims for? seems no use to me! ...cleave09222020
 
   // Spawn 2 threads for listening to RTMA and moving robot
   pthread_t rtmaThread, robotMoverThread;
 
   // Create thread arguments
-  struct arg_struct<DOF> args(wam, center_pos, mod, product_manager_, haptics_demo);
+  struct arg_struct<DOF> args(wam, center_pos, mod, product_manager_, cw1);
 
   //Start threads
   pthread_create(&rtmaThread, NULL, &responderWrapper<DOF>, (void *)&args);
