@@ -182,7 +182,8 @@ class ControllerWarper{
 	// controller variables
 	jp_type input_q_00;
 	cp_type input_x_00;
-	cp_type	center_pos; // keep this inorder to same with the old code.
+	cp_type	center_pos; 	// keep this inorder to same with the old code.
+	cp_type center_pos0; 	// the reference center [-0.448, 0.418, 0]
 	Matrix_4x4 K_q0;
 	Matrix_4x4 B_q0; 
 	Matrix_3x3 K_x0;
@@ -193,7 +194,7 @@ class ControllerWarper{
 	ControllerWarper(ProductManager& pm, systems::Wam<DOF>& wam, Matrix_4x4 K_q00, Matrix_3x3 K_x00, jp_type input_q_000, cp_type input_x_000):
 	pm(pm), wam(wam),
 	K_q0(K_q00), B_q0(0.1*K_q00), K_x0(K_x00), B_x0(0.1*K_x00),
-	input_q_00(input_q_000), input_x_00(input_x_000), center_pos(input_x_000),
+	input_q_00(input_q_000), input_x_00(input_x_000), center_pos(input_x_000), center_pos0(input_x_000),
 	jj(K_q0, B_q0, K_x0, B_x0, input_q_00, input_x_00, wam),
 	forceMet(false){
 	// after initilization, mvoeTo
@@ -219,7 +220,7 @@ class ControllerWarper{
 
 	void setCenter(cp_type newCenter) {
   		printf("Enter function: setCenter.");
-  		center_pos = newCenter;
+  		center_pos = newCenter + center_pos0;
 	}
 
 	void startController(){
