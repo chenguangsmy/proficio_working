@@ -9,7 +9,7 @@
  * 
  * moveAstep -> moves the burt one step toward a position
  * 
- * Author(s): Ivana Stevens 2019
+ * Author(s): Ivana Stevens 2019, Chenguang Z. 2020
  * 
  */
  
@@ -132,33 +132,33 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       burt_status_data.jt_1 = wam.getJointTorques()[0];
       burt_status_data.jt_2 = wam.getJointTorques()[1];
       burt_status_data.jt_3 = wam.getJointTorques()[2];
-      //burt_status_data.jt_4 = wam.getJointTorques()[3];
+      burt_status_data.jt_4 = wam.getJointTorques()[3];
 
       burt_status_data.jv_1 = wam.getJointVelocities()[0];
       burt_status_data.jv_2 = wam.getJointVelocities()[1];
       burt_status_data.jv_3 = wam.getJointVelocities()[2];
-      //burt_status_data.jv_4 = wam.getJointVelocities()[3];
+      burt_status_data.jv_4 = wam.getJointVelocities()[3];
 
       burt_status_data.jp_1 = wam.getJointPositions()[0];
       burt_status_data.jp_2 = wam.getJointPositions()[1];
       burt_status_data.jp_3 = wam.getJointPositions()[2];
-      //burt_status_data.jp_4 = wam.getJointPositions()[3];
+      burt_status_data.jp_4 = wam.getJointPositions()[3];
       
       // Set Position Data  TODO: MOVE CONVERSION ELSEWHERE
       cp = barrett::math::saturate(wam.getToolPosition(), 9.999);
-      burt_status_data.pos_x = cp[1]; // * 1280 / 0.2; // Assume this is accurate
-      burt_status_data.pos_y = cp[0]; // * 1280 / 0.2; // TODO: check that cp has the right value
+      burt_status_data.pos_x = cp[0]; // * 1280 / 0.2; // Assume this is accurate
+      burt_status_data.pos_y = cp[1]; // * 1280 / 0.2; // TODO: check that cp has the right value
       burt_status_data.pos_z = cp[2]; // * 1280 / 0.2; // and is set properly
       
       //populate velocity here
       cv = barrett::math::saturate(wam.getToolVelocity(), 19.999);
-      burt_status_data.vel_x = cv[1]; // * 1280 / 0.2; // Assume this is accurate
-      burt_status_data.vel_y = cv[0]; // * 1280 / 0.2; // TODO: check that cp has the right value
+      burt_status_data.vel_x = cv[0]; // * 1280 / 0.2; // Assume this is accurate
+      burt_status_data.vel_y = cv[1]; // * 1280 / 0.2; // TODO: check that cp has the right value
       burt_status_data.vel_z = cv[2]; // * 1280 / 0.2; // and is set properly
 
       //also populate the center location
-      burt_status_data.center_x = system_center[1];
-      burt_status_data.center_y = system_center[0];
+      burt_status_data.center_x = system_center[0];
+      burt_status_data.center_y = system_center[1];
       burt_status_data.center_z = system_center[2];
 
       // Send Message
@@ -183,8 +183,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           freeMoving = true;
           sendData = false;
           cw.setForceMet(true);
-          monkey_center[1] = task_state_data.target[30]; 
-          monkey_center[0] = task_state_data.target[31];
+          monkey_center[0] = task_state_data.target[30]; // here we temperarily change to a const value, for tesging
+          monkey_center[1] = task_state_data.target[31];
           monkey_center[2] = task_state_data.target[32];
           cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
           cw.setCenter(monkey_center);
