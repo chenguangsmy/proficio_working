@@ -24,7 +24,6 @@ typedef typename ::barrett::math::Matrix<6,3, void> Matrix_6x3xv; //self-def mat
 typedef typename ::barrett::math::Matrix<3,1> Matrix_3x1; //self-def matrix type
 typedef typename ::barrett::math::Matrix<6,4> Matrix_6x4; //self-def matrix type
 
-
 using namespace barrett;
 using detail::waitForEnter;
 
@@ -38,16 +37,18 @@ public:
 	Input<cp_type> wamCPInput;
 	Input<cv_type> wamCVInput;
 	Output<jt_type> wamJTOutput;
+	Output<cf_type> wamCFPretOutput;
 	jp_type input_q_0;
 	cp_type input_x_0;
 
 protected:
-	typename Output<jt_type>::Value* outputValue; 
+	typename Output<jt_type>::Value* outputValue1; 
+	typename Output<cf_type>::Value* outputValue2; 
 	systems::Wam<DOF>& wam;
 	
 public:
 	explicit JointControlClass(systems::Wam<DOF>& wam, const std::string& sysName = "JointControlClass") :
-		systems::System(sysName), wam(wam), wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this), wamJTOutput(this, &outputValue){
+		systems::System(sysName), wam(wam), wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this), wamJTOutput(this, &outputValue1), wamCFPretOutput(this, &outputValue2){
 			
 		// Joint stiffness
 		K_q(0,0) = 5;
@@ -164,7 +165,7 @@ protected:
 		tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 	
 
 		// Random Preturbation
-		f_pretOutput.setRandom();//;(3,1);
+		f_pretOutput.setRandom();
 		f_pretOutput[2] = 0.0;
 		f_pret[0] = f_pretOutput[0];
 		f_pret[1] = f_pretOutput[1];
@@ -183,7 +184,8 @@ protected:
 		torqueOutput[2] = tau[2];
 		torqueOutput[3] = tau[3];
 
-		this->outputValue->setData(&torqueOutput);
+		this->outputValue1->setData(&torqueOutput);
+		this->outputValue2->setData(&f_pretOutput);
 	}
 
 private:
@@ -210,7 +212,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 
 	// //Set up data logging
 	systems::Ramp time(pm.getExecutionManager(), 1.0);
-	systems::TupleGrouper<double, jp_type, jv_type, cp_type, cv_type, jt_type> tg;
+	systems::TupleGrouper<double, jp_type, jv_type, cp_type, cv_type, jt_type, cf_type> tg;
 	systems::connect(time.output, tg.template getInput<0>());
 	systems::connect(wam.jpOutput, tg.template getInput<1>());
 	systems::connect(wam.jvOutput, tg.template getInput<2>());
@@ -218,8 +220,10 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 	systems::connect(wam.toolVelocity.output, tg.template getInput<4>());
 	//systems::connect(wam.toolOrientation.output, tg.template getInput<6>());
 	systems::connect(jj.wamJTOutput, tg.template getInput<5>());
+	systems::connect(jj.wamCFPretOutput, tg.template getInput<6>());
 
-	typedef boost::tuple<double, jp_type, jv_type, cp_type, cv_type, jt_type> tuple_type;
+
+	typedef boost::tuple<double, jp_type, jv_type, cp_type, cv_type, jt_type, cf_type> tuple_type;
 
 	const size_t PERIOD_MULTIPLIER = 1;
 	systems::PeriodicDataLogger<tuple_type> logger(
