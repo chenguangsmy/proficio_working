@@ -3,4 +3,7 @@ CMakeLists.txt.user
 WAM_OffLineTesting/CMakeCache.txt
 WAM_OffLineTesting/CMakeFiles/
 WAM_OffLineTesting/cmake_install.cmake
+WAM_OffLineTesting/CustomController
+WAM_OffLineTesting/Makefile
+
 
