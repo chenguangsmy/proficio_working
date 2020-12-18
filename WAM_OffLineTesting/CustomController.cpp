@@ -65,15 +65,15 @@ public:
 		input_q_0[3] = 1.521; 
 
 		//End-effector stiffness
-		K_x(0,0) = 1000.0;
-		K_x(1,1) = 1000.0;
-	 	K_x(2,2) = 1000.0; 
+		K_x(0,0) = 100.0;
+		K_x(1,1) = 100.0;
+	 	K_x(2,2) = 200.0; 
 		//End-effector damping
 	 	B_x = 0.1*K_x;
 
 		// Nominal end-effector potion	(NEED TO CHECK THIS BEFORE TESTING)
 		input_x_0[0] = -0.448;  //position: raise hand on desk
-		input_x_0[1] = -0.418;
+		input_x_0[1] = 0.418;
 		input_x_0[2] = 0.010;
 		}
 
@@ -166,6 +166,9 @@ protected:
 
 		// Random Preturbation
 		f_pretOutput.setRandom();
+    f_pretOutput[0] = f_pretOutput[0] * 2.0;
+    f_pretOutput[1] = f_pretOutput[1] * 2.0;
+    f_pretOutput[2] = f_pretOutput[2] * 2.0;
 		f_pretOutput[2] = 0.0;
 		f_pret[0] = f_pretOutput[0];
 		f_pret[1] = f_pretOutput[1];
