@@ -58,13 +58,10 @@ classdef importWAM < handle
             xlabel('x'); ylabel('y'); zlabel('z'); grid on; axis equal;
             xlim([-1 1]); ylim([-1 1]); zlim([-1 1]); hold off;
             
-            figure;plot(this.F_pret(:,1));
-            this.F_pret(find(this.F_pret(:,1)>=0),1) = 1;
-            this.F_pret(find(this.F_pret(:,1)<0),1) = -1;
-            figure;plot(this.F_pret(:,1),'-o'); ylim([-1.5 1.5]);
+            figure;
+            subplot(2,1,1); plot(this.F_pret(:,1));
+            subplot(2,1,2); histogram(this.F_pret(:,1));
 
-            figure;histogram(this.F_pret(:,1))
-            
             
 %             get_ToolPathPlot(this);
 %             get_toolPathMovie(this);
@@ -128,8 +125,9 @@ classdef importWAM < handle
         end
         
         function get_robotJointPlot(this)
-            W_Tranform = [1 0 0 0; 0 1 0 0 ; 0 0 1 0 ; 0 0 0 1];
-                      %[0 1 0 0; 0 0 1 0; 1 0 0 0; 0 0 0 1]; 
+            W_Tranform = [0 1 0 0; 0 0 1 0; 1 0 0 0; 0 0 0 1];
+                        %[1 0 0 0; 0 1 0 0 ; 0 0 1 0 ; 0 0 0 1];
+                      
             for i = 1:length(this.q)
                trans = get_transformMatrix(this,this.q(i,:));
                tmp1 = W_Tranform*trans{1}.T; 
