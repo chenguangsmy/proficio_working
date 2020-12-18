@@ -163,18 +163,18 @@ protected:
 		tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 	
 
 		// Random Preturbation
-		f_pret = MatrixXd::Random(3,1);
-		f_pret[2] = 0.0;
-		f_pretOutput[0] = f_pret[0];
-		f_pretOutput[1] = f_pret[1];
-		f_pretOutput[2] = f_pret[2];
+		f_pretOutput.setRandom();//;(3,1);
+		f_pretOutput[2] = 0.0;
+		f_pret[0] = f_pretOutput[0];
+		f_pret[1] = f_pretOutput[1];
+		f_pret[2] = f_pretOutput[2]; 
 
 		tau_pret = J_x.transpose()*(f_pret);
 
 		// Sum torque commands
 		tau = tau_q + tau_x + tau_pret;
 
-		// printf("tau: %.2f, %.2f, %.2f, %.2f \n", tau[0],tau[1],tau[2],tau[3]);
+		// printf("tau: %.5f, %.5f, %.5f, \n", f_pret[0],f_pret[1],f_pret[2]);
 
 		// Save outputs
 		torqueOutput[0] = tau[0];
