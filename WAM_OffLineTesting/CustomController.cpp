@@ -86,7 +86,7 @@ protected:
 	jt_type torqueOutput;
 	cf_type forceOutput;
 	jt_type force2torqueOutput;
-
+	cf_type f_pretOutput;
 
 	// Initialize variables 
 	Matrix_4x4 K_q; 
@@ -103,7 +103,7 @@ protected:
 	Matrix_4x1 tau_q;
 	Matrix_4x1 tau_x;
 	Matrix_4x1 tau_pret;
-	Matrix_2x1 callRand;
+	Matrix_3x1 f_pret;
 	Matrix_6x4 J_tot;
 	Matrix_3x4 J_x;
 
@@ -163,13 +163,16 @@ protected:
 		tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 	
 
 		// Random Preturbation
-		// callRand = MatrixXd::Random(2,1);
-		// f_pret[0] = callRand[0];
-		// f_pret[1] = callRand[1];
-		// tau_pret = J_x.transpose()*(f_pret);
+		f_pret = MatrixXd::Random(3,1);
+		f_pret[2] = 0.0;
+		f_pretOutput[0] = f_pret[0];
+		f_pretOutput[1] = f_pret[1];
+		f_pretOutput[2] = f_pret[2];
+
+		tau_pret = J_x.transpose()*(f_pret);
 
 		// Sum torque commands
-		tau = tau_q + tau_x; // tau_pret
+		tau = tau_q + tau_x + tau_pret;
 
 		// printf("tau: %.2f, %.2f, %.2f, %.2f \n", tau[0],tau[1],tau[2],tau[3]);
 
