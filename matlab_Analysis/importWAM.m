@@ -16,17 +16,21 @@ classdef importWAM < handle
         robotPos
         robotPos_end
         robot
+        
+        W_Tranform
     end
     
     methods
         function this = importWAM()
             % UNTITLED Construct an instance of this class
             %   Detailed explanation goes here
-            this.q0 = [0,0,0,1.57];
+            this.q0 = [-1.581,-0.035,-0.034,1.521];
+            this.W_Tranform =[0 1 0 0; 0 0 1 0; 1 0 0 0; 0 0 0 1];
+                            %[1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1];
             filee = 'dataFile_notTracked/20201218aft02.csv';
             this.importWAMData(filee);
 %             check_stiffness(this);
-            import_WAM_model(this);
+%             import_WAM_model(this);
             get_robotJointPlot(this);
             
             % Post Check Point Constraint
@@ -61,10 +65,24 @@ classdef importWAM < handle
             figure;
             subplot(2,1,1); plot(this.F_pret(:,1));
             subplot(2,1,2); histogram(this.F_pret(:,1));
-
             
+            for i = 1:length(this.t)
+                X_joint(i,1) = this.robotPos{i}(5,1);
+            	X_joint(i,2) = this.robotPos{i}(5,2);
+                X_joint(i,3) = this.robotPos{i}(5,3);
+            end
+            
+            % postion error
+             figure; 
+             subplot(3,1,1); plot(this.t,(this.X(:,1)-X_joint(:,1)));
+             subplot(3,1,2); plot(this.t,(this.X(:,2)-X_joint(:,2)));
+             subplot(3,1,3); plot(this.t,(this.X(:,3)-X_joint(:,3)));
+
 %             get_ToolPathPlot(this);
 %             get_toolPathMovie(this);
+
+            % get x0 pos
+%             pos = get_robotSinglePos(this,this.q0);
             
         end
         
@@ -85,26 +103,35 @@ classdef importWAM < handle
             this.sfrq = 500; % Check this
             
 %             % Check import plot
-%             figure;
-%             subplot(2,3,1);
-%             plot(this.t, this.q);
-%             title('jointPositions');
-%             subplot(2,3,2);
-%             plot(this.t,this.q_dot);
-%             title('jointVelocities');
-%             subplot(2,3,3);
-%             plot(this.t, this.tau);
-%             title('JointTorqueController');
-%             
-%             subplot(2,3,4);
-%             plot(this.t,this.X);
-%             title('toolPositions');
-%             subplot(2,3,5);
-%             plot(this.t,this.X_dot);
-%             title('toolVelocities');
-%             subplot(2,3,6);
-%             plot(this.t,this.F);
-%             title('ToolForceController');
+            figure;
+            subplot(2,3,1);
+            plot(this.t, this.q);
+            title('jointPositions');
+            subplot(2,3,2);
+            plot(this.t,this.q_dot);
+            title('jointVelocities');
+            subplot(2,3,3);
+            plot(this.t, this.tau);
+            title('JointTorqueController');
+            
+            subplot(2,3,4);
+            plot(this.t,this.X);
+            title('toolPositions');
+            subplot(2,3,5);
+            plot(this.t,this.X_dot);
+            title('toolVelocities');
+            subplot(2,3,6);
+            plot(this.t,this.F_pret);
+            title('ToolForceController');
+            
+            figure; 
+            title('Raw Postion Data No Transformation');
+            plot3(this.X(:,1),this.X(:,2),this.X(:,3)); hold on;
+            plot3([0,0.1],[0,0],[0,0],'-r','linewidth',2);
+            plot3([0,0],[0,0.1],[0,0],'-r','linewidth',2);
+            plot3([0,0],[0,0],[0,0.1],'-r','linewidth',2);
+            xlabel('x'); ylabel('y'); zlabel('z'); grid on; axis equal;
+            xlim([-1 1]); ylim([-1 1]); zlim([-1 1]);
             
         end
         
@@ -113,7 +140,8 @@ classdef importWAM < handle
             q = [q,0];
             a = [0,0,0.045,-0.045,0];
             alpha = [-pi/2,pi/2,-pi/2,pi/2,0];
-            d = [0,0,0.55,0,0.35];
+            d = [0,0,0.4400,0,0.36];
+            % d = [0,0,0.55,0,0.35];
             
             for i = 1:5
                trans{i}.T = [cos(q(i)), -sin(q(i))*cos(alpha(i)), sin(q(i))*sin(alpha(i)),  a(i)*cos(q(i));...
@@ -125,16 +153,15 @@ classdef importWAM < handle
         end
         
         function get_robotJointPlot(this)
-            W_Tranform = [0 1 0 0; 0 0 1 0; 1 0 0 0; 0 0 0 1];
-                        %[1 0 0 0; 0 1 0 0 ; 0 0 1 0 ; 0 0 0 1];
+
                       
             for i = 1:length(this.q)
                trans = get_transformMatrix(this,this.q(i,:));
-               tmp1 = W_Tranform*trans{1}.T; 
-               tmp2 = W_Tranform*trans{1}.T*trans{2}.T;
-               tmp3 = W_Tranform*trans{1}.T*trans{2}.T*trans{3}.T;
-               tmp4 = W_Tranform*trans{1}.T*trans{2}.T*trans{3}.T*trans{4}.T;
-               tmp5 = W_Tranform*trans{1}.T*trans{2}.T*trans{3}.T*trans{4}.T*trans{5}.T;
+               tmp1 = this.W_Tranform*trans{1}.T; 
+               tmp2 = this.W_Tranform*trans{1}.T*trans{2}.T;
+               tmp3 = this.W_Tranform*trans{1}.T*trans{2}.T*trans{3}.T;
+               tmp4 = this.W_Tranform*trans{1}.T*trans{2}.T*trans{3}.T*trans{4}.T;
+               tmp5 = this.W_Tranform*trans{1}.T*trans{2}.T*trans{3}.T*trans{4}.T*trans{5}.T;
                       
                robotPos{i} = [tmp1(1:3,4)';tmp2(1:3,4)';tmp3(1:3,4)';tmp4(1:3,4)';tmp5(1:3,4)'];
                robotPos_end(i,:) = tmp5(1:3,4);
@@ -145,14 +172,13 @@ classdef importWAM < handle
         end
         
         function pos = get_robotSinglePos(this,q)
-            W_Tranform = [1 0 0 0; 0 1 0 0 ; 0 0 1 0 ; 0 0 0 1];
                       
             trans = get_transformMatrix(this,q);
-            tmp1 = W_Tranform*trans{1}.T;
-            tmp2 = W_Tranform*trans{1}.T*trans{2}.T;
-            tmp3 = W_Tranform*trans{1}.T*trans{2}.T*trans{3}.T;
-            tmp4 = W_Tranform*trans{1}.T*trans{2}.T*trans{3}.T*trans{4}.T;
-            tmp5 = W_Tranform*trans{1}.T*trans{2}.T*trans{3}.T*trans{4}.T*trans{5}.T;
+            tmp1 = this.W_Tranform*trans{1}.T;
+            tmp2 = this.W_Tranform*trans{1}.T*trans{2}.T;
+            tmp3 = this.W_Tranform*trans{1}.T*trans{2}.T*trans{3}.T;
+            tmp4 = this.W_Tranform*trans{1}.T*trans{2}.T*trans{3}.T*trans{4}.T;
+            tmp5 = this.W_Tranform*trans{1}.T*trans{2}.T*trans{3}.T*trans{4}.T*trans{5}.T;
             
             pos = [tmp1(1:3,4)';tmp2(1:3,4)';tmp3(1:3,4)';tmp4(1:3,4)';tmp5(1:3,4)'];
                
