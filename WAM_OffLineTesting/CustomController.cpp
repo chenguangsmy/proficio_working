@@ -82,7 +82,7 @@ public:
 	virtual ~JointControlClass() { this->mandatoryCleanUp(); }
 
 protected:
-	double  input_time
+	double  input_time;
 	jp_type input_q;
 	jv_type input_q_dot;
 	cp_type input_x;
@@ -199,7 +199,7 @@ protected:
 		tau = tau_q + tau_x + tau_pret;
 
 		// printf("tau: %.5f, %.5f, %.5f, \n", f_pret[0],f_pret[1],f_pret[2]);
-		 printf("time: %.5f, \n", timeInput);
+		 printf("time: %.5f, \n", input_time);
 		
 		// Save outputs
 		torqueOutput[0] = tau[0];
