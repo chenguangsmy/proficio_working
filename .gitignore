@@ -6,7 +6,11 @@ WAM_OffLineTesting/cmake_install.cmake
 WAM_OffLineTesting/CustomController
 WAM_OffLineTesting/Makefile
 matlab_Analysis/dataFile_notTracked/*
-
+CMakeCache.txt
+CMakeFiles/*
+WAM_OffLineTesting/build/*
+build/*
+cmake_install.cmake
 
 
 
