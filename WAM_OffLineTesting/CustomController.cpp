@@ -69,7 +69,7 @@ public:
 		K_x(1,1) = 2000.0;
 	 	K_x(2,2) = 2000.0; 
 		//End-effector damping
-	 	B_x = 0.1*K_x;
+	 	B_x = 0.02*K_x;
 
 		// Nominal end-effector potion	(NEED TO CHECK THIS BEFORE TESTING)
 		input_x_0[0] = -0.3841;  //position: raise hand on desk
@@ -167,10 +167,25 @@ protected:
 
 		// Random Preturbation
 		f_pretOutput.setRandom();
-    	f_pretOutput[0] = f_pretOutput[0] * 2.0;
-    	f_pretOutput[1] = f_pretOutput[1] * 2.0;
-    	f_pretOutput[2] = f_pretOutput[2] * 2.0;
+    	f_pretOutput[0] = f_pretOutput[0];
+    	f_pretOutput[1] = f_pretOutput[1];
+    	f_pretOutput[2] = f_pretOutput[2];
 		f_pretOutput[2] = 0.0;
+
+		// Make Preturbation unifore amplitude
+		if (f_pretOutput[0] >= 0 ) {
+			f_pretOutput[0] = 1;
+		} else if (f_pretOutput[0] < 0 ){
+			f_pretOutput[0] = -1;
+		}
+
+		if (f_pretOutput[1] >= 0 ) {
+			f_pretOutput[1] = 1;
+		} else if (f_pretOutput[1] < 0 ){
+			f_pretOutput[1] = -1;
+		}
+		
+
 		f_pret[0] = f_pretOutput[0];
 		f_pret[1] = f_pretOutput[1];
 		f_pret[2] = f_pretOutput[2]; 

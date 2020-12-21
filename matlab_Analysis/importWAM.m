@@ -27,7 +27,7 @@ classdef importWAM < handle
             this.q0 = [-1.581,-0.035,-0.034,1.521];
             this.W_Tranform =[0 1 0 0; 0 0 1 0; 1 0 0 0; 0 0 0 1];
                             %[1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1];
-            filee = 'dataFile_notTracked/20201218aft02.csv';
+            filee = 'dataFile_notTracked/preliminarySystemIDTest_5min.csv';
             this.importWAMData(filee);
 %             check_stiffness(this);
 %             import_WAM_model(this);
