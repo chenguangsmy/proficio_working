@@ -32,6 +32,7 @@ class JointControlClass : public systems::System{
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
 
 public:
+	Input<double> timeInput;
 	Input<jp_type> wamJPInput;
 	Input<jv_type> wamJVInput;
 	Input<cp_type> wamCPInput;
@@ -48,7 +49,7 @@ protected:
 	
 public:
 	explicit JointControlClass(systems::Wam<DOF>& wam, const std::string& sysName = "JointControlClass") :
-		systems::System(sysName), wam(wam), wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this), wamJTOutput(this, &outputValue1), wamCFPretOutput(this, &outputValue2){
+		systems::System(sysName), wam(wam), timeInput(this),wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this), wamJTOutput(this, &outputValue1), wamCFPretOutput(this, &outputValue2){
 			
 		// Joint stiffness
 		K_q(0,0) = 5.0;
@@ -81,6 +82,7 @@ public:
 	virtual ~JointControlClass() { this->mandatoryCleanUp(); }
 
 protected:
+	double  input_time
 	jp_type input_q;
 	jv_type input_q_dot;
 	cp_type input_x;
@@ -110,7 +112,8 @@ protected:
 	Matrix_3x4 J_x;
 
 	virtual void operate() {
-		
+
+		input_time = timeInput.getValue();
 		input_q = wamJPInput.getValue();
  		input_q_dot = wamJVInput.getValue();
  		input_x = wamCPInput.getValue();
@@ -196,7 +199,8 @@ protected:
 		tau = tau_q + tau_x + tau_pret;
 
 		// printf("tau: %.5f, %.5f, %.5f, \n", f_pret[0],f_pret[1],f_pret[2]);
-
+		 printf("time: %.5f, \n", timeInput);
+		
 		// Save outputs
 		torqueOutput[0] = tau[0];
 		torqueOutput[1] = tau[1];
@@ -258,6 +262,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 	systems::connect(tg.output, logger.input);
 	printf("Logging started.\n");
 
+	systems::connect(time.output, jj.timeInput);
  	systems::connect(wam.jpOutput, jj.wamJPInput);
  	systems::connect(wam.jvOutput, jj.wamJVInput);
 	systems::connect(wam.toolPosition.output, jj.wamCPInput);	
