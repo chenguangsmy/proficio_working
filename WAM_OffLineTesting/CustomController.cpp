@@ -250,14 +250,13 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 			new log::RealTimeWriter<tuple_type>(tmpFile, PERIOD_MULTIPLIER * pm.getExecutionManager()->getPeriod()),
 			PERIOD_MULTIPLIER);
 
-	time.start();
-	systems::connect(tg.output, logger.input);
-	printf("Logging started.\n");
-
-
 	// Connect torque controller
 	printf("Press [Enter] to start your custom system.");
 	waitForEnter();
+
+	time.start();
+	systems::connect(tg.output, logger.input);
+	printf("Logging started.\n");
 
  	systems::connect(wam.jpOutput, jj.wamJPInput);
  	systems::connect(wam.jvOutput, jj.wamJVInput);
