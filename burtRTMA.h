@@ -80,7 +80,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
               ControllerWarper<DOF> &cw)
 {
   cf_type cforce;
-  bool wamLocked = false;
+  bool wamLocked = false; //.. this could be a garbage code -cg.
   bool read_rlt = false;
   
   bool freeMoving = false; //TODO: THIS SHOULD BE FALSE

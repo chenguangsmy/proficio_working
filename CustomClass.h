@@ -56,14 +56,14 @@ public:
 
 	virtual ~JointControlClass() { this->mandatoryCleanUp(); }
 
-	void setImpedance(Matrix_4x4 K_q1){
-		K_q = K_q1;
-		B_q = 0.1*K_q;
+	void setImpedance(Matrix_3x3 K_x1){ //cg changed: K_q1 --> K_x1
+		K_x = K_x1;
+		B_x = 0.1*K_x;
 	}
 
-	void resetImpedance(){
-		K_q = K_q0;
-		B_q = B_q0;
+	void resetImpedance(Matrix_3x3 K_x0){ // cg changed: K_q0 --> K_x0;
+		K_x = K_x0;
+		B_x = 0.1*K_x;
 	}
 
 protected:
@@ -186,14 +186,16 @@ class ControllerWarper{
 	cp_type center_pos0; 	// the reference center [-0.448, 0.418, 0]
 	Matrix_4x4 K_q0;
 	Matrix_4x4 B_q0; 
-	Matrix_3x3 K_x0;
-	Matrix_3x3 B_x0;
+	Matrix_3x3 K_x0;		// locked stiffness and damping
+	Matrix_3x3 B_x0;		
+	Matrix_3x3 K_x1; 		// Free-moving stiffness and damping
+	Matrix_3x3 B_x1;
 	bool forceMet;
 	public:
 	JointControlClass<DOF> jj;
-	ControllerWarper(ProductManager& pm, systems::Wam<DOF>& wam, Matrix_4x4 K_q00, Matrix_3x3 K_x00, jp_type input_q_000, cp_type input_x_000):
+	ControllerWarper(ProductManager& pm, systems::Wam<DOF>& wam, Matrix_4x4 K_q00, Matrix_3x3 K_x00, Matrix_3x3 K_x01, jp_type input_q_000, cp_type input_x_000):
 	pm(pm), wam(wam),
-	K_q0(K_q00), B_q0(0.1*K_q00), K_x0(K_x00), B_x0(0.1*K_x00),
+	K_q0(K_q00), B_q0(0.1*K_q00), K_x0(K_x00), B_x0(0.1*K_x00), K_x1(K_x01), B_x1(0.1*K_x01),
 	input_q_00(input_q_000), input_x_00(input_x_000), center_pos(input_x_000), center_pos0(input_x_000),
 	jj(K_q0, B_q0, K_x0, B_x0, input_q_00, input_x_00, wam),
 	forceMet(false){
@@ -229,7 +231,15 @@ class ControllerWarper{
 
 	void setForceMet(bool wasMet){
 		forceMet = wasMet;
-		// change the K_q here? or else where?
+		
+		if (!wasMet){
+			// change the K_q to a low value here
+			jj.setImpedance(K_x1);
+		}
+		else {
+			// change the K_q to a high value here
+			jj.resetImpedance(K_x0);
+		}
 	}
 
 	void connectForces() {

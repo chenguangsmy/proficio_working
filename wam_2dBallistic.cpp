@@ -195,6 +195,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   Matrix_4x4 K_q00; //... initialize these set of variables from RTMA system --cg
 	Matrix_4x4 K_q01;
 	Matrix_3x3 K_x00;
+  Matrix_3x3 K_x01;
 	jp_type input_q_000;
 	cp_type input_x_000;
 
@@ -202,9 +203,13 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	K_q00(1,1) = 10;
 	K_q00(2,2) = 10;
 	K_q00(3,3) = 20;
-	K_x00(0,0) = 100;
-	K_x00(1,1) = 100;
-	K_x00(2,2) = 100;
+	K_x00(0,0) = 1000;
+	K_x00(1,1) = 1000;
+	K_x00(2,2) = 1000;
+
+  K_x01(0,0) = 10;
+	K_x01(1,1) = 10;
+	K_x01(2,2) = 10;
 
 	K_q01(0,0) = 10;
 	K_q01(1,1) = 10;
@@ -219,7 +224,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	input_x_000[1] =-0.418;
 	input_x_000[2] = 0.010;
 
-  ControllerWarper<DOF> cw1(product_manager_, wam, K_q00, K_x00, input_q_000,input_x_000); 
+  ControllerWarper<DOF> cw1(product_manager_, wam, K_q00, K_x00, K_x01, input_q_000,input_x_000); 
 
   if (!cw1.init()) {
     printf("hptics_demo init failure!");
