@@ -13,7 +13,7 @@
  * 
  */
 
-#include "wam_2dBalistic.h"  
+//#include "wam_2dBalistic.h"  
 //#include "/home/robot/src/Proficio_Systems/magnitude.h"
 //#include "/home/robot/src/Proficio_Systems/normalize.h"
 #include "/home/robot/rg2/include/RTMA_config.h"
