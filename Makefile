@@ -39,10 +39,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/cleave/proficio_working
+CMAKE_SOURCE_DIR = /home/cleave/proj.prac/proficio_working
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/cleave/proficio_working
+CMAKE_BINARY_DIR = /home/cleave/proj.prac/proficio_working
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -110,9 +110,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/cleave/proficio_working/CMakeFiles /home/cleave/proficio_working/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/cleave/proj.prac/proficio_working/CMakeFiles /home/cleave/proj.prac/proficio_working/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/cleave/proficio_working/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/cleave/proj.prac/proficio_working/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -152,29 +152,29 @@ Proficio_External/fast:
 	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/build
 .PHONY : Proficio_External/fast
 
-wam_2dBalistic.o: wam_2dBalistic.cpp.o
-.PHONY : wam_2dBalistic.o
+wam_2dBallistic.o: wam_2dBallistic.cpp.o
+.PHONY : wam_2dBallistic.o
 
 # target to build an object file
-wam_2dBalistic.cpp.o:
-	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.o
-.PHONY : wam_2dBalistic.cpp.o
+wam_2dBallistic.cpp.o:
+	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/wam_2dBallistic.cpp.o
+.PHONY : wam_2dBallistic.cpp.o
 
-wam_2dBalistic.i: wam_2dBalistic.cpp.i
-.PHONY : wam_2dBalistic.i
+wam_2dBallistic.i: wam_2dBallistic.cpp.i
+.PHONY : wam_2dBallistic.i
 
 # target to preprocess a source file
-wam_2dBalistic.cpp.i:
-	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.i
-.PHONY : wam_2dBalistic.cpp.i
+wam_2dBallistic.cpp.i:
+	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/wam_2dBallistic.cpp.i
+.PHONY : wam_2dBallistic.cpp.i
 
-wam_2dBalistic.s: wam_2dBalistic.cpp.s
-.PHONY : wam_2dBalistic.s
+wam_2dBallistic.s: wam_2dBallistic.cpp.s
+.PHONY : wam_2dBallistic.s
 
 # target to generate assembly for a file
-wam_2dBalistic.cpp.s:
-	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/wam_2dBalistic.cpp.s
-.PHONY : wam_2dBalistic.cpp.s
+wam_2dBallistic.cpp.s:
+	$(MAKE) -f CMakeFiles/Proficio_External.dir/build.make CMakeFiles/Proficio_External.dir/wam_2dBallistic.cpp.s
+.PHONY : wam_2dBallistic.cpp.s
 
 # Help Target
 help:
@@ -189,9 +189,9 @@ help:
 	@echo "... install/strip"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
-	@echo "... wam_2dBalistic.o"
-	@echo "... wam_2dBalistic.i"
-	@echo "... wam_2dBalistic.s"
+	@echo "... wam_2dBallistic.o"
+	@echo "... wam_2dBallistic.i"
+	@echo "... wam_2dBallistic.s"
 .PHONY : help
 
 
