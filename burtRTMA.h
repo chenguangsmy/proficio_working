@@ -119,13 +119,13 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       //burt_status_data.state = thresholdMet;
       //burt_status_data.error = (int) hasError;
 
-      // Set Force Data
+      // Get Force Data //.. I doubt this line, how should cforce wrote? -CG
       burt_status_data.force_x = cforce[1];
       burt_status_data.force_y = cforce[0];
       burt_status_data.force_z = cforce[2];
       
 
-      // Set Joint position, velocity and toque
+      // Get Joint position, velocity and toque
       //For some reason, setting wam.getJointTorques to a variable of type jt_type Does not work. 
       //During make, will report error.
           
@@ -144,7 +144,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       burt_status_data.jp_3 = wam.getJointPositions()[2];
       burt_status_data.jp_4 = wam.getJointPositions()[3];
       
-      // Set Position Data  TODO: MOVE CONVERSION ELSEWHERE
+      // Get Position Data  TODO: MOVE CONVERSION ELSEWHERE
       cp = barrett::math::saturate(wam.getToolPosition(), 9.999);
       burt_status_data.pos_x = cp[0]; // * 1280 / 0.2; // Assume this is accurate
       burt_status_data.pos_y = cp[1]; // * 1280 / 0.2; // TODO: check that cp has the right value
@@ -168,7 +168,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       // printf("M data has been sent! \n"); // debug code 
     }
 
-    // Task State config, set force
+    // Task State config, set stiffness and zero-force position
     if (Consumer_M.msg_type == MT_TASK_STATE_CONFIG)
     {
       printf("M: MT_TASK_STATE_CONFIG \n");
@@ -221,11 +221,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
             cout<<"wam pos"<<wam.getToolPosition()<<endl;
             wamLocked = true;
           }
-          /*monkey_centerget[0] = task_state_data.target[1];
-          target[2] = task_state_data.target[2];
-          cout << "Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
 
-          wam.moveTo(target);*/
           break;
         default:
           break;
