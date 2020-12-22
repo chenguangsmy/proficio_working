@@ -221,7 +221,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	input_q_000[2] =-0.034;
 	input_q_000[3] = 1.521;
 	input_x_000[0] =-0.448;
-	input_x_000[1] =-0.418;
+	input_x_000[1] = 0.418;
 	input_x_000[2] = 0.010;
 
   ControllerWarper<DOF> cw1(product_manager_, wam, K_q00, K_x00, K_x01, input_q_000,input_x_000); 
