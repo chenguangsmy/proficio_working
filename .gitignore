@@ -20,6 +20,8 @@ makeColorful.sh
 powerpc-fsl-linux-ld
 powerpc-fsl-linux-ls
 wam_2dBallistic
+.vscode/*
+CMakeLists.txt~
 
 
 
