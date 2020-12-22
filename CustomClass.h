@@ -220,7 +220,6 @@ class ControllerWarper{
 
 	void setCenter(cp_type newCenter) {
   		printf("Enter function: setCenter.");
-  		//center_pos = newCenter + center_pos0; // cg for debug.
 		center_pos = newCenter;  
 	}
 
