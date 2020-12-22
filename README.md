@@ -17,13 +17,13 @@ This project is not really tidy. Some of the files is useless but not deleted, s
   * Where the respond to RTMA system code locates.
   * Containing the task logic and change data of the robot. 
       * Task logic: 
-          * Case1: 
-          * Case2: 
-          * Case3: begin
-          * Case4: 
-          * Case5: final
-          * Case6: intertrial
-          * Case7: move?
+          * Case1: Begin
+          * Case2: Present
+          * Case3: ForceRamp
+          * Case4: Move
+          * Case5: Hold
+          * Case6: End
+          * Case7: Reset
 
 * movingBurt.h
   * `void recoverBurt()` ,Not used
