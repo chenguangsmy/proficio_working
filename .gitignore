@@ -1,2 +1,12 @@
 CMakeLists.txt.user
 **/*.DS_Store
+WAM_OffLineTesting/CMakeCache.txt
+WAM_OffLineTesting/CMakeFiles/
+WAM_OffLineTesting/cmake_install.cmake
+WAM_OffLineTesting/CustomController
+WAM_OffLineTesting/Makefile
+matlab_Analysis/dataFile_notTracked/*
+
+
+
+

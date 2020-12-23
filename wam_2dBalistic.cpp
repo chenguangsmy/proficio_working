@@ -93,7 +93,7 @@ bool validate_args(int argc, char** argv) {
 }
 
 
-/** */
+/** send this arg_struct in processing functions (threads) */
 template <size_t DOF>
 struct arg_struct {
   barrett::systems::Wam<DOF>& wam;
@@ -114,7 +114,7 @@ struct arg_struct {
 
 
 /*****************************************************************************************
- * Wrapper function to make calling respoder easier, for me....mentally
+ * Wrapper function that calls respoder
  ****************************************************************************************/
 template <size_t DOF> 
 void * responderWrapper(void *arguments)
@@ -126,7 +126,9 @@ void * responderWrapper(void *arguments)
 
 
 /*****************************************************************************************
- * Thread function to move the robot
+ * Thread function to processing the robot movement
+ * Useful in the old version proficio, but may not as useful in customclass by JH and CZ
+ * consider to change latter -CZ
  ****************************************************************************************/
 template <size_t DOF>
 void * moveRobot(void *arguments)
@@ -164,7 +166,7 @@ void * moveRobot(void *arguments)
  ****************************************************************************************/
 template <size_t DOF>
 int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, barrett::systems::Wam<DOF>& wam){
-  printf("Begining of the main function!\n");  //
+  printf("Begining of the main function!\n");  
   if (!validate_args(argc, argv)) return -1; // if not get right input, end.
   BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
 
@@ -173,8 +175,8 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   try
   {
     mod.DisconnectFromMMM();
-    mod.ConnectToMMM((char *)"192.168.2.48:7112");
-    printf("RTMA connected!\n");  //
+    mod.ConnectToMMM((char *)"192.168.2.48:7112"); //RTMA host
+    printf("RTMA connected!\n");  
   }
   catch( exception &e)
 	{
@@ -183,14 +185,14 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 
   // Subscribe to executive messages
   mod.Subscribe( MT_TASK_STATE_CONFIG );
-  mod.Subscribe( MT_MOVE_HOME );
+  mod.Subscribe( MT_MOVE_HOME ); // ...check this? what this do? --cg
   mod.Subscribe( MT_SAMPLE_GENERATED );
   printf("Module Supscription succeed!\n");  //
 
   wam.gravityCompensate();
   // wam.moveTo(center_pos);
   // set a series of initial value for the CustomController;
-  Matrix_4x4 K_q00;
+  Matrix_4x4 K_q00; //... initialize these set of variables from RTMA system --cg
 	Matrix_4x4 K_q01;
 	Matrix_3x3 K_x00;
 	jp_type input_q_000;
@@ -219,22 +221,15 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 
   ControllerWarper<DOF> cw1(product_manager_, wam, K_q00, K_x00, input_q_000,input_x_000); 
 
-  // HapticsDemo<DOF> haptics_demo(wam, product_manager_);
-
-//  if (!haptics_demo.setupNetworking()) return 1; //for debugging haptics demo function
-    if (!cw1.init()) {
-      printf("hptics_demo init failure!");
-    return 1;
+  if (!cw1.init()) {
+    printf("hptics_demo init failure!");
+  return 1;
   }
-//  NetworkHaptics<DOF> nh(product_manager_.getExecutionManager(), remote_host, &user_grav_comp_);
-  // NetworkHaptics<DOF> nh(product_manager_.getExecutionManager(), remote_host);
-  message.setValue(msg_tmp);
 
-  // barrett::systems::forceConnect(message.output, nh.input);
+  message.setValue(msg_tmp); //.. this is confusing, what do this do?
+
   cw1.connectForces();
   cout << "Connected Forces" << endl;
-
-  //  ... haptics_demo.ftOn = false; // what this line aims for? seems no use to me! ...cleave09222020
 
   // Spawn 2 threads for listening to RTMA and moving robot
   pthread_t rtmaThread, robotMoverThread;
