@@ -159,7 +159,6 @@ protected:
 		J_tot.block(0,0,6,4) = wam.getToolJacobian(); // Entire 6D Jacobian
 		J_x.block(0,0,3,4) = J_tot.block(0,0,3,4); // 3D Translational Jacobian
   
-  
 		// Control Law Implamentation
 
 		// Joint impedance controller
