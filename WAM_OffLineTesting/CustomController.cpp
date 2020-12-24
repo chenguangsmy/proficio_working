@@ -33,23 +33,28 @@ class JointControlClass : public systems::System{
 
 public:
 	Input<double> timeInput;
+	Input<double> wamIterationInput;
+	Input<cf_type> wamPrevPretInput;
 	Input<jp_type> wamJPInput;
 	Input<jv_type> wamJVInput;
 	Input<cp_type> wamCPInput;
 	Input<cv_type> wamCVInput;
 	Output<jt_type> wamJTOutput;
 	Output<cf_type> wamCFPretOutput;
+	Output<double> wamIterationOutput;
 	jp_type input_q_0;
 	cp_type input_x_0;
 
 protected:
 	typename Output<jt_type>::Value* outputValue1; 
 	typename Output<cf_type>::Value* outputValue2; 
+	typename Output<double>::Value* outputValue2; 
+
 	systems::Wam<DOF>& wam;
 	
 public:
 	explicit JointControlClass(systems::Wam<DOF>& wam, const std::string& sysName = "JointControlClass") :
-		systems::System(sysName), wam(wam), timeInput(this),wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this), wamJTOutput(this, &outputValue1), wamCFPretOutput(this, &outputValue2){
+		systems::System(sysName), wam(wam), timeInput(this), wamIterationInput(this), wamPrevPretInput(this),wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this), wamJTOutput(this, &outputValue1), wamCFPretOutput(this, &outputValue2), wamIterationOutput(this, &outputValue3){
 			
 		// Joint stiffness
 		K_q(0,0) = 5.0;
@@ -82,7 +87,9 @@ public:
 	virtual ~JointControlClass() { this->mandatoryCleanUp(); }
 
 protected:
-	double  input_time;
+	double input_time;
+	double input_iteration;
+	cf_type input_prevPret;
 	jp_type input_q;
 	jv_type input_q_dot;
 	cp_type input_x;
@@ -91,6 +98,7 @@ protected:
 	cf_type forceOutput;
 	jt_type force2torqueOutput;
 	cf_type f_pretOutput;
+	double output_iteration;
 
 	// Initialize variables 
 	Matrix_4x4 K_q; 
@@ -114,6 +122,8 @@ protected:
 	virtual void operate() {
 
 		input_time = timeInput.getValue();
+		input_iteration = wamIterationInput.getValue();
+		input_prevPret = wamPrevPretInput.getValue();
 		input_q = wamJPInput.getValue();
  		input_q_dot = wamJVInput.getValue();
  		input_x = wamCPInput.getValue();
@@ -161,6 +171,12 @@ protected:
   
 		// Control Law Implamentation
 
+		// Ramp up stiffness for first 10 seconds
+		if (input_time < 10.0 ) {
+		K_q = (input_time/10.0)*K_q;
+		K_x = (input_time/10.0)*K_x;
+		}
+
 		// Joint impedance controller
 		tau_q = K_q*(q_0 - q) - B_q*(q_dot);
 
@@ -168,29 +184,47 @@ protected:
 		tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 	
 
 		// Random Preturbation
-		f_pretOutput.setRandom();
-    	f_pretOutput[0] = f_pretOutput[0];
-    	f_pretOutput[1] = f_pretOutput[1];
-    	f_pretOutput[2] = f_pretOutput[2];
-		f_pretOutput[2] = 0.0;
+		// Less than 4 iterations since last update
+		if(input_iteration < 4){ 
+			output_iteration = input_iteration+1;
+			f_pretOuput[0] = input_prevPret[0];
+			f_pretOuput[1] = input_prevPret[1];
+			f_pretOuput[2] = input_prevPret[2];
 
-		// Make Preturbation unifore amplitude
-		if (f_pretOutput[0] >= 0 ) {
-			f_pretOutput[0] = 1;
-		} else if (f_pretOutput[0] < 0 ){
-			f_pretOutput[0] = -1;
-		}
+			f_pret[0] = f_pretOutput[0];
+			f_pret[1] = f_pretOutput[1];
+			f_pret[2] = f_pretOutput[2]; 
 
-		if (f_pretOutput[1] >= 0 ) {
-			f_pretOutput[1] = 1;
-		} else if (f_pretOutput[1] < 0 ){
-			f_pretOutput[1] = -1;
-		}
+		// More than 4 iterations since last update get new preturbaiton amplitude
+		else if (input_iteration >= 4) {
+
+			// Reset the count
+			output_iteration = 1;
+
+			f_pretOutput.setRandom();
+    		f_pretOutput[0] = f_pretOutput[0];
+    		f_pretOutput[1] = f_pretOutput[1];
+    		f_pretOutput[2] = f_pretOutput[2];
+			f_pretOutput[2] = 0.0;
+
+			// Make Preturbation unifore amplitude
+			if (f_pretOutput[0] >= 0 ) {
+				f_pretOutput[0] = 1;
+			} else if (f_pretOutput[0] < 0 ){
+				f_pretOutput[0] = -1;
+			}
+
+			if (f_pretOutput[1] >= 0 ) {
+				f_pretOutput[1] = 1;
+			} else if (f_pretOutput[1] < 0 ){
+				f_pretOutput[1] = -1;
+			}
 		
+			f_pret[0] = f_pretOutput[0];
+			f_pret[1] = f_pretOutput[1];
+			f_pret[2] = f_pretOutput[2]; 
 
-		f_pret[0] = f_pretOutput[0];
-		f_pret[1] = f_pretOutput[1];
-		f_pret[2] = f_pretOutput[2]; 
+		}
 
 		tau_pret = J_x.transpose()*(f_pret);
 
@@ -198,7 +232,7 @@ protected:
 		tau = tau_q + tau_x + tau_pret;
 
 		// printf("tau: %.5f, %.5f, %.5f, \n", f_pret[0],f_pret[1],f_pret[2]);
-		 printf("time: %.5f, \n", input_time);
+		// printf("time: %.5f, \n", input_time);
 		
 		// Save outputs
 		torqueOutput[0] = tau[0];
@@ -208,6 +242,8 @@ protected:
 
 		this->outputValue1->setData(&torqueOutput);
 		this->outputValue2->setData(&f_pretOutput);
+		this->outputValue2->setData(&output_iteration);
+		
 	}
 
 private:
@@ -262,6 +298,8 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 	printf("Logging started.\n");
 
 	systems::connect(time.output, jj.timeInput);
+	systems::connect(jj.wamCFPretOutput, jj.wamPrevPretInput); // Add to give access to previous preturbation 
+	systems::connect(jj.wamIterationOutput, jj.wamIterationInput); // Add to give access to loop iterations since drawing a new random preturbation
  	systems::connect(wam.jpOutput, jj.wamJPInput);
  	systems::connect(wam.jvOutput, jj.wamJVInput);
 	systems::connect(wam.toolPosition.output, jj.wamCPInput);	
