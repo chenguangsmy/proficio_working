@@ -78,7 +78,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
               RTMA_Module &mod,
               //HapticsDemo<DOF> &ball)
               ControllerWarper<DOF> &cw)
-{
+{ 
   cf_type cforce;
   bool wamLocked = false; //.. this could be a garbage code -cg.
   bool read_rlt = false;
