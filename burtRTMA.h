@@ -243,7 +243,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     else if (Consumer_M.msg_type == MT_PING) {}
 
     // Exit the function
-    else if (Consumer_M.msg_type == MT_EXIT) {}
+    else if (Consumer_M.msg_type == MT_EXIT) { // add finish recording here
+
+    }
   
     //if (yDirectionError) { /*cout << "Y direction Error" << endl;*/ }
   }
