@@ -265,6 +265,11 @@ class ControllerWarper{
   		BARRETT_UNITS_FIXED_SIZE_TYPEDEFS;
 	}
 
+	void trackSignal(){ //enable the tracking signal out of CustomClass
+		wam.trackReferenceSignal(jj.wamJTOutput);
+  		BARRETT_UNITS_FIXED_SIZE_TYPEDEFS;
+	}
+
 };
 
 template<size_t DOF>
