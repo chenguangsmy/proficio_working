@@ -71,7 +71,7 @@ barrett::systems::ExposedOutput<v_type> message;
 
 bool forceMet = false;
 //const jp_type center_pos1(-1.5, 0, 0, 1.5);
-cp_type center_pos(-0.448, -0.418, 0.010);
+cp_type center_pos(-0.448, 0.418, 0.010);
 
 
 // end mutex

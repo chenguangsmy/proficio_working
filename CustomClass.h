@@ -148,6 +148,8 @@ protected:
 		tau_q = K_q*(q_0 - q) - B_q*(q_dot);
 		// End-effector impedance controller
 		tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 	
+		printf("K_x are: %.3f, %.3f, %.3f \n", K_x(0,0), K_x(1,1), K_x(2,2));
+
 		// Random Preturbation
 		// callRand = MatrixXd::Random(2,1);
 		// f_pret[0] = callRand[0];
