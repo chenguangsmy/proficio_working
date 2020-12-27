@@ -234,6 +234,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     {
       MDF_MOVE_HOME startButton;
       Consumer_M.GetData( &startButton); 
+      cw.moveToq0(); //make sure on the right joint position
       cout<<"move to: "<< monkey_center[0] << "; "<< monkey_center[1] << "; "<< monkey_center[2] <<endl;
       moveToCenter(wam, monkey_center, mod); 
     }
