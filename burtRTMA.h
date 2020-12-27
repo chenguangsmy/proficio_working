@@ -202,7 +202,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
         case 4:
           cout << " case 4 " << endl;
-          cw.setForceMet(true);
+          cw.setForceMet(false);//true); //debugging 
           break;
         case 5:
           cout << " case 5 " << endl;
@@ -212,7 +212,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 7:
            cout << " case 7 " << endl;
           freeMoving = true;
-          cw.setForceMet(true);
+          cw.setForceMet(false);//true);
           /*Shuqi Liu - 2019/10/09-19:01 Stay at current location*/
           if (!wamLocked)
           {
