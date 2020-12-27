@@ -135,11 +135,10 @@ void * moveRobot(void *arguments)
 {
   struct arg_struct<DOF> *args = (arg_struct<DOF> *)arguments;
   while (true)
-  {
-    if (false)
+  { // check if wam.trackReferenceSignal is false
+    if (!args->cw.isTrackRef()) // if cw.isTrackRef is false
     {
-      replayTrajectory(args->product_manager, args->wam);
-      moveToCenter(args->wam, args->system_center, args->mod);
+      args->cw.trackSignal();
     }
     // Check if you should be moving the robot
     else if (true)

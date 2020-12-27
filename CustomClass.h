@@ -193,6 +193,7 @@ class ControllerWarper{
 	Matrix_3x3 K_x1; 		// Free-moving stiffness and damping
 	Matrix_3x3 B_x1;
 	bool forceMet;
+	bool TrackRef;
 	public:
 	JointControlClass<DOF> jj;
 	ControllerWarper(ProductManager& pm, systems::Wam<DOF>& wam, Matrix_4x4 K_q00, Matrix_3x3 K_x00, Matrix_3x3 K_x01, jp_type input_q_000, cp_type input_x_000):
@@ -200,7 +201,7 @@ class ControllerWarper{
 	K_q0(K_q00), B_q0(0.1*K_q00), K_x0(K_x00), B_x0(0.1*K_x00), K_x1(K_x01), B_x1(0.1*K_x01),
 	input_q_00(input_q_000), input_x_00(input_x_000), center_pos(input_x_000), center_pos0(input_x_000),
 	jj(K_q0, B_q0, K_x0, B_x0, input_q_00, input_x_00, wam),
-	forceMet(false){
+	forceMet(false), TrackRef(false){
 	// after initilization, mvoeTo
 	printf("Move to joint controller position, in CustomClass:: Controller Wrapper.");
 	wam.moveTo(jj.input_q_0);
@@ -215,8 +216,9 @@ class ControllerWarper{
   		pm.getSafetyModule()->setTorqueLimit(4.5);    // Was 4.5 (Hongwei, 9/5/2019)
 
   		wam.moveTo(jj.input_q_0); //center_pos
+		TrackRef = false;
   		barrett::btsleep(0.5);
-
+		
   		wam.idle();
   		//printf("Begin idle \n");
   		return true;
@@ -248,6 +250,7 @@ class ControllerWarper{
 
 	void moveToq0(void ){
 		wam.moveTo(jj.input_q_0); //center_pos
+		TrackRef = false;
   		barrett::btsleep(0.5);
 	}
 
@@ -262,12 +265,18 @@ class ControllerWarper{
 		// track reference
 		// wam.trackReferenceSignal(jtSum.output);
 		wam.trackReferenceSignal(jj.wamJTOutput);
+		TrackRef = true;
   		BARRETT_UNITS_FIXED_SIZE_TYPEDEFS;
 	}
 
 	void trackSignal(){ //enable the tracking signal out of CustomClass
 		wam.trackReferenceSignal(jj.wamJTOutput);
+		TrackRef = true;
   		BARRETT_UNITS_FIXED_SIZE_TYPEDEFS;
+	}
+
+	bool isTrackRef(){
+		return TrackRef;
 	}
 
 };
