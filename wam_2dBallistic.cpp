@@ -70,6 +70,7 @@ v_type msg_tmp;
 barrett::systems::ExposedOutput<v_type> message;
 
 bool forceMet = false;
+bool trackOutput = false; // the variable prevent repeating printf -cg.
 //const jp_type center_pos1(-1.5, 0, 0, 1.5);
 cp_type center_pos(-0.448, 0.418, 0.010);
 
@@ -139,10 +140,18 @@ void * moveRobot(void *arguments)
     if (!args->cw.isTrackRef()) // if cw.isTrackRef is false
     {
       args->cw.trackSignal();
+      if (trackOutput){
+        printf("isTrackRef: false, track now! \n");
+        trackOutput = false;
+        }
     }
     // Check if you should be moving the robot
-    else if (true)
+    else
     {
+      if (!trackOutput){
+        printf("isTrackRef: true, continue! \n");
+        trackOutput = true;
+        }
       //moveToCenter(args->wam, args->system_center, args->mod);
       //moveAStep(args->wam, args->system_center, args->mod);
     }
