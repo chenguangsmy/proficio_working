@@ -193,7 +193,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cout << " case 2 " << endl;
           break;
         case 3:
-          wam.idle();
+          // wam.idle(); //try a remove, if it stiff the wam? -cg
           cw.setForceMet(false);
           wamLocked = false;
           //forceThreshold = 0; //task_state_data.target[3]; //TODO: SEND FROM JUDGE MESSAGE? OR SEPARTE CONFIGURE
@@ -206,10 +206,10 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
         case 5: // this should be move -cg
           cout << " case 5 " << endl;
-          cw.setForceMet(true);
           break;
         case 6:
           cout << " case 6 " << endl;
+          cw.setForceMet(true);
         case 7:
            cout << " case 7 " << endl;
           freeMoving = true;
