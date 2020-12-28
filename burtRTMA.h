@@ -182,11 +182,11 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 1:
           freeMoving = true;
           sendData = false;
-          cw.setForceMet(true);
+          cw.setForceMet(false);//true);
           monkey_center[0] = task_state_data.target[30]; // here we temperarily change to a const value, for tesging
           monkey_center[1] = task_state_data.target[31];
           monkey_center[2] = task_state_data.target[32];
-          cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
+          // cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
           cw.setCenter(monkey_center);
           break;
         case 2:
@@ -204,8 +204,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cout << " case 4 " << endl;
           cw.setForceMet(false);//true); //debugging 
           break;
-        case 5:
+        case 5: // this should be move -cg
           cout << " case 5 " << endl;
+          cw.setForceMet(true);
           break;
         case 6:
           cout << " case 6 " << endl;

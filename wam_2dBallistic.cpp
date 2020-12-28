@@ -215,9 +215,9 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	K_x00(1,1) = 10;
 	K_x00(2,2) = 10;
 
-  K_x01(0,0) = 100;
-	K_x01(1,1) = 100;
-	K_x01(2,2) = 100;
+  K_x01(0,0) = 500;
+	K_x01(1,1) = 500;
+	K_x01(2,2) = 500;
 
 	K_q01(0,0) = 10;
 	K_q01(1,1) = 10;
