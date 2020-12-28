@@ -80,7 +80,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
               ControllerWarper<DOF> &cw)
 { 
   cf_type cforce;
-  bool wamLocked = false; //.. this could be a garbage code -cg.
+//  bool wamLocked = false; //.. this could be a garbage code -cg.
   bool read_rlt = false;
   
   bool freeMoving = false; //TODO: THIS SHOULD BE FALSE
@@ -171,10 +171,10 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     // Task State config, set stiffness and zero-force position
     if (Consumer_M.msg_type == MT_TASK_STATE_CONFIG)
     {
-      printf("M: MT_TASK_STATE_CONFIG \n");
+      //printf("M: MT_TASK_STATE_CONFIG \n");
       MDF_TASK_STATE_CONFIG task_state_data;
       Consumer_M.GetData( &task_state_data);
-      cout << "task id : " << task_state_data.id << endl;
+      //cout << "task id : " << task_state_data.id << endl;
       freeMoving = false;
       sendData  = true;
       switch(task_state_data.id)
@@ -189,44 +189,46 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           // cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
           cw.setCenter(monkey_center);
           break;
+          cout<<endl;
         case 2:
-          cout << " case 2 " << endl;
+          //cout << " case 2 " << endl;
           break;
-        case 3:
+        case 3: //ForceRamp
           // wam.idle(); //try a remove, if it stiff the wam? -cg
-          cw.setForceMet(true);
-          wamLocked = false;
+          cw.setForceMet(true); 
+//          wamLocked = false;
           //forceThreshold = 0; //task_state_data.target[3]; //TODO: SEND FROM JUDGE MESSAGE? OR SEPARTE CONFIGURE
-          cout << " case 3 " << endl;
-          cout << "force threshold is: " << task_state_data.target[3] << endl;
+          //cout << " case 3 " << endl;
+          //cout << "force threshold is: " << task_state_data.target[3] << endl;
           break;
-        case 4:
-          cout << " case 4 " << endl;
-          cw.setForceMet(false);//true); //debugging 
+        case 4: //Move
+          //cout << " case 4 " << endl;
+          //cw.setForceMet(false);//true); //debugging 
           break;
-        case 5: // this should be move -cg
-          cout << " case 5 " << endl;
+        case 5: // hold
+          //cout << " case 5 " << endl;
           break;
         case 6:
-          cout << " case 6 " << endl;
+          //cout << " case 6 " << endl;
+          break;
         case 7:
-           cout << " case 7 " << endl;
+          //cout << " case 7 " << endl;
           freeMoving = true;
-          cw.setForceMet(false);//true);
+          //cw.setForceMet(false);//true);
           /*Shuqi Liu - 2019/10/09-19:01 Stay at current location*/
-          if (!wamLocked)
+/*          if (!wamLocked)
           {
             cout << "Locking Wam" << endl;
             //wam.moveTo(wam.getToolPosition());
             cout<<"wam pos"<<wam.getToolPosition()<<endl;
             wamLocked = true;
           }
-
+*/
           break;
         default:
           break;
       }      
-      printf("M: MT_TASK_STATE_CONFIG:: finished\n");
+      printf("ST: %d, ", task_state_data.id);
     }
 
     // Have Burt move in steps toward home postion
@@ -236,7 +238,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       Consumer_M.GetData( &startButton); 
       cw.moveToq0(); //make sure on the right joint position
       cout<<"move to: "<< monkey_center[0] << "; "<< monkey_center[1] << "; "<< monkey_center[2] <<endl;
-      moveToCenter(wam, monkey_center, mod); 
+      moveToCenter(wam, monkey_center, mod);  // do not fully delete this part! Msg contain! 
       // re-track force output here?  
       cw.trackSignal();
     }

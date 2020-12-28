@@ -135,7 +135,7 @@ template <size_t DOF>
 void * moveRobot(void *arguments)
 {
   struct arg_struct<DOF> *args = (arg_struct<DOF> *)arguments;
-  while (true)
+  while (false)
   { // check if wam.trackReferenceSignal is false
     if (!args->cw.isTrackRef()) // if cw.isTrackRef is false
     {
@@ -207,13 +207,13 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	jp_type input_q_000;
 	cp_type input_x_000;
 
-	K_q00(0,0) = 10;
-	K_q00(1,1) = 10;
-	K_q00(2,2) = 10;
-	K_q00(3,3) = 20;
-	K_x00(0,0) = 10;
-	K_x00(1,1) = 10;
-	K_x00(2,2) = 10;
+	K_q00(0,0) = 10.0; // keep wam upright
+	K_q00(1,1) = 10.0;
+	K_q00(2,2) = 10.0;
+	K_q00(3,3) = 10.0;
+	K_x00(0,0) = 0.0;
+	K_x00(1,1) = 0.0;
+	K_x00(2,2) = 0.0;
 
   K_x01(0,0) = 500;
 	K_x01(1,1) = 500;

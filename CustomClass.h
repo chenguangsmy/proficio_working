@@ -148,7 +148,7 @@ protected:
 		tau_q = K_q*(q_0 - q) - B_q*(q_dot);
 		// End-effector impedance controller
 		tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 	
-		printf("K_x are: %.3f, %.3f, %.3f \n", K_x(0,0), K_x(1,1), K_x(2,2));
+		// printf("K_x are: %.3f, %.3f, %.3f \n", K_x(0,0), K_x(1,1), K_x(2,2));
 
 		// Random Preturbation
 		// callRand = MatrixXd::Random(2,1);
@@ -225,7 +225,7 @@ class ControllerWarper{
 	}
 
 	void setCenter(cp_type newCenter) {
-  		printf("Enter function: setCenter.");
+  		//printf("Enter function: setCenter.");
 		center_pos = newCenter;  
 	}
 
@@ -238,13 +238,13 @@ class ControllerWarper{
 		
 		if (!wasMet){
 			// change the K_q to a low value here
-			jj.setImpedance(K_x0);
-			printf("set impedance to: %.3f, %.3f, %.3f", K_x0(0,0), K_x0(1,1), K_x0(2,2));
+			jj.setImpedance(K_x1);
+			printf("set impedance to: %.3f, %.3f, %.3f", K_x1(0,0), K_x1(1,1), K_x1(2,2));
 		}
 		else {
 			// change the K_q to a high value here
-			jj.resetImpedance(K_x1);
-			printf("set impedance to: %.3f, %.3f, %.3f", K_x1(0,0), K_x1(1,1), K_x1(2,2));
+			jj.resetImpedance(K_x0);
+			printf("set impedance to: %.3f, %.3f, %.3f", K_x0(0,0), K_x0(1,1), K_x0(2,2));
 		}
 	}
 
