@@ -133,7 +133,7 @@ void moveToCenter(barrett::systems::Wam<DOF>& wam,
   CMessage MDMC( MT_DENSO_MOVE_COMPLETE );
   MDMC.SetData( &dmc, sizeof(dmc) );
   mod.SendMessage( &MDMC );
-
+  printf("DENSO Msg sent! \n");
 }
 
 

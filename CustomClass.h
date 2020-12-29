@@ -66,6 +66,10 @@ public:
 		B_x = 0.1*K_x;
 	}
 
+	void setq0(cp_type center_pos){
+		input_x_0 = center_pos;
+	}
+
 protected:
 	jp_type input_q;
 	jv_type input_q_dot;
@@ -226,7 +230,8 @@ class ControllerWarper{
 
 	void setCenter(cp_type newCenter) {
   		//printf("Enter function: setCenter.");
-		center_pos = newCenter;  
+		center_pos = newCenter; 
+		jj.setq0(center_pos);
 	}
 
 	void startController(){
@@ -273,6 +278,7 @@ class ControllerWarper{
 		wam.trackReferenceSignal(jj.wamJTOutput);
 		TrackRef = true;
   		BARRETT_UNITS_FIXED_SIZE_TYPEDEFS;
+		printf("Track Ref! \n");
 	}
 
 	bool isTrackRef(){
