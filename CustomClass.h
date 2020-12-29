@@ -239,12 +239,12 @@ class ControllerWarper{
 		if (!wasMet){
 			// change the K_q to a low value here
 			jj.setImpedance(K_x1);
-			printf("set impedance to: %.3f, %.3f, %.3f", K_x1(0,0), K_x1(1,1), K_x1(2,2));
+			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x1(0,0), K_x1(1,1), K_x1(2,2));
 		}
 		else {
 			// change the K_q to a high value here
 			jj.resetImpedance(K_x0);
-			printf("set impedance to: %.3f, %.3f, %.3f", K_x0(0,0), K_x0(1,1), K_x0(2,2));
+			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x0(0,0), K_x0(1,1), K_x0(2,2));
 		}
 	}
 

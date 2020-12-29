@@ -72,7 +72,7 @@ barrett::systems::ExposedOutput<v_type> message;
 bool forceMet = false;
 bool trackOutput = false; // the variable prevent repeating printf -cg.
 //const jp_type center_pos1(-1.5, 0, 0, 1.5);
-cp_type center_pos(-0.448, 0.418, 0.010);
+cp_type center_pos(-0.492, 0.505, 0.022);
 
 
 // end mutex
@@ -195,6 +195,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   mod.Subscribe( MT_TASK_STATE_CONFIG );
   mod.Subscribe( MT_MOVE_HOME ); // ...check this? what this do? --cg
   mod.Subscribe( MT_SAMPLE_GENERATED );
+  mod.Subscribe( MT_EXIT ); 
   printf("Module Supscription succeed!\n");  //
 
   wam.gravityCompensate();
@@ -224,13 +225,13 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	K_q01(2,2) = 10;
 	K_q01(3,3) = 0;
 
-	input_q_000[0] =-1.581;
-	input_q_000[1] =-0.035;
-	input_q_000[2] =-0.034;
-	input_q_000[3] = 1.521;
-	input_x_000[0] =-0.448;
-	input_x_000[1] = 0.418;
-	input_x_000[2] = 0.010;
+	input_q_000[0] =-1.576;
+	input_q_000[1] =-0.036;
+	input_q_000[2] =-0.048;
+	input_q_000[3] = 1.566;
+	input_x_000[0] =-0.492;
+	input_x_000[1] = 0.505;
+	input_x_000[2] = 0.022;
 
   ControllerWarper<DOF> cw1(product_manager_, wam, K_q00, K_x00, K_x01, input_q_000,input_x_000); 
 
