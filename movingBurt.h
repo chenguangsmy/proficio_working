@@ -13,7 +13,7 @@
  * 
  */
  
-#include "/home/robot/src/Proficio_Systems/magnitude.h"
+#include "/home/robot/src/Proficio_Systems/magnitude.h" //... do we use these two files? -cg
 #include "/home/robot/src/Proficio_Systems/normalize.h"
 #include "/home/robot/rg2/include/RTMA_config.h"
 #include <unistd.h>
@@ -123,16 +123,17 @@ void moveToCenter(barrett::systems::Wam<DOF>& wam,
               cp_type system_center,
               RTMA_Module &mod)
 {
+  /* //-cg debugging, 2020-12-28
   wam.moveTo(system_center);
   usleep(2000);
   cout << "Proficio reached home" << endl;
-
+  */
   // Send Denso home message
   MDF_DENSO_MOVE_COMPLETE dmc;
   CMessage MDMC( MT_DENSO_MOVE_COMPLETE );
   MDMC.SetData( &dmc, sizeof(dmc) );
   mod.SendMessage( &MDMC );
-
+  printf("DENSO Msg sent! \n");
 }
 
 

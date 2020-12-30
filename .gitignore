@@ -5,8 +5,23 @@ WAM_OffLineTesting/CMakeFiles/
 WAM_OffLineTesting/cmake_install.cmake
 WAM_OffLineTesting/CustomController
 WAM_OffLineTesting/Makefile
+WAM_OffLineTesting/build/*
 matlab_Analysis/dataFile_notTracked/*
 
+CMakeCache.txt
+CMakeFiles/*
+cmake_install.cmake
+
+Makefile
+build/*
+build_message_defs.sh
+logger.txt
+makeColorful.sh
+powerpc-fsl-linux-ld
+powerpc-fsl-linux-ls
+wam_2dBallistic
+.vscode/*
+CMakeLists.txt~
 
 
 

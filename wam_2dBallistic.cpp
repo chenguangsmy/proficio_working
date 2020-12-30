@@ -9,22 +9,23 @@
  * 
  * moveAstep -> moves the burt one step toward a position
  * 
- * Author(s): Ivana Stevens 2019
+ * Author(s): Ivana Stevens 2019, Chenguang Z. 2020
  * 
  */
 
-#include "proficio_2dBalistic.h"  
-#include "/home/robot/src/Proficio_Systems/magnitude.h"
-#include "/home/robot/src/Proficio_Systems/normalize.h"
+//#include "wam_2dBalistic.h"  
+//#include "/home/robot/src/Proficio_Systems/magnitude.h"
+//#include "/home/robot/src/Proficio_Systems/normalize.h"
 #include "/home/robot/rg2/include/RTMA_config.h"
 #include <unistd.h>
 
 #include "recordTrajectory.h"
 #include "movingBurt.h"
-#include "hapticsDemoClass.h"
+// #include "hapticsDemoClass.h"
 #include "burtRTMA.h"
+#include "CustomClass.h"
 
-#include <RTMA/RTMA.h>
+#include "/home/robot/RTMA/include/RTMA.h"
 
 #include <signal.h>  // signal, raise, sig_atomic_t
 #include <string.h>
@@ -44,12 +45,22 @@
 #include <barrett/products/product_manager.h>
 #include <barrett/config.h>
 
-#include <proficio/systems/utilities.h>
-
+//#include <proficio/systems/utilities.h>
+#include <barrett/standard_main_function.h>
 #define BARRETT_SMF_VALIDATE_ARGS
 
-#include <proficio/standard_proficio_main.h>
+//#include <proficio/standard_proficio_main.h>
+typedef typename ::barrett::math::Matrix<4,4> Matrix_4x4; //self-def matrix type
+typedef typename ::barrett::math::Matrix<4,1> Matrix_4x1; //self-def matrix type
+typedef typename ::barrett::math::Matrix<2,1> Matrix_2x1; //self-def matrix type
+typedef typename ::barrett::math::Matrix<3,4> Matrix_3x4; //self-def matrix type
+typedef typename ::barrett::math::Matrix<3,3> Matrix_3x3; //self-def matrix type
+typedef typename ::barrett::math::Matrix<6,3, void> Matrix_6x3xv; //self-def matrix type
+typedef typename ::barrett::math::Matrix<3,1> Matrix_3x1; //self-def matrix type
+typedef typename ::barrett::math::Matrix<6,4> Matrix_6x4; //self-def matrix type
 
+using namespace barrett;
+using detail::waitForEnter;
 
 //BARRETT_UNITS_FIXED_SIZE_TYPEDEFS;
 //BARRETT_UNITS_TYPEDEFS(10);
@@ -59,8 +70,10 @@ v_type msg_tmp;
 barrett::systems::ExposedOutput<v_type> message;
 
 bool forceMet = false;
-//cp_type center_pos(0.50, -0.120, 0.250);
-cp_type center_pos(0.5, -0.120, 0.250);
+bool trackOutput = false; // the variable prevent repeating printf -cg.
+//const jp_type center_pos1(-1.5, 0, 0, 1.5);
+cp_type center_pos(-0.492, 0.505, 0.022);
+
 
 // end mutex
 pthread_mutex_t beLock;
@@ -72,7 +85,7 @@ pthread_mutex_t rmLock;
  ****************************************************************************************/
 bool validate_args(int argc, char** argv) {
   if (argc != 2) {
-    remote_host = "127.0.0.1";
+    remote_host = "127.0.0.1";  //actually this IP is local host
     printf("Defaulting to 127.0.0.1\n");
   } else {
     remote_host = argv[1];
@@ -81,55 +94,64 @@ bool validate_args(int argc, char** argv) {
 }
 
 
-/** */
+/** send this arg_struct in processing functions (threads) */
 template <size_t DOF>
 struct arg_struct {
   barrett::systems::Wam<DOF>& wam;
   cp_type system_center;
   RTMA_Module &mod;
   barrett::ProductManager& product_manager;
-  HapticsDemo<DOF>& ball;
+  ControllerWarper<DOF>& cw;
   arg_struct(barrett::systems::Wam<DOF>& wam,
               cp_type system_center,
               RTMA_Module &mod,
               barrett::ProductManager& product_manager,
-              HapticsDemo<DOF>& ball) : wam(wam), 
+              ControllerWarper<DOF>& cw) : wam(wam), 
                 system_center(system_center), 
                 mod(mod), 
                 product_manager(product_manager),
-                ball(ball) {}
+                cw(cw) {}
 };
 
 
 /*****************************************************************************************
- * Wrapper function to make calling respoder easier, for me....mentally
+ * Wrapper function that calls respoder
  ****************************************************************************************/
 template <size_t DOF> 
 void * responderWrapper(void *arguments)
 {
   struct arg_struct<DOF> *args = (arg_struct<DOF> *)arguments;
-  respondToRTMA(args->wam, args->system_center, args->mod, args->ball);
+  respondToRTMA(args->wam, args->system_center, args->mod, args->cw);
   return NULL;
 }
 
 
 /*****************************************************************************************
- * Thread function to move the robot
+ * Thread function to processing the robot movement
+ * Useful in the old version proficio, but may not as useful in customclass by JH and CZ
+ * consider to change latter -CZ
  ****************************************************************************************/
 template <size_t DOF>
 void * moveRobot(void *arguments)
 {
   struct arg_struct<DOF> *args = (arg_struct<DOF> *)arguments;
-  while (true)
-  {
-    if (false)
+  while (false)
+  { // check if wam.trackReferenceSignal is false
+    if (!args->cw.isTrackRef()) // if cw.isTrackRef is false
     {
-      replayTrajectory(args->product_manager, args->wam);
-      moveToCenter(args->wam, args->system_center, args->mod);
+      args->cw.trackSignal();
+      if (trackOutput){
+        printf("isTrackRef: false, track now! \n");
+        trackOutput = false;
+        }
     }
     // Check if you should be moving the robot
-    else if (true)
+    else
     {
+      if (!trackOutput){
+        printf("isTrackRef: true, continue! \n");
+        trackOutput = true;
+        }
       //moveToCenter(args->wam, args->system_center, args->mod);
       //moveAStep(args->wam, args->system_center, args->mod);
     }
@@ -146,22 +168,23 @@ void * moveRobot(void *arguments)
 
 
 /*****************************************************************************************
- * proficio_main
+ * wam_main
  *
  * Run experiment in BURT robot
  ****************************************************************************************/
 template <size_t DOF>
-int proficio_main(int argc, char** argv, barrett::ProductManager& product_manager_,
-                  barrett::systems::Wam<DOF>& wam, const Config& side) 
-{
+int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, barrett::systems::Wam<DOF>& wam){
+  printf("Begining of the main function!\n");  
+  if (!validate_args(argc, argv)) return -1; // if not get right input, end.
   BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
-  
+
   // Initializing RTMA
   RTMA_Module mod( 62, 0); //MID_BURT_ROBOT
   try
   {
     mod.DisconnectFromMMM();
-    mod.ConnectToMMM((char *)"192.168.2.48:7112");
+    mod.ConnectToMMM((char *)"192.168.2.48:7112"); //RTMA host
+    printf("RTMA connected!\n");  
   }
   catch( exception &e)
 	{
@@ -170,50 +193,75 @@ int proficio_main(int argc, char** argv, barrett::ProductManager& product_manage
 
   // Subscribe to executive messages
   mod.Subscribe( MT_TASK_STATE_CONFIG );
-  mod.Subscribe( MT_MOVE_HOME );
+  mod.Subscribe( MT_MOVE_HOME ); // ...check this? what this do? --cg
   mod.Subscribe( MT_SAMPLE_GENERATED );
+  mod.Subscribe( MT_EXIT ); 
+  printf("Module Supscription succeed!\n");  //
 
-  // Instantiate robot
-  std::string fname = "calibration_data/wam3/";
-  if (side == LEFT) {  // Left Config
-    fname = fname + "LeftConfig.txt";
-  } else if (side == RIGHT) {
-    fname = fname + "RightConfig.txt";
-  }
-  proficio::systems::UserGravityCompensation<DOF> user_grav_comp_(
-      barrett::EtcPathRelative(fname).c_str());
-  user_grav_comp_.setGainZero();
-  HapticsDemo<DOF> haptics_demo(wam, product_manager_, &user_grav_comp_);
-  if (!haptics_demo.setupNetworking()) {
-    return 1;
-  }
-  if (!haptics_demo.init()) return 1;
+  wam.gravityCompensate();
+  // wam.moveTo(center_pos);
+  // set a series of initial value for the CustomController;
+  Matrix_4x4 K_q00; //... initialize these set of variables from RTMA system --cg
+	Matrix_4x4 K_q01;
+	Matrix_3x3 K_x00;
+  Matrix_3x3 K_x01;
+	jp_type input_q_000;
+	cp_type input_x_000;
 
-  // instantiate Systems
-  NetworkHaptics<DOF> nh(product_manager_.getExecutionManager(), remote_host,
-                         &user_grav_comp_);
-  message.setValue(msg_tmp);
-  barrett::systems::forceConnect(message.output, nh.input);
-  haptics_demo.connectForces();
+	K_q00(0,0) = 10.0; // keep wam upright
+	K_q00(1,1) = 10.0;
+	K_q00(2,2) = 10.0;
+	K_q00(3,3) = 10.0;
+	K_x00(0,0) = 0.0;
+	K_x00(1,1) = 0.0;
+	K_x00(2,2) = 0.0;
+
+  K_x01(0,0) = 500;
+	K_x01(1,1) = 500;
+	K_x01(2,2) = 500;
+
+	K_q01(0,0) = 10;
+	K_q01(1,1) = 10;
+	K_q01(2,2) = 10;
+	K_q01(3,3) = 0;
+
+	input_q_000[0] =-1.576;
+	input_q_000[1] =-0.036;
+	input_q_000[2] =-0.048;
+	input_q_000[3] = 1.566;
+	input_x_000[0] =-0.492;
+	input_x_000[1] = 0.505;
+	input_x_000[2] = 0.022;
+
+  ControllerWarper<DOF> cw1(product_manager_, wam, K_q00, K_x00, K_x01, input_q_000,input_x_000); 
+
+  if (!cw1.init()) {
+    printf("hptics_demo init failure!");
+  return 1;
+  }
+
+  message.setValue(msg_tmp); //.. this is confusing, what do this do?
+
+  cw1.connectForces();
   cout << "Connected Forces" << endl;
-
-  haptics_demo.ftOn = false;
 
   // Spawn 2 threads for listening to RTMA and moving robot
   pthread_t rtmaThread, robotMoverThread;
 
   // Create thread arguments
-  struct arg_struct<DOF> args(wam, center_pos, mod, product_manager_, haptics_demo);
+  struct arg_struct<DOF> args(wam, center_pos, mod, product_manager_, cw1);
 
   //Start threads
   pthread_create(&rtmaThread, NULL, &responderWrapper<DOF>, (void *)&args);
+  printf("RTMA thread created! \n");
   pthread_create(&robotMoverThread, NULL, &moveRobot<DOF>, (void *)&args);
-
+  printf("robotMoverThread created! \n");
   // Wait for threads to finish
   pthread_join(rtmaThread, NULL );
+  printf("The RTMA thread joined! \n");
   // pthread_join(robotMoverThread, NULL );
 
-  cout << "Finished trial" << endl;
+  cout << "Finished trials" << endl;
   barrett::btsleep(0.1);
 
   mod.DisconnectFromMMM();
