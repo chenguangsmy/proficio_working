@@ -1,15 +1,43 @@
 # proficio_working
 This is a working proficio 2D ballistic program repo. 
-This project is not really tidy. Some of the files is useless but not deleted, so it may cause hard to read.
+This project need to be refined later. 
 
-
-## main function
-* proficio_2dBallistic.cpp 
-  Where main function locates.
+## important functions
+* `wam_main()`  
+  Main function, locates in `wam_2dBallistic`.
+  Responsble for starting up this module, 
+  subscribing messages from RTMA system,
+  initializing customcontroller values,
+  creating respondRTMA threads, 
+  and finish. 
   * Important: should enter the *validate_args* function, in order to have the remote_host IP address.
+
+* `CustomClass::operate()`   
+  Execution fuction directly updates joints' torques. 
+  Locates in `CustomClass.h`. 
+  Calculate joints' torques by adding up Cartesian Force, Joint Torque and Perturbation force. 
+  Using `wam.trackReferenceSignal()` to let wam rum. 
+  (<font color=red>Question to Barrett here </font>)
+
+* `LoggerClass::LoggerClass()`   
+  Locates in `CustomClass.h`. 
+  Initialize which variable to track in a seperate file. 
+  (<font color=red>Need Synchronize time with RTMA here! </font>)   
+
+* `respondToRTMA(...)`  
+  A ever-looping function responding RTMA.  
+  Locates in `burtRTMA.h`.  
+  Response for: 
+  sending WAM information to RTMA system, 
+  receiving task states, 
+  changing low-level WAM controller values (
+    K_x
+  ).
+  (<font color=red>Do we need to change K_q better? </font>)   
+
 ## useful *.h files
 * CustomClass.h
-  * class `JointControlClass`: robot controller. It is a mixture controller  containing jp, cp, and pert (joint position, cartesian tool position, and perturbation controller). In the controller, the convert between joint and cartesian positions are using Jacobian matrix , which is acquired from the wam. 
+  * class `JointControlClass`: robot controller. It is a mixture controller containing jp, cp, and pert (joint position, cartesian tool position, and perturbation controller). In the controller, the convert between joint and cartesian positions are using Jacobian matrix , which is acquired from the wam. 
   * class `ControllerWarper`: contains the contorller and other nessesary functions serving the starting and moving of the robot. 
   * class `LoggerClass`: in charge of recording wam robot variables and write it in a seperate *.cvs file. 
 
@@ -17,23 +45,20 @@ This project is not really tidy. Some of the files is useless but not deleted, s
   * Where the respond to RTMA system code locates.
   * Containing the task logic and change data of the robot. 
       * Task logic: 
-          * Case1: Begin
+          * Case1: Begin (set Robot Impedance High)
           * Case2: Present
           * Case3: ForceRamp
-          * Case4: Move
+          * Case4: Move  (set Robot Impedance Low)
           * Case5: Hold
           * Case6: End
           * Case7: Reset
 
 * movingBurt.h
-  * `void recoverBurt()` ,Not used
   * `moveToCenter()`, Used
-  * `moveAStep()`, Not used. 
-  * Maybe I need to delete this file. --CG
+  * Change the `moveToCenter()` part into emergency. --CG
 
 * recordTrajectory.h
   * A libbarrett function
-  * Unknown the exact use in this part, may delete it later. -CG.
 
 ## download command 
 $ git clone https://github.com/chenguangsmy/proficio_working.git
