@@ -190,6 +190,18 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	{
 		std::cout << "Unknown Exception!" << e.what() << std::endl;
 	}
+  char * loggerfname;
+  try{
+    loggerfname = argv[1];
+  }
+  catch (exception &e){
+    std::cout << "cannot assign logger fname" << e.what() <<std::endl;
+  }
+  char logtmpFile[] = "bt20200904XXXXXX";
+	if (mkstemp(logtmpFile) == -1) {
+		printf("ERROR: Couldn't create temporary file!\n");
+	return 1;
+	} 
 
   // Subscribe to executive messages
   mod.Subscribe( MT_TASK_STATE_CONFIG );
@@ -234,6 +246,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	input_x_000[2] = 0.022;
 
   ControllerWarper<DOF> cw1(product_manager_, wam, K_q00, K_x00, K_x01, input_q_000,input_x_000); 
+  LoggerClass<DOF> log1(product_manager_, wam, loggerfname, logtmpFile, cw1);
 
   if (!cw1.init()) {
     printf("hptics_demo init failure!");
@@ -243,6 +256,8 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   message.setValue(msg_tmp); //.. this is confusing, what do this do?
 
   cw1.connectForces();
+  log1.datalogger_connect();
+  log1.datalogger_start();
   cout << "Connected Forces" << endl;
 
   // Spawn 2 threads for listening to RTMA and moving robot
@@ -260,7 +275,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   pthread_join(rtmaThread, NULL );
   printf("The RTMA thread joined! \n");
   // pthread_join(robotMoverThread, NULL );
-
+  log1.datalogger_end();
   cout << "Finished trials" << endl;
   barrett::btsleep(0.1);
 
