@@ -17,9 +17,9 @@ include_directories(${CURSES_INCLUDE_DIR})
 set(GCC_COVERAGE_COMPILE_FLAGS "-frounding-math")
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
-add_executable(${PROJECT_NAME} wam_2dBalistic.cpp)
+add_executable(${PROJECT_NAME} wam_2dBallistic.cpp)
 target_link_libraries(${PROJECT_NAME} ${BARRETT_LIBRARIES} RTMA )
-set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "wam_2dBalistic")
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "wam_2dBallistic")
 
 install(TARGETS ${PROJECT_NAME}
         DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}

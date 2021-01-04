@@ -56,14 +56,18 @@ public:
 
 	virtual ~JointControlClass() { this->mandatoryCleanUp(); }
 
-	void setImpedance(Matrix_4x4 K_q1){
-		K_q = K_q1;
-		B_q = 0.1*K_q;
+	void setImpedance(Matrix_3x3 K_x1){ //cg changed: K_q1 --> K_x1
+		K_x = K_x1;
+		B_x = 0.1*K_x;
 	}
 
-	void resetImpedance(){
-		K_q = K_q0;
-		B_q = B_q0;
+	void resetImpedance(Matrix_3x3 K_x0){ // cg changed: K_q0 --> K_x0;
+		K_x = K_x0;
+		B_x = 0.1*K_x;
+	}
+
+	void setq0(cp_type center_pos){
+		input_x_0 = center_pos;
 	}
 
 protected:
@@ -148,6 +152,8 @@ protected:
 		tau_q = K_q*(q_0 - q) - B_q*(q_dot);
 		// End-effector impedance controller
 		tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 	
+		// printf("K_x are: %.3f, %.3f, %.3f \n", K_x(0,0), K_x(1,1), K_x(2,2));
+
 		// Random Preturbation
 		// callRand = MatrixXd::Random(2,1);
 		// f_pret[0] = callRand[0];
@@ -186,17 +192,20 @@ class ControllerWarper{
 	cp_type center_pos0; 	// the reference center [-0.448, 0.418, 0]
 	Matrix_4x4 K_q0;
 	Matrix_4x4 B_q0; 
-	Matrix_3x3 K_x0;
-	Matrix_3x3 B_x0;
+	Matrix_3x3 K_x0;		// locked stiffness and damping
+	Matrix_3x3 B_x0;		
+	Matrix_3x3 K_x1; 		// Free-moving stiffness and damping
+	Matrix_3x3 B_x1;
 	bool forceMet;
+	bool TrackRef;
 	public:
 	JointControlClass<DOF> jj;
-	ControllerWarper(ProductManager& pm, systems::Wam<DOF>& wam, Matrix_4x4 K_q00, Matrix_3x3 K_x00, jp_type input_q_000, cp_type input_x_000):
+	ControllerWarper(ProductManager& pm, systems::Wam<DOF>& wam, Matrix_4x4 K_q00, Matrix_3x3 K_x00, Matrix_3x3 K_x01, jp_type input_q_000, cp_type input_x_000):
 	pm(pm), wam(wam),
-	K_q0(K_q00), B_q0(0.1*K_q00), K_x0(K_x00), B_x0(0.1*K_x00),
+	K_q0(K_q00), B_q0(0.1*K_q00), K_x0(K_x00), B_x0(0.1*K_x00), K_x1(K_x01), B_x1(0.1*K_x01),
 	input_q_00(input_q_000), input_x_00(input_x_000), center_pos(input_x_000), center_pos0(input_x_000),
 	jj(K_q0, B_q0, K_x0, B_x0, input_q_00, input_x_00, wam),
-	forceMet(false){
+	forceMet(false), TrackRef(false){
 	// after initilization, mvoeTo
 	printf("Move to joint controller position, in CustomClass:: Controller Wrapper.");
 	wam.moveTo(jj.input_q_0);
@@ -211,17 +220,18 @@ class ControllerWarper{
   		pm.getSafetyModule()->setTorqueLimit(4.5);    // Was 4.5 (Hongwei, 9/5/2019)
 
   		wam.moveTo(jj.input_q_0); //center_pos
+		TrackRef = false;
   		barrett::btsleep(0.5);
-
+		
   		wam.idle();
   		//printf("Begin idle \n");
   		return true;
 	}
 
 	void setCenter(cp_type newCenter) {
-  		printf("Enter function: setCenter.");
-  		//center_pos = newCenter + center_pos0; // cg for debug.
-		center_pos = newCenter;  
+  		//printf("Enter function: setCenter.");
+		center_pos = newCenter; 
+		jj.setq0(center_pos);
 	}
 
 	void startController(){
@@ -230,7 +240,23 @@ class ControllerWarper{
 
 	void setForceMet(bool wasMet){
 		forceMet = wasMet;
-		// change the K_q here? or else where?
+		
+		if (!wasMet){
+			// change the K_q to a low value here
+			jj.setImpedance(K_x1);
+			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x1(0,0), K_x1(1,1), K_x1(2,2));
+		}
+		else {
+			// change the K_q to a high value here
+			jj.resetImpedance(K_x0);
+			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x0(0,0), K_x0(1,1), K_x0(2,2));
+		}
+	}
+
+	void moveToq0(void ){
+		wam.moveTo(jj.input_q_0); //center_pos
+		TrackRef = false;
+  		barrett::btsleep(0.5);
 	}
 
 	void connectForces() {
@@ -244,7 +270,19 @@ class ControllerWarper{
 		// track reference
 		// wam.trackReferenceSignal(jtSum.output);
 		wam.trackReferenceSignal(jj.wamJTOutput);
+		TrackRef = true;
   		BARRETT_UNITS_FIXED_SIZE_TYPEDEFS;
+	}
+
+	void trackSignal(){ //enable the tracking signal out of CustomClass
+		wam.trackReferenceSignal(jj.wamJTOutput);
+		TrackRef = true;
+  		BARRETT_UNITS_FIXED_SIZE_TYPEDEFS;
+		printf("Track Ref! \n");
+	}
+
+	bool isTrackRef(){
+		return TrackRef;
 	}
 
 };
