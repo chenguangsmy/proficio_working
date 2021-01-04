@@ -48,7 +48,7 @@ public:
 protected:
 	typename Output<jt_type>::Value* outputValue1; 
 	typename Output<cf_type>::Value* outputValue2; 
-	typename Output<double>::Value* outputValue2; 
+	typename Output<double>::Value* outputValue3; 
 
 	systems::Wam<DOF>& wam;
 	
@@ -187,14 +187,14 @@ protected:
 		// Less than 4 iterations since last update
 		if(input_iteration < 4){ 
 			output_iteration = input_iteration+1;
-			f_pretOuput[0] = input_prevPret[0];
-			f_pretOuput[1] = input_prevPret[1];
-			f_pretOuput[2] = input_prevPret[2];
+			f_pretOutput[0] = input_prevPret[0];
+			f_pretOutput[1] = input_prevPret[1];
+			f_pretOutput[2] = input_prevPret[2];
 
 			f_pret[0] = f_pretOutput[0];
 			f_pret[1] = f_pretOutput[1];
 			f_pret[2] = f_pretOutput[2]; 
-
+		}
 		// More than 4 iterations since last update get new preturbaiton amplitude
 		else if (input_iteration >= 4) {
 
@@ -242,7 +242,7 @@ protected:
 
 		this->outputValue1->setData(&torqueOutput);
 		this->outputValue2->setData(&f_pretOutput);
-		this->outputValue2->setData(&output_iteration);
+		this->outputValue3->setData(&output_iteration);
 		
 	}
 
