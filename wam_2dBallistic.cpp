@@ -72,7 +72,7 @@ barrett::systems::ExposedOutput<v_type> message;
 bool forceMet = false;
 bool trackOutput = false; // the variable prevent repeating printf -cg.
 //const jp_type center_pos1(-1.5, 0, 0, 1.5);
-cp_type center_pos(-0.492, 0.505, 0.022);
+cp_type center_pos(-0.511, 0.485, 0.001);
 
 
 // end mutex
@@ -237,13 +237,13 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	K_q01(2,2) = 10;
 	K_q01(3,3) = 0;
 
-	input_q_000[0] =-1.576;
-	input_q_000[1] =-0.036;
-	input_q_000[2] =-0.048;
-	input_q_000[3] = 1.566;
-	input_x_000[0] =-0.492;
-	input_x_000[1] = 0.505;
-	input_x_000[2] = 0.022;
+	input_q_000[0] =-1.570;
+	input_q_000[1] = 0.002;
+	input_q_000[2] = 0.002;
+	input_q_000[3] = 1.569;
+	input_x_000[0] =-0.511;
+	input_x_000[1] = 0.485;
+	input_x_000[2] = 0.002;
 
   ControllerWarper<DOF> cw1(product_manager_, wam, K_q00, K_x00, K_x01, input_q_000,input_x_000); 
   LoggerClass<DOF> log1(product_manager_, wam, loggerfname, logtmpFile, cw1);
