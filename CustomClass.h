@@ -56,14 +56,24 @@ public:
 
 	virtual ~JointControlClass() { this->mandatoryCleanUp(); }
 
-	void setImpedance(Matrix_3x3 K_x1){ //cg changed: K_q1 --> K_x1
+	void setImpedance(Matrix_3x3 K_x1){ 
 		K_x = K_x1;
 		B_x = 0.1*K_x;
 	}
 
-	void resetImpedance(Matrix_3x3 K_x0){ // cg changed: K_q0 --> K_x0;
+	void resetImpedance(Matrix_3x3 K_x0){
 		K_x = K_x0;
 		B_x = 0.1*K_x;
+	}
+
+	void setJointImpedance(Matrix_4x4 K_q1){ //higher one, ST_HOLD
+		K_q = K_q1;
+		B_q = 0.1*K_q;
+	}
+
+	void resetJointImpedance(Matrix_4x4 K_q0){	//lower one, ST_MOV
+		K_q = K_q0;
+		B_q = 0.1*K_q;
 	}
 
 	void setq0(cp_type center_pos){
@@ -190,19 +200,22 @@ class ControllerWarper{
 	cp_type input_x_00;
 	cp_type	center_pos; 	// keep this inorder to same with the old code.
 	cp_type center_pos0; 	// the reference center [-0.448, 0.418, 0]
-	Matrix_4x4 K_q0;
+	Matrix_4x4 K_q0;		// free-moving stiffness and damping
 	Matrix_4x4 B_q0; 
-	Matrix_3x3 K_x0;		// locked stiffness and damping
-	Matrix_3x3 B_x0;		
-	Matrix_3x3 K_x1; 		// Free-moving stiffness and damping
+	Matrix_3x3 K_x0;			
+	Matrix_3x3 B_x0;
+	Matrix_4x4 K_q1;		// locked stiffness and damping
+	Matrix_4x4 B_q1;
+	Matrix_3x3 K_x1; 		
 	Matrix_3x3 B_x1;
 	bool forceMet;
 	bool TrackRef;
 	public:
 	JointControlClass<DOF> jj;
-	ControllerWarper(ProductManager& pm, systems::Wam<DOF>& wam, Matrix_4x4 K_q00, Matrix_3x3 K_x00, Matrix_3x3 K_x01, jp_type input_q_000, cp_type input_x_000):
+	ControllerWarper(ProductManager& pm, systems::Wam<DOF>& wam, Matrix_4x4 K_q00, Matrix_4x4 K_q01, Matrix_3x3 K_x00, Matrix_3x3 K_x01, jp_type input_q_000, cp_type input_x_000):
 	pm(pm), wam(wam),
-	K_q0(K_q00), B_q0(0.1*K_q00), K_x0(K_x00), B_x0(0.1*K_x00), K_x1(K_x01), B_x1(0.1*K_x01),
+	K_q0(K_q00), B_q0(0.1*K_q00), K_q1(K_q01), B_q1(0.1*K_q01),
+	K_x0(K_x00), B_x0(0.1*K_x00), K_x1(K_x01), B_x1(0.1*K_x01),
 	input_q_00(input_q_000), input_x_00(input_x_000), center_pos(input_x_000), center_pos0(input_x_000),
 	jj(K_q0, B_q0, K_x0, B_x0, input_q_00, input_x_00, wam),
 	forceMet(false), TrackRef(false){
@@ -243,13 +256,17 @@ class ControllerWarper{
 		
 		if (!wasMet){
 			// change the K_q to a low value here
-			jj.setImpedance(K_x1);
-			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x1(0,0), K_x1(1,1), K_x1(2,2));
+			//jj.setImpedance(K_x1);
+			//printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x1(0,0), K_x1(1,1), K_x1(2,2));
+			jj.setJointImpedance(K_q1);
+			printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q1(0,0), K_q1(1,1), K_q1(2,2), K_q1(3,3));
 		}
 		else {
 			// change the K_q to a high value here
-			jj.resetImpedance(K_x0);
-			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x0(0,0), K_x0(1,1), K_x0(2,2));
+			//jj.resetImpedance(K_x0);
+			//printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x0(0,0), K_x0(1,1), K_x0(2,2));
+			jj.setJointImpedance(K_q0);
+			printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q0(0,0), K_q0(1,1), K_q0(2,2), K_q0(3,3));
 		}
 	}
 
