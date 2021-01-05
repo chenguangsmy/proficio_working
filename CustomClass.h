@@ -259,6 +259,11 @@ class ControllerWarper{
   		barrett::btsleep(0.5);
 	}
 
+	void moveToq0(void ){
+		wam.moveTo(jj.input_q_0); //center_pos
+  		barrett::btsleep(0.5);
+	}
+
 	void connectForces() {
     	printf("Enter function: connectForces.");
   		barrett::systems::modXYZ<cp_type> mod_axes;

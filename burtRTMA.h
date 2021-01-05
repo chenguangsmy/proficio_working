@@ -242,7 +242,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       moveToCenter(wam, monkey_center, mod);  // do not fully delete this part! Msg contain! 
       // re-track force output here?  
       cw.trackSignal(); //maybe not needed as idle no longer exist. 
-
     }
 
     // Ping sent   Acknowlegde ping...
