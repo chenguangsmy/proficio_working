@@ -78,9 +78,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
               RTMA_Module &mod,
               //HapticsDemo<DOF> &ball)
               ControllerWarper<DOF> &cw)
-{
+{ 
   cf_type cforce;
-  bool wamLocked = false;
+//  bool wamLocked = false; //.. this could be a garbage code -cg.
   bool read_rlt = false;
   
   bool freeMoving = false; //TODO: THIS SHOULD BE FALSE
@@ -171,62 +171,65 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     // Task State config, set stiffness and zero-force position
     if (Consumer_M.msg_type == MT_TASK_STATE_CONFIG)
     {
-      printf("M: MT_TASK_STATE_CONFIG \n");
+      //printf("M: MT_TASK_STATE_CONFIG \n");
       MDF_TASK_STATE_CONFIG task_state_data;
       Consumer_M.GetData( &task_state_data);
-      cout << "task id : " << task_state_data.id << endl;
+      //cout << "task id : " << task_state_data.id << endl;
       freeMoving = false;
       sendData  = true;
       switch(task_state_data.id)
       {
         case 1:
+          cout << " ST 1, ";
           freeMoving = true;
           sendData = false;
-          cw.setForceMet(true);
+          cw.setForceMet(false);//true);
           monkey_center[0] = task_state_data.target[30]; // here we temperarily change to a const value, for tesging
           monkey_center[1] = task_state_data.target[31];
           monkey_center[2] = task_state_data.target[32];
-          cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
+          //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
           cw.setCenter(monkey_center);
           break;
         case 2:
-          cout << " case 2 " << endl;
+          cout << " ST 2, ";
+          //cout << " case 2 " << endl;
           break;
-        case 3:
-          wam.idle();
-          cw.setForceMet(false);
-          wamLocked = false;
+        case 3: //ForceRamp
+          // wam.idle(); //try a remove, if it stiff the wam? -cg
+          cout << " ST 3, ";
+//          wamLocked = false;
           //forceThreshold = 0; //task_state_data.target[3]; //TODO: SEND FROM JUDGE MESSAGE? OR SEPARTE CONFIGURE
-          cout << " case 3 " << endl;
-          cout << "force threshold is: " << task_state_data.target[3] << endl;
+          //cout << "force threshold is: " << task_state_data.target[3] << endl;
           break;
-        case 4:
-          cout << " case 4 " << endl;
-          cw.setForceMet(true);
+        case 4: //Move
+          cout << " ST 4, ";
+          cw.setForceMet(true); 
+          //cw.setForceMet(false);//true); //debugging 
           break;
-        case 5:
-          cout << " case 5 " << endl;
+        case 5: // hold
+          cout << " ST 5, ";
           break;
         case 6:
-          cout << " case 6 " << endl;
+          cout << " ST 6, ";
+          break;
         case 7:
-           cout << " case 7 " << endl;
+          cout << " ST 7, " << endl;
           freeMoving = true;
-          cw.setForceMet(true);
+          //cw.setForceMet(false);//true);
           /*Shuqi Liu - 2019/10/09-19:01 Stay at current location*/
-          if (!wamLocked)
+/*          if (!wamLocked)
           {
             cout << "Locking Wam" << endl;
             //wam.moveTo(wam.getToolPosition());
             cout<<"wam pos"<<wam.getToolPosition()<<endl;
             wamLocked = true;
           }
-
+*/
           break;
         default:
           break;
       }      
-      printf("M: MT_TASK_STATE_CONFIG:: finished\n");
+      //printf("ST: %d, ", task_state_data.id);
     }
 
     // Have Burt move in steps toward home postion
@@ -235,15 +238,23 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       MDF_MOVE_HOME startButton;
       Consumer_M.GetData( &startButton); 
       cw.moveToq0(); //make sure on the right joint position
-      cout<<"move to: "<< monkey_center[0] << "; "<< monkey_center[1] << "; "<< monkey_center[2] <<endl;
-      moveToCenter(wam, monkey_center, mod); 
+      // cout<<"move to: "<< monkey_center[0] << "; "<< monkey_center[1] << "; "<< monkey_center[2] <<endl;
+      moveToCenter(wam, monkey_center, mod);  // do not fully delete this part! Msg contain! 
+      // re-track force output here?  
+      cw.trackSignal(); //maybe not needed as idle no longer exist. 
     }
 
     // Ping sent   Acknowlegde ping...
-    else if (Consumer_M.msg_type == MT_PING) {}
+    else if (Consumer_M.msg_type == MT_PING) {
+      cw.init();
+    }
 
     // Exit the function
-    else if (Consumer_M.msg_type == MT_EXIT) {}
+    else if (Consumer_M.msg_type == MT_EXIT) { // add finish recording here
+      wam.moveHome();
+      wam.idle();
+      break;
+    }
   
     //if (yDirectionError) { /*cout << "Y direction Error" << endl;*/ }
   }

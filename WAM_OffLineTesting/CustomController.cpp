@@ -32,6 +32,7 @@ class JointControlClass : public systems::System{
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
 
 public:
+	Input<double> timeInput;
 	Input<jp_type> wamJPInput;
 	Input<jv_type> wamJVInput;
 	Input<cp_type> wamCPInput;
@@ -48,7 +49,7 @@ protected:
 	
 public:
 	explicit JointControlClass(systems::Wam<DOF>& wam, const std::string& sysName = "JointControlClass") :
-		systems::System(sysName), wam(wam), wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this), wamJTOutput(this, &outputValue1), wamCFPretOutput(this, &outputValue2){
+		systems::System(sysName), wam(wam), timeInput(this),wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this), wamJTOutput(this, &outputValue1), wamCFPretOutput(this, &outputValue2){
 			
 		// Joint stiffness
 		K_q(0,0) = 5.0;
@@ -69,7 +70,7 @@ public:
 		K_x(1,1) = 2000.0;
 	 	K_x(2,2) = 2000.0; 
 		//End-effector damping
-	 	B_x = 0.1*K_x;
+	 	B_x = 0.02*K_x;
 
 		// Nominal end-effector potion	(NEED TO CHECK THIS BEFORE TESTING)
 		input_x_0[0] = -0.3841;  //position: raise hand on desk
@@ -81,6 +82,7 @@ public:
 	virtual ~JointControlClass() { this->mandatoryCleanUp(); }
 
 protected:
+	double  input_time;
 	jp_type input_q;
 	jv_type input_q_dot;
 	cp_type input_x;
@@ -110,7 +112,8 @@ protected:
 	Matrix_3x4 J_x;
 
 	virtual void operate() {
-		
+
+		input_time = timeInput.getValue();
 		input_q = wamJPInput.getValue();
  		input_q_dot = wamJVInput.getValue();
  		input_x = wamCPInput.getValue();
@@ -156,7 +159,6 @@ protected:
 		J_tot.block(0,0,6,4) = wam.getToolJacobian(); // Entire 6D Jacobian
 		J_x.block(0,0,3,4) = J_tot.block(0,0,3,4); // 3D Translational Jacobian
   
-  
 		// Control Law Implamentation
 
 		// Joint impedance controller
@@ -167,10 +169,25 @@ protected:
 
 		// Random Preturbation
 		f_pretOutput.setRandom();
-    	f_pretOutput[0] = f_pretOutput[0] * 2.0;
-    	f_pretOutput[1] = f_pretOutput[1] * 2.0;
-    	f_pretOutput[2] = f_pretOutput[2] * 2.0;
+    	f_pretOutput[0] = f_pretOutput[0];
+    	f_pretOutput[1] = f_pretOutput[1];
+    	f_pretOutput[2] = f_pretOutput[2];
 		f_pretOutput[2] = 0.0;
+
+		// Make Preturbation unifore amplitude
+		if (f_pretOutput[0] >= 0 ) {
+			f_pretOutput[0] = 1;
+		} else if (f_pretOutput[0] < 0 ){
+			f_pretOutput[0] = -1;
+		}
+
+		if (f_pretOutput[1] >= 0 ) {
+			f_pretOutput[1] = 1;
+		} else if (f_pretOutput[1] < 0 ){
+			f_pretOutput[1] = -1;
+		}
+		
+
 		f_pret[0] = f_pretOutput[0];
 		f_pret[1] = f_pretOutput[1];
 		f_pret[2] = f_pretOutput[2]; 
@@ -181,7 +198,8 @@ protected:
 		tau = tau_q + tau_x + tau_pret;
 
 		// printf("tau: %.5f, %.5f, %.5f, \n", f_pret[0],f_pret[1],f_pret[2]);
-
+		 printf("time: %.5f, \n", input_time);
+		
 		// Save outputs
 		torqueOutput[0] = tau[0];
 		torqueOutput[1] = tau[1];
@@ -235,15 +253,15 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 			new log::RealTimeWriter<tuple_type>(tmpFile, PERIOD_MULTIPLIER * pm.getExecutionManager()->getPeriod()),
 			PERIOD_MULTIPLIER);
 
-	time.start();
-	systems::connect(tg.output, logger.input);
-	printf("Logging started.\n");
-
-
 	// Connect torque controller
 	printf("Press [Enter] to start your custom system.");
 	waitForEnter();
 
+	time.start();
+	systems::connect(tg.output, logger.input);
+	printf("Logging started.\n");
+
+	systems::connect(time.output, jj.timeInput);
  	systems::connect(wam.jpOutput, jj.wamJPInput);
  	systems::connect(wam.jvOutput, jj.wamJVInput);
 	systems::connect(wam.toolPosition.output, jj.wamCPInput);	

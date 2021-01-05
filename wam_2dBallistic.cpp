@@ -70,8 +70,9 @@ v_type msg_tmp;
 barrett::systems::ExposedOutput<v_type> message;
 
 bool forceMet = false;
+bool trackOutput = false; // the variable prevent repeating printf -cg.
 //const jp_type center_pos1(-1.5, 0, 0, 1.5);
-cp_type center_pos(-0.448, -0.418, 0.010);
+cp_type center_pos(-0.511, 0.485, 0.001);
 
 
 // end mutex
@@ -134,16 +135,23 @@ template <size_t DOF>
 void * moveRobot(void *arguments)
 {
   struct arg_struct<DOF> *args = (arg_struct<DOF> *)arguments;
-  while (true)
-  {
-    if (false)
+  while (false)
+  { // check if wam.trackReferenceSignal is false
+    if (!args->cw.isTrackRef()) // if cw.isTrackRef is false
     {
-      replayTrajectory(args->product_manager, args->wam);
-      moveToCenter(args->wam, args->system_center, args->mod);
+      args->cw.trackSignal();
+      if (trackOutput){
+        printf("isTrackRef: false, track now! \n");
+        trackOutput = false;
+        }
     }
     // Check if you should be moving the robot
-    else if (true)
+    else
     {
+      if (!trackOutput){
+        printf("isTrackRef: true, continue! \n");
+        trackOutput = true;
+        }
       //moveToCenter(args->wam, args->system_center, args->mod);
       //moveAStep(args->wam, args->system_center, args->mod);
     }
@@ -182,11 +190,24 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	{
 		std::cout << "Unknown Exception!" << e.what() << std::endl;
 	}
+  char * loggerfname;
+  try{
+    loggerfname = argv[1];
+  }
+  catch (exception &e){
+    std::cout << "cannot assign logger fname" << e.what() <<std::endl;
+  }
+  char logtmpFile[] = "bt20200904XXXXXX";
+	if (mkstemp(logtmpFile) == -1) {
+		printf("ERROR: Couldn't create temporary file!\n");
+	return 1;
+	} 
 
   // Subscribe to executive messages
   mod.Subscribe( MT_TASK_STATE_CONFIG );
   mod.Subscribe( MT_MOVE_HOME ); // ...check this? what this do? --cg
   mod.Subscribe( MT_SAMPLE_GENERATED );
+  mod.Subscribe( MT_EXIT ); 
   printf("Module Supscription succeed!\n");  //
 
   wam.gravityCompensate();
@@ -195,31 +216,37 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   Matrix_4x4 K_q00; //... initialize these set of variables from RTMA system --cg
 	Matrix_4x4 K_q01;
 	Matrix_3x3 K_x00;
+  Matrix_3x3 K_x01;
 	jp_type input_q_000;
 	cp_type input_x_000;
 
-	K_q00(0,0) = 10;
-	K_q00(1,1) = 10;
-	K_q00(2,2) = 10;
-	K_q00(3,3) = 20;
-	K_x00(0,0) = 100;
-	K_x00(1,1) = 100;
-	K_x00(2,2) = 100;
+	K_q00(0,0) = 10.0; // keep wam upright
+	K_q00(1,1) = 10.0;
+	K_q00(2,2) = 10.0;
+	K_q00(3,3) = 10.0;
+	K_x00(0,0) = 0.0;
+	K_x00(1,1) = 0.0;
+	K_x00(2,2) = 0.0;
+
+  K_x01(0,0) = 500;
+	K_x01(1,1) = 500;
+	K_x01(2,2) = 500;
 
 	K_q01(0,0) = 10;
 	K_q01(1,1) = 10;
 	K_q01(2,2) = 10;
 	K_q01(3,3) = 0;
 
-	input_q_000[0] =-1.581;
-	input_q_000[1] =-0.035;
-	input_q_000[2] =-0.034;
-	input_q_000[3] = 1.521;
-	input_x_000[0] =-0.448;
-	input_x_000[1] = 0.418;
-	input_x_000[2] = 0.010;
+	input_q_000[0] =-1.570;
+	input_q_000[1] = 0.002;
+	input_q_000[2] = 0.002;
+	input_q_000[3] = 1.569;
+	input_x_000[0] =-0.511;
+	input_x_000[1] = 0.485;
+	input_x_000[2] = 0.002;
 
-  ControllerWarper<DOF> cw1(product_manager_, wam, K_q00, K_x00, input_q_000,input_x_000); 
+  ControllerWarper<DOF> cw1(product_manager_, wam, K_q00, K_x00, K_x01, input_q_000,input_x_000); 
+  LoggerClass<DOF> log1(product_manager_, wam, loggerfname, logtmpFile, cw1);
 
   if (!cw1.init()) {
     printf("hptics_demo init failure!");
@@ -229,6 +256,8 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   message.setValue(msg_tmp); //.. this is confusing, what do this do?
 
   cw1.connectForces();
+  log1.datalogger_connect();
+  log1.datalogger_start();
   cout << "Connected Forces" << endl;
 
   // Spawn 2 threads for listening to RTMA and moving robot
@@ -246,7 +275,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   pthread_join(rtmaThread, NULL );
   printf("The RTMA thread joined! \n");
   // pthread_join(robotMoverThread, NULL );
-
+  log1.datalogger_end();
   cout << "Finished trials" << endl;
   barrett::btsleep(0.1);
 
