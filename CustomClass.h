@@ -48,10 +48,16 @@ protected:
 	systems::Wam<DOF>& wam;
 	
 public:
-	explicit JointControlClass(Matrix_4x4 K_q, Matrix_4x4 B_q, Matrix_3x3 K_x, Matrix_3x3 B_x, jp_type input_q_0, cp_type input_x_0, systems::Wam<DOF>& wam, const std::string& sysName = "JointControlClass") :
+	explicit JointControlClass(Matrix_4x4 K_q, Matrix_4x4 B_q, Matrix_3x3 K_x, Matrix_3x3 B_x,
+	 Matrix_4x4 K_q1, Matrix_4x4 B_q1,
+	 jp_type input_q_0, cp_type input_x_0, systems::Wam<DOF>& wam, const std::string& sysName = "JointControlClass") :
 		systems::System(sysName), wam(wam), wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this), wamJTOutput(this, &outputValue), 
-		K_q(K_q), B_q(B_q), input_q_0(input_q_0), K_x(K_x), B_x(B_x), input_x_0(input_x_0){
-
+		K_q(K_q), B_q(B_q), K_q1(K_q1), B_q1(B_q1),
+		input_q_0(input_q_0), K_x(K_x), B_x(B_x), input_x_0(input_x_0){
+			loop_iteration = 0;
+			loop_itMax = 500*1; 	// freq*s
+		 	if_set_JImp = false; 	// 
+			K_qQuantum = (K_q1 - K_q1)/double(loop_itMax);
 		}
 
 	virtual ~JointControlClass() { this->mandatoryCleanUp(); }
@@ -67,8 +73,7 @@ public:
 	}
 
 	void setJointImpedance(Matrix_4x4 K_q1){ //higher one, ST_HOLD
-		K_q = K_q1;
-		B_q = 0.1*K_q;
+		if_set_JImp = true;
 	}
 
 	void resetJointImpedance(Matrix_4x4 K_q0){	//lower one, ST_MOV
@@ -88,12 +93,17 @@ protected:
 	jt_type torqueOutput;
 	cf_type forceOutput;
 	jt_type force2torqueOutput;
-	
+	int 	loop_iteration;
+	int		loop_itMax;
+	bool 	if_set_JImp;
 	// Initialize variables 
 	Matrix_4x4 K_q;
 	Matrix_4x4 B_q;
-	Matrix_4x4 K_q0; // to store spare K_q, because K_q would be set to 0 when forceMet.
+	Matrix_4x4 K_q0; 	//lower value of K_q, because K_q would be set to 0 when forceMet.
 	Matrix_4x4 B_q0;
+	Matrix_4x4 K_q1;	//higher value of K_q
+	Matrix_4x4 B_q1;
+	Matrix_4x4 K_qQuantum; // each small part
 	Matrix_3x3 K_x; 
 	Matrix_3x3 B_x; 
 	Matrix_3x1 x_0; 	//Matrix_4x1 x_0;
@@ -179,6 +189,16 @@ protected:
 		torqueOutput[3] = tau[3];
 
 		this->outputValue->setData(&torqueOutput);
+
+		if (if_set_JImp){// slowly ramp the impedance
+			loop_iteration++;
+			K_q = K_q + K_qQuantum;
+			B_q = 0.1*K_q;
+		}
+		if (loop_iteration>loop_itMax){
+			loop_iteration = 0;
+			if_set_JImp = false;
+		}
 	}
 
 private:
@@ -217,7 +237,7 @@ class ControllerWarper{
 	K_q0(K_q00), B_q0(0.1*K_q00), K_q1(K_q01), B_q1(0.1*K_q01),
 	K_x0(K_x00), B_x0(0.1*K_x00), K_x1(K_x01), B_x1(0.1*K_x01),
 	input_q_00(input_q_000), input_x_00(input_x_000), center_pos(input_x_000), center_pos0(input_x_000),
-	jj(K_q0, B_q0, K_x0, B_x0, input_q_00, input_x_00, wam),
+	jj(K_q0, B_q0, K_x0, B_x0, K_q1, B_q1, input_q_00, input_x_00, wam),
 	forceMet(false), TrackRef(false){
 	// after initilization, mvoeTo
 	printf("Move to joint controller position, in CustomClass:: Controller Wrapper.");
@@ -265,7 +285,7 @@ class ControllerWarper{
 			// change the K_q to a high value here
 			//jj.resetImpedance(K_x0);
 			//printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x0(0,0), K_x0(1,1), K_x0(2,2));
-			jj.setJointImpedance(K_q0);
+			jj.resetJointImpedance(K_q0);
 			printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q0(0,0), K_q0(1,1), K_q0(2,2), K_q0(3,3));
 		}
 	}
