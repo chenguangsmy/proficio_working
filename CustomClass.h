@@ -57,7 +57,8 @@ public:
 			loop_iteration = 0;
 			loop_itMax = 500*1; 	// freq*s
 		 	if_set_JImp = false; 	// 
-			K_qQuantum = (K_q1 - K_q1)/double(loop_itMax);
+			K_qQuantum = (K_q1 - K_q0)/double(loop_itMax);
+      		//printf("K_qQ is: %.3f, %.3f, %.3f, %.3f\n", K_qQuantum(0,0), K_qQuantum(1,1), K_qQuantum(2,2), K_qQuantum(3,3));
 		}
 
 	virtual ~JointControlClass() { this->mandatoryCleanUp(); }
@@ -73,6 +74,7 @@ public:
 	}
 
 	void setJointImpedance(Matrix_4x4 K_q1){ //higher one, ST_HOLD
+		// how to avoid continuous increasing?
 		if_set_JImp = true;
 	}
 
@@ -166,6 +168,18 @@ protected:
 		J_tot.block(0,0,6,4) = wam.getToolJacobian(); // Entire 6D Jacobian
 		J_x.block(0,0,3,4) = J_tot.block(0,0,3,4); // 3D Translational Jacobian
 
+		// Updating K_q
+		if (if_set_JImp){// slowly ramp the impedance
+			loop_iteration++;
+			K_q = K_q + K_qQuantum;
+			B_q = 0.1*K_q;
+			printf("K_q is: %.3f, %.3f, %.3f, %.3f\n", K_q(0,0), K_q(1,1), K_q(2,2), K_q(3,3));
+		}
+		if (loop_iteration>loop_itMax){
+			loop_iteration = 0;
+			if_set_JImp = false;
+		}
+
 		// Control Law Implamentation
 
 		// Joint impedance controller
@@ -190,15 +204,6 @@ protected:
 
 		this->outputValue->setData(&torqueOutput);
 
-		if (if_set_JImp){// slowly ramp the impedance
-			loop_iteration++;
-			K_q = K_q + K_qQuantum;
-			B_q = 0.1*K_q;
-		}
-		if (loop_iteration>loop_itMax){
-			loop_iteration = 0;
-			if_set_JImp = false;
-		}
 	}
 
 private:
@@ -278,7 +283,7 @@ class ControllerWarper{
 			// change the K_q to a low value here
 			//jj.setImpedance(K_x1);
 			//printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x1(0,0), K_x1(1,1), K_x1(2,2));
-			jj.setJointImpedance(K_q1);
+			jj.setJointImpedance(K_q1); // increase impedance steadily
 			printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q1(0,0), K_q1(1,1), K_q1(2,2), K_q1(3,3));
 		}
 		else {

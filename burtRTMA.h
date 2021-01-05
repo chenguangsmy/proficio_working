@@ -215,6 +215,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 7:
           cout << " ST 7, " << endl;
           freeMoving = true;
+          cw.setForceMet(true); 
           //cw.setForceMet(false);//true);
           /*Shuqi Liu - 2019/10/09-19:01 Stay at current location*/
 /*          if (!wamLocked)
