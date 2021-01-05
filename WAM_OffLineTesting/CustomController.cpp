@@ -65,10 +65,10 @@ public:
 	 	B_q = 0.1*K_q;
 
 	 	// Nominal joint space postion
-		input_q_0[0] = -1.581;
-		input_q_0[1] = -0.035; 
-		input_q_0[2] = -0.034; 
-		input_q_0[3] = 1.521; 
+		input_q_0[0] = -1.570;
+		input_q_0[1] =  0.008; 
+		input_q_0[2] =  0.008; 
+		input_q_0[3] =  1.570; 
 
 		//End-effector stiffness
 		K_x(0,0) = 2000.0;
@@ -78,9 +78,9 @@ public:
 	 	B_x = 0.02*K_x;
 
 		// Nominal end-effector potion	(NEED TO CHECK THIS BEFORE TESTING)
-		input_x_0[0] = -0.3841;  //position: raise hand on desk
-		input_x_0[1] = 0.5166;
-		input_x_0[2] = -0.0176;
+		input_x_0[0] = -0.409;  //position: raise hand on desk
+		input_x_0[1] = 0.482;
+		input_x_0[2] = -0.04;
 
 		}
 
