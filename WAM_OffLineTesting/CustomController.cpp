@@ -54,7 +54,10 @@ protected:
 	
 public:
 	explicit JointControlClass(systems::Wam<DOF>& wam, const std::string& sysName = "JointControlClass") :
-		systems::System(sysName), wam(wam), timeInput(this), wamIterationInput(this), wamPrevPretInput(this),wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this), wamJTOutput(this, &outputValue1), wamCFPretOutput(this, &outputValue2), wamIterationOutput(this, &outputValue3){
+		systems::System(sysName), wam(wam), timeInput(this), 
+		wamIterationInput(this), wamPrevPretInput(this), 
+		wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this), wamJTOutput(this, &outputValue1), 
+		wamCFPretOutput(this, &outputValue2), wamIterationOutput(this, &outputValue3){
 			
 		// Joint stiffness
 		K_q(0,0) = 5.0;
@@ -120,6 +123,7 @@ protected:
 	Matrix_3x4 J_x;
 
 	virtual void operate() {
+		printf("Enter in the operate function");
 
 		input_time = timeInput.getValue();
 		input_iteration = wamIterationInput.getValue();
@@ -240,6 +244,8 @@ protected:
 		torqueOutput[2] = tau[2];
 		torqueOutput[3] = tau[3];
 
+		printf("tau output: %.5f, %.5f, %.5f, \n", tau[0],tau[1],tau[2], tau[3]);
+		
 		this->outputValue1->setData(&torqueOutput);
 		this->outputValue2->setData(&f_pretOutput);
 		this->outputValue3->setData(&output_iteration);
