@@ -190,8 +190,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
           cw.setCenter(monkey_center);
           break;
-        case 2:
+        case 2: // Present
           cout << " ST 2, ";
+          
           //cout << " case 2 " << endl;
           break;
         case 3: //ForceRamp
@@ -203,7 +204,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
         case 4: //Move
           cout << " ST 4, ";
-          cw.setForceMet(true); 
+          cw.setForceMet(true); //decrease the impedance suddenly
           //cw.setForceMet(false);//true); //debugging 
           break;
         case 5: // hold
@@ -215,7 +216,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 7:
           cout << " ST 7, " << endl;
           freeMoving = true;
-          cw.setForceMet(true); 
           //cw.setForceMet(false);//true);
           /*Shuqi Liu - 2019/10/09-19:01 Stay at current location*/
 /*          if (!wamLocked)

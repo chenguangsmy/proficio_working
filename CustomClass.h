@@ -55,7 +55,7 @@ public:
 		K_q(K_q), B_q(B_q), K_q1(K_q1), B_q1(B_q1),
 		input_q_0(input_q_0), K_x(K_x), B_x(B_x), input_x_0(input_x_0){
 			loop_iteration = 0;
-			loop_itMax = 500*1; 	// freq*s
+			loop_itMax = 500*0.1; 	// freq*s
 		 	if_set_JImp = false; 	// 
 			K_qQuantum = (K_q1 - K_q0)/double(loop_itMax);
       		//printf("K_qQ is: %.3f, %.3f, %.3f, %.3f\n", K_qQuantum(0,0), K_qQuantum(1,1), K_qQuantum(2,2), K_qQuantum(3,3));
@@ -75,6 +75,7 @@ public:
 
 	void setJointImpedance(Matrix_4x4 K_q1){ //higher one, ST_HOLD
 		// how to avoid continuous increasing?
+		K_q = K_q0;
 		if_set_JImp = true;
 	}
 
@@ -279,18 +280,18 @@ class ControllerWarper{
 	void setForceMet(bool wasMet){
 		forceMet = wasMet;
 		
-		if (!wasMet){
+		if (wasMet){
 			// change the K_q to a low value here
 			//jj.setImpedance(K_x1);
 			//printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x1(0,0), K_x1(1,1), K_x1(2,2));
-			jj.setJointImpedance(K_q1); // increase impedance steadily
+			jj.resetJointImpedance(K_q0); // decrease impedance suddenly
 			printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q1(0,0), K_q1(1,1), K_q1(2,2), K_q1(3,3));
 		}
 		else {
 			// change the K_q to a high value here
 			//jj.resetImpedance(K_x0);
 			//printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x0(0,0), K_x0(1,1), K_x0(2,2));
-			jj.resetJointImpedance(K_q0);
+			jj.setJointImpedance(K_q1); // increase impedance steadily
 			printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q0(0,0), K_q0(1,1), K_q0(2,2), K_q0(3,3));
 		}
 	}
