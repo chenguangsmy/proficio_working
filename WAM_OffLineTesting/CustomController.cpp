@@ -59,9 +59,9 @@ public:
 		{
 			
 		// Joint stiffness
-		K_q(0,0) = 0.0;//100.0;
+		K_q(0,0) = 100.0;
 		K_q(1,1) = 0.0;
-	 	K_q(2,2) = 0.0;//100.0; 
+	 	K_q(2,2) = 100.0; 
 		K_q(3,3) = 0.0;
 
 		// Joint damping
@@ -228,7 +228,7 @@ protected:
 			f_pretOutput[2] = 0.0;
 
 			// Make Preturbation unifore amplitude
-			pretAmplitude = 0.0;
+			pretAmplitude = 2.0;
 			if (f_pretOutput[0] >= 0 ) {
 				f_pretOutput[0] = pretAmplitude;
 			} else if (f_pretOutput[0] < 0 ){
