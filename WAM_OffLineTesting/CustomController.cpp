@@ -59,14 +59,11 @@ public:
 		{
 			
 		// Joint stiffness
-		K_q(0,0) = 5.0;
-		K_q(1,1) = 5.0;
-	 	K_q(2,2) = 5.0; 
-		K_q(3,3) = 5.0;
-		K_q0(0,0) = 5.0;
-		K_q0(1,1) = 5.0;
-	 	K_q0(2,2) = 5.0; 
-		K_q0(3,3) = 5.0;
+		K_q(0,0) = 100.0;
+		K_q(1,1) = 0.0;
+	 	K_q(2,2) = 100.0; 
+		K_q(3,3) = 0.0;
+
 		// Joint damping
 	 	B_q = 0.1*K_q;
 
@@ -77,12 +74,10 @@ public:
 		input_q_0[3] =  1.570; 
 
 		//End-effector stiffness
-		K_x(0,0) = 2000.0;
-		K_x(1,1) = 2000.0;
-	 	K_x(2,2) = 2000.0; 
-		K_x0(0,0) = 2000.0;
-		K_x0(1,1) = 2000.0;
-	 	K_x0(2,2) = 2000.0; 
+		K_x(0,0) = 0.0; // 2000.0;
+		K_x(1,1) = 0.0; // 2000.0;
+	 	K_x(2,2) = 0.0; // 2000.0; 
+
 		//End-effector damping
 	 	B_x = 0.02*K_x;
 
@@ -103,6 +98,8 @@ public:
 protected:
 	double input_time;
 	double input_iteration;
+	double pretAmplitude;
+	double rampTime; // ramp stiffnes duing this duration
 	int iteration;
 	int iteration_MAX;
 	cf_type input_prevPret;
@@ -182,6 +179,8 @@ protected:
 		x_dot[1] = input_x_dot[1];
 		x_dot[2] = input_x_dot[2];
 
+		rampTime = 10.0;
+
 		// Import Jacobian
 		J_tot.block(0,0,6,4) = wam.getToolJacobian(); // Entire 6D Jacobian
 		J_x.block(0,0,3,4) = J_tot.block(0,0,3,4); // 3D Translational Jacobian
@@ -189,20 +188,22 @@ protected:
 		// Control Law Implamentation
 
 		// Ramp up stiffness for first 10 seconds
-		if (input_time < 10.0 ) {
-			K_q = (input_time/10.0)*K_q0;
-			K_x = (input_time/10.0)*K_x0;
-		}
-		else {
-			K_q = K_q0;
-			K_x = K_x0;
-		}
 
 		// Joint impedance controller
-		tau_q = K_q*(q_0 - q) - B_q*(q_dot);
+		if (input_time < rampTime ) {
+			tau_q = (input_time/rampTime)*K_q*(q_0 - q) - B_q*(q_dot);
+		}
+		else {
+			tau_q = K_q*(q_0 - q) - B_q*(q_dot);
+		}
 
 		// End-effector impedance controller
-		tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 	
+		if (input_time < rampTime ) {
+			tau_x = J_x.transpose()*((input_time/rampTime)*K_x*(x_0 - x) - B_x*(x_dot)); 	
+		}
+		else {
+			tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 
+		}
 
 		// Random Preturbation
 		// Less than iteration_MAX iterations since last update
@@ -227,16 +228,17 @@ protected:
 			f_pretOutput[2] = 0.0;
 
 			// Make Preturbation unifore amplitude
+			pretAmplitude = 2.0;
 			if (f_pretOutput[0] >= 0 ) {
-				f_pretOutput[0] = 1;
+				f_pretOutput[0] = pretAmplitude;
 			} else if (f_pretOutput[0] < 0 ){
-				f_pretOutput[0] = -1;
+				f_pretOutput[0] = -pretAmplitude;
 			}
 
 			if (f_pretOutput[1] >= 0 ) {
-				f_pretOutput[1] = 1;
+				f_pretOutput[1] = pretAmplitude;
 			} else if (f_pretOutput[1] < 0 ){
-				f_pretOutput[1] = -1;
+				f_pretOutput[1] = -pretAmplitude;
 			}
 		
 			f_pret[0] = f_pretOutput[0];
