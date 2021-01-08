@@ -27,7 +27,7 @@ classdef importWAM < handle
             this.q0 = [-1.581,-0.035,-0.034,1.521];
             this.W_Tranform =[0 1 0 0; 0 0 1 0; 1 0 0 0; 0 0 0 1];
                             %[1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1];
-            filee = 'dataFile_notTracked/preliminarySystemIDTest_5min.csv';
+            filee = 'dataFile_notTracked/noTorquePret.csv';
             this.importWAMData(filee);
 %             check_stiffness(this);
 %             import_WAM_model(this);
@@ -101,6 +101,11 @@ classdef importWAM < handle
             this.F_pret= data(:,20:22);
 %             figure; plot(1./diff(this.t));
             this.sfrq = 500; % Check this
+            
+            figure;
+            subplot(3,1,1); plot(this.t,this.X(:,1)); hold on;
+            subplot(3,1,2); plot(this.t,this.X(:,2)); hold on;
+            subplot(3,1,3); plot(this.t,this.X(:,3)); hold on;
             
 %             % Check import plot
             figure;
