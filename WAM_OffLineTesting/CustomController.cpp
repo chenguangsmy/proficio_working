@@ -63,6 +63,10 @@ public:
 		K_q(1,1) = 5.0;
 	 	K_q(2,2) = 5.0; 
 		K_q(3,3) = 5.0;
+		K_q0(0,0) = 5.0;
+		K_q0(1,1) = 5.0;
+	 	K_q0(2,2) = 5.0; 
+		K_q0(3,3) = 5.0;
 		// Joint damping
 	 	B_q = 0.1*K_q;
 
@@ -76,6 +80,9 @@ public:
 		K_x(0,0) = 2000.0;
 		K_x(1,1) = 2000.0;
 	 	K_x(2,2) = 2000.0; 
+		K_x0(0,0) = 2000.0;
+		K_x0(1,1) = 2000.0;
+	 	K_x0(2,2) = 2000.0; 
 		//End-effector damping
 	 	B_x = 0.02*K_x;
 
@@ -112,8 +119,10 @@ protected:
 
 	// Initialize variables 
 	Matrix_4x4 K_q; 
+	Matrix_4x4 K_q0; 	// stand alone K_q value
 	Matrix_4x4 B_q; 
 	Matrix_3x3 K_x; 
+	Matrix_3x3 K_x0;
 	Matrix_3x3 B_x; 
 	Matrix_3x1 x_0; 	//Matrix_4x1 x_0;
 	Matrix_3x1 x;   	//Matrix_4x1 x; 
@@ -181,8 +190,12 @@ protected:
 
 		// Ramp up stiffness for first 10 seconds
 		if (input_time < 10.0 ) {
-		K_q = (input_time/10.0)*K_q;
-		K_x = (input_time/10.0)*K_x;
+			K_q = (input_time/10.0)*K_q0;
+			K_x = (input_time/10.0)*K_x0;
+		}
+		else {
+			K_q = K_q0;
+			K_x = K_x0;
 		}
 
 		// Joint impedance controller
