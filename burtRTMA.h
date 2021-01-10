@@ -7,12 +7,10 @@
  * 
  * movetoCenter -> moves the burt to a predefined center postion
  * 
- * moveAstep -> moves the burt one step toward a position
- * 
  * Author(s): Ivana Stevens 2019, Chenguang Z. 2020
  * 
  */
- 
+
 #include "/home/robot/src/Proficio_Systems/magnitude.h" //...do we use these files?
 #include "/home/robot/src/Proficio_Systems/normalize.h"
 #include "/home/robot/rg2/include/RTMA_config.h"
@@ -72,6 +70,7 @@ extern bool forceMet; //thresholdMet;
 /**
  * Thread funtion to handle messages from RTMA 
  */
+// replace DOF with 4, try
 template <size_t DOF>
 void respondToRTMA(barrett::systems::Wam<DOF>& wam,
               cp_type system_center,
@@ -90,7 +89,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   jp_type jp;
   jv_type jv;
   jt_type jt;
-  //cp_type monkey_center(0.350, -0.120, 0.250);
+  double taskJ_center[4]; // task send joint position
   cp_type monkey_center(system_center);
   cp_type target;
 
@@ -179,16 +178,23 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       sendData  = true;
       switch(task_state_data.id)
       {
-        case 1:
+        case 1:   // set joint center and endpoint center
           cout << " ST 1, ";
           freeMoving = true;
           sendData = false;
-          cw.setForceMet(false);//true);
-          monkey_center[0] = task_state_data.target[30]; // here we temperarily change to a const value, for tesging
-          monkey_center[1] = task_state_data.target[31];
-          monkey_center[2] = task_state_data.target[32];
+          cw.setForceMet(false);
+          // target: XYZ-IJK-0123456789
+          monkey_center[0] = task_state_data.target[0]; // here we temperarily change to a const value, for tesging
+          monkey_center[1] = task_state_data.target[1];
+          monkey_center[2] = task_state_data.target[2];
+          
+          taskJ_center[0] = task_state_data.target[8];
+          taskJ_center[1] = task_state_data.target[9];
+          taskJ_center[2] = task_state_data.target[10];
+          taskJ_center[3] = task_state_data.target[11];
           //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
-          cw.setCenter(monkey_center);
+          cw.setCenter_joint(taskJ_center);
+          cw.setCenter_endpoint(monkey_center);
           break;
         case 2: // Present
           cout << " ST 2, ";
