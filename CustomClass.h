@@ -63,25 +63,29 @@ public:
 
 	virtual ~JointControlClass() { this->mandatoryCleanUp(); }
 
-	void setImpedance(Matrix_3x3 K_x1){ 
+	void setImpedance(Matrix_3x3 K_x1, Matrix_3x3 B_x1){ 
 		K_x = K_x1;
-		B_x = 0.1*K_x;
+		B_x = B_x1;
 	}
 
-	void resetImpedance(Matrix_3x3 K_x0){
-		K_x = K_x0;
-		B_x = 0.1*K_x;
-	}
-
-	void setJointImpedance(Matrix_4x4 K_q1){ //higher one, ST_HOLD
+	void setJointImpedance(Matrix_4x4 K_q1, Matrix_3x3 B_q1){ //higher one, ST_HOLD
 		// how to avoid continuous increasing?
-		K_q = K_q0;
+		K_q = K_q1;
+		B_q = B_q1;
+	//	if_set_JImp = true;
+	}
+
+	void setImpedance_inc(Matrix_3x3 K_x1, Matrix_3x3 B_x1){ 
+		K_xQuantum = (K_x1 - K_x)/loop_itMax;
+		B_xQuantum = (B_x1 - B_x)/loop_itMax;
 		if_set_JImp = true;
 	}
 
-	void resetJointImpedance(Matrix_4x4 K_q0){	//lower one, ST_MOV
-		K_q = K_q0;
-		B_q = 0.1*K_q;
+	void setJointImpedance_inc(Matrix_4x4 K_q1, Matrix_3x3 B_q1){ //higher one, ST_HOLD
+		// how to avoid continuous increasing?
+		K_qQuantum = (K_q1 - K_q)/loop_itMax;
+		B_qQuantum = (B_q1 - B_q)/loop_itMax;
+		if_set_JImp = true;
 	}
 
 	void setx0(cp_type center_pos){
@@ -111,6 +115,9 @@ protected:
 	Matrix_4x4 K_q1;	//higher value of K_q
 	Matrix_4x4 B_q1;
 	Matrix_4x4 K_qQuantum; // each small part
+	Matrix_4x4 B_qQuantum;
+	Matrix_3x3 K_xQuantum;
+	Matrix_3x3 B_xQuantum;
 	Matrix_3x3 K_x; 
 	Matrix_3x3 B_x; 
 	Matrix_3x1 x_0; 	//Matrix_4x1 x_0;
@@ -173,14 +180,17 @@ protected:
 		J_tot.block(0,0,6,4) = wam.getToolJacobian(); // Entire 6D Jacobian
 		J_x.block(0,0,3,4) = J_tot.block(0,0,3,4); // 3D Translational Jacobian
 
-		// Updating K_q
+		// Updating K_q incrementally
 		if (if_set_JImp){// slowly ramp the impedance
 			loop_iteration++;
 			K_q = K_q + K_qQuantum;
-			B_q = 0.1*K_q;
-			printf("K_q is: %.3f, %.3f, %.3f, %.3f\n", K_q(0,0), K_q(1,1), K_q(2,2), K_q(3,3));
+			B_q = B_q + B_qQuantum;
+			
+			K_x = K_x + K_xQuantum;
+			B_x = B_x + B_xQuantum;
+			//printf("K_q is: %.3f, %.3f, %.3f, %.3f\n", K_q(0,0), K_q(1,1), K_q(2,2), K_q(3,3));
 		}
-		if (loop_iteration>loop_itMax){
+		if (loop_iteration >= loop_itMax){
 			loop_iteration = 0;
 			if_set_JImp = false;
 		}
@@ -299,14 +309,14 @@ class ControllerWarper{
 		
 		if (wasMet){
 			// change the K_q to a low value here
-			jj.setImpedance(K_x0);
+			jj.setImpedance(K_x0, B_x0);
 			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x0(0,0), K_x0(1,1), K_x0(2,2));
-			//jj.resetJointImpedance(K_q0); // decrease impedance suddenly
+			//jj.setJointImpedance(K_q0); // decrease impedance suddenly
 			//printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q1(0,0), K_q1(1,1), K_q1(2,2), K_q1(3,3));
 		}
 		else {
 			// change the K_q to a high value here
-			jj.resetImpedance(K_x1);
+			jj.setImpedance_inc(K_x1, B_x1);
 			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x1(0,0), K_x1(1,1), K_x1(2,2));
 			//jj.setJointImpedance(K_q1); // increase impedance steadily
 			//printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q0(0,0), K_q0(1,1), K_q0(2,2), K_q0(3,3));
