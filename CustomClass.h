@@ -84,8 +84,12 @@ public:
 		B_q = 0.1*K_q;
 	}
 
-	void setq0(cp_type center_pos){
+	void setx0(cp_type center_pos){
 		input_x_0 = center_pos;
+	}
+
+	void setq0(jp_type center_pos){
+		input_q_0 = center_pos;
 	}
 
 protected:
@@ -267,10 +271,20 @@ class ControllerWarper{
   		return true;
 	}
 
-	void setCenter(cp_type newCenter) {
+	void setCenter_endpoint(cp_type newCenter) {
   		//printf("Enter function: setCenter.");
 		center_pos = newCenter; 
-		jj.setq0(center_pos);
+		jj.setx0(center_pos);
+	}
+
+	void setCenter_joint(double *jointCenter) {
+		// copy the value of each element
+		input_q_00[0] = jointCenter[0];
+		input_q_00[1] = jointCenter[1];
+		input_q_00[2] = jointCenter[2];
+		input_q_00[3] = jointCenter[3]; 
+		// set to jj
+		jj.setq0(input_q_00);
 	}
 
 	void startController(){
