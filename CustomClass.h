@@ -242,11 +242,14 @@ class ControllerWarper{
 	bool TrackRef;
 	public:
 	JointControlClass<DOF> jj;
-	ControllerWarper(ProductManager& pm, systems::Wam<DOF>& wam, Matrix_4x4 K_q00, Matrix_4x4 K_q01, Matrix_3x3 K_x00, Matrix_3x3 K_x01, jp_type input_q_000, cp_type input_x_000):
+	ControllerWarper(ProductManager& pm, systems::Wam<DOF>& wam, 
+		Matrix_4x4 K_q0, Matrix_4x4 K_q1, Matrix_4x4 B_q0, Matrix_4x4 B_q1,
+		Matrix_3x3 K_x0, Matrix_3x3 K_x1, Matrix_3x3 B_x0, Matrix_3x3 B_x1,
+		jp_type input_q_00, cp_type input_x_00):
 	pm(pm), wam(wam),
-	K_q0(K_q00), B_q0(0.1*K_q00), K_q1(K_q01), B_q1(0.1*K_q01),
-	K_x0(K_x00), B_x0(0.1*K_x00), K_x1(K_x01), B_x1(0.1*K_x01),
-	input_q_00(input_q_000), input_x_00(input_x_000), center_pos(input_x_000), center_pos0(input_x_000),
+	K_q0(K_q0), B_q0(B_q0), K_q1(K_q1), B_q1(B_q1),
+	K_x0(K_x0), B_x0(B_x0), K_x1(K_x1), B_x1(B_x1),
+	input_q_00(input_q_00), input_x_00(input_x_00), center_pos(input_x_00), center_pos0(input_x_00),
 	jj(K_q0, B_q0, K_x0, B_x0, K_q1, B_q1, input_q_00, input_x_00, wam),
 	forceMet(false), TrackRef(false){
 	// after initilization, mvoeTo
@@ -296,17 +299,17 @@ class ControllerWarper{
 		
 		if (wasMet){
 			// change the K_q to a low value here
-			//jj.setImpedance(K_x1);
-			//printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x1(0,0), K_x1(1,1), K_x1(2,2));
-			jj.resetJointImpedance(K_q0); // decrease impedance suddenly
-			printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q1(0,0), K_q1(1,1), K_q1(2,2), K_q1(3,3));
+			jj.setImpedance(K_x0);
+			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x0(0,0), K_x0(1,1), K_x0(2,2));
+			//jj.resetJointImpedance(K_q0); // decrease impedance suddenly
+			//printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q1(0,0), K_q1(1,1), K_q1(2,2), K_q1(3,3));
 		}
 		else {
 			// change the K_q to a high value here
-			//jj.resetImpedance(K_x0);
-			//printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x0(0,0), K_x0(1,1), K_x0(2,2));
-			jj.setJointImpedance(K_q1); // increase impedance steadily
-			printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q0(0,0), K_q0(1,1), K_q0(2,2), K_q0(3,3));
+			jj.resetImpedance(K_x1);
+			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x1(0,0), K_x1(1,1), K_x1(2,2));
+			//jj.setJointImpedance(K_q1); // increase impedance steadily
+			//printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q0(0,0), K_q0(1,1), K_q0(2,2), K_q0(3,3));
 		}
 	}
 
