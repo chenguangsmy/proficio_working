@@ -193,8 +193,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           taskJ_center[2] = task_state_data.target[10];
           taskJ_center[3] = task_state_data.target[11];
           //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
-          cw.setCenter_joint(taskJ_center);
-          cw.setCenter_endpoint(monkey_center);
+          //cw.setCenter_joint(taskJ_center);
+          //cw.setCenter_endpoint(monkey_center);
           break;
         case 2: // Present
           cout << " ST 2, ";
@@ -222,16 +222,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 7:
           cout << " ST 7, " << endl;
           freeMoving = true;
-          //cw.setForceMet(false);//true);
-          /*Shuqi Liu - 2019/10/09-19:01 Stay at current location*/
-/*          if (!wamLocked)
-          {
-            cout << "Locking Wam" << endl;
-            //wam.moveTo(wam.getToolPosition());
-            cout<<"wam pos"<<wam.getToolPosition()<<endl;
-            wamLocked = true;
-          }
-*/
           break;
         default:
           break;

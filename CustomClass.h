@@ -57,6 +57,7 @@ public:
 			loop_iteration = 0;
 			loop_itMax = 500*0.1; 	// freq*s
 		 	if_set_JImp = false; 	// 
+			if_set_Imp = false;
 			K_qQuantum = (K_q1 - K_q0)/double(loop_itMax);
       		//printf("K_qQ is: %.3f, %.3f, %.3f, %.3f\n", K_qQuantum(0,0), K_qQuantum(1,1), K_qQuantum(2,2), K_qQuantum(3,3));
 		}
@@ -72,13 +73,12 @@ public:
 		// how to avoid continuous increasing?
 		K_q = K_q1;
 		B_q = B_q1;
-	//	if_set_JImp = true;
 	}
 
 	void setImpedance_inc(Matrix_3x3 K_x1, Matrix_3x3 B_x1){ 
 		K_xQuantum = (K_x1 - K_x)/loop_itMax;
 		B_xQuantum = (B_x1 - B_x)/loop_itMax;
-		if_set_JImp = true;
+		if_set_Imp = true;
 	}
 
 	void setJointImpedance_inc(Matrix_4x4 K_q1, Matrix_3x3 B_q1){ //higher one, ST_HOLD
@@ -107,6 +107,7 @@ protected:
 	int 	loop_iteration;
 	int		loop_itMax;
 	bool 	if_set_JImp;
+	bool 	if_set_Imp;
 	// Initialize variables 
 	Matrix_4x4 K_q;
 	Matrix_4x4 B_q;
@@ -185,16 +186,19 @@ protected:
 			loop_iteration++;
 			K_q = K_q + K_qQuantum;
 			B_q = B_q + B_qQuantum;
-			
+		}
+		if (if_set_Imp){// ramp the endpoint impedance
+			loop_iteration++;
 			K_x = K_x + K_xQuantum;
 			B_x = B_x + B_xQuantum;
-			//printf("K_q is: %.3f, %.3f, %.3f, %.3f\n", K_q(0,0), K_q(1,1), K_q(2,2), K_q(3,3));
 		}
 		if (loop_iteration >= loop_itMax){
 			loop_iteration = 0;
+			if_set_Imp = false;
 			if_set_JImp = false;
 		}
-
+		printf("K_q is: %.3f, %.3f, %.3f, %.3f\n", K_q(0,0), K_q(1,1), K_q(2,2), K_q(3,3));
+		printf("K_x is: %.3f, %.3f, %.3f; B_x is: %.3f, %.3f, %.3f \n", K_x(0,0), K_x(1,1), K_x(2,2), B_x(0,0), B_x(1,1), B_x(2,2));
 		// Control Law Implamentation
 
 		// Joint impedance controller
