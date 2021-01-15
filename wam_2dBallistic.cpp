@@ -238,12 +238,13 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	K_q01(3,3) = 0;
 
 	input_q_000[0] =-1.570;
-	input_q_000[1] =-0.001;
-	input_q_000[2] =-0.002;
+
+	input_q_000[1] = 0.002;
+	input_q_000[2] = 0.002;
 	input_q_000[3] = 1.569;
 	input_x_000[0] =-0.511;
 	input_x_000[1] = 0.485;
-	input_x_000[2] = 0.001;
+	input_x_000[2] = 0.002;
 
   ControllerWarper<DOF> cw1(product_manager_, wam, K_q00, K_x00, K_x01, input_q_000,input_x_000); 
   LoggerClass<DOF> log1(product_manager_, wam, loggerfname, logtmpFile, cw1);
