@@ -40,22 +40,26 @@ public:
 	Input<cp_type> wamCPInput;
 	Input<cv_type> wamCVInput;
 	Output<jt_type> wamJTOutput;
+    Output<int> wamRDTOutput; // read-time to synchronize stand-alone data and wam data
 	jp_type input_q_0;
 	cp_type input_x_0;
 
 protected:
-	typename Output<jt_type>::Value* outputValue; 
+	typename Output<jt_type>::Value* outputValue1; 
+	typename Output<int>::Value* outputValue2;
 	systems::Wam<DOF>& wam;
 	
 public:
 	explicit JointControlClass(Matrix_4x4 K_q, Matrix_4x4 B_q, Matrix_3x3 K_x, Matrix_3x3 B_x,
 	 Matrix_4x4 K_q1, Matrix_4x4 B_q1,
 	 jp_type input_q_0, cp_type input_x_0, systems::Wam<DOF>& wam, const std::string& sysName = "JointControlClass") :
-		systems::System(sysName), wam(wam), wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this), wamJTOutput(this, &outputValue), 
+		systems::System(sysName), wam(wam), wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this), 
+		wamJTOutput(this, &outputValue1), wamRDTOutput(this, &outputValue2),
 		K_q(K_q), B_q(B_q), K_q1(K_q1), B_q1(B_q1),
 		input_q_0(input_q_0), K_x(K_x), B_x(B_x), input_x_0(input_x_0){
 			loop_iteration = 0;
 			loop_itMax = 500*0.1; 	// freq*s
+			rdt = 0;
 		 	if_set_JImp = false; 	// 
 			if_set_Imp = false;
 			K_qQuantum = (K_q1 - K_q0)/double(loop_itMax);
@@ -96,6 +100,10 @@ public:
 		input_q_0 = center_pos;
 	}
 
+	int get_rdt(){
+		return rdt;
+	}
+
 protected:
 	jp_type input_q;
 	jv_type input_q_dot;
@@ -106,6 +114,7 @@ protected:
 	jt_type force2torqueOutput;
 	int 	loop_iteration;
 	int		loop_itMax;
+	int rdt; 
 	bool 	if_set_JImp;
 	bool 	if_set_Imp;
 	// Initialize variables 
@@ -221,7 +230,11 @@ protected:
 		torqueOutput[2] = tau[2];
 		torqueOutput[3] = tau[3];
 
-		this->outputValue->setData(&torqueOutput);
+		// update readtime variable
+		rdt++;
+
+		this->outputValue1->setData(&torqueOutput);
+		this->outputValue2->setData(&rdt);
 
 	}
 
@@ -368,8 +381,8 @@ public:
   	ProductManager& pm;
 	systems::Wam<DOF>& wam;
 	systems::Ramp time;
-	systems::TupleGrouper<double, jp_type, jv_type, cp_type, cv_type, jt_type> tg;
-	typedef boost::tuple<double, jp_type, jv_type, cp_type, cv_type, jt_type> tuple_type;
+	systems::TupleGrouper<double, jp_type, jv_type, cp_type, cv_type, jt_type, int> tg;
+	typedef boost::tuple<double, jp_type, jv_type, cp_type, cv_type, jt_type, int> tuple_type;
 	const size_t PERIOD_MULTIPLIER;
 	char *tmpFile;
 	const char* tmpFileName;
@@ -397,7 +410,8 @@ public:
 		systems::connect(wam.jvOutput, tg.template getInput<2>());
 		systems::connect(wam.toolPosition.output, tg.template getInput<3>());
 		systems::connect(wam.toolVelocity.output, tg.template getInput<4>());
-    systems::connect(controller1.jj.wamJTOutput, tg.template getInput<5>());
+    	systems::connect(controller1.jj.wamJTOutput, tg.template getInput<5>());
+		systems::connect(controller1.jj.wamRDTOutput, tg.template getInput<6>());
 	}
 	void datalogger_start(){
 		printf("Start timming! \n");

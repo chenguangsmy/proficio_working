@@ -102,15 +102,20 @@ struct arg_struct {
   RTMA_Module &mod;
   barrett::ProductManager& product_manager;
   ControllerWarper<DOF>& cw;
+  LoggerClass<DOF>& lg;
+
   arg_struct(barrett::systems::Wam<DOF>& wam,
               cp_type system_center,
               RTMA_Module &mod,
               barrett::ProductManager& product_manager,
-              ControllerWarper<DOF>& cw) : wam(wam), 
+              ControllerWarper<DOF>& cw,
+              LoggerClass<DOF>& lg
+              ) : wam(wam), 
                 system_center(system_center), 
                 mod(mod), 
                 product_manager(product_manager),
-                cw(cw) {}
+                cw(cw),
+                lg(lg) {}
 };
 
 
@@ -121,7 +126,7 @@ template <size_t DOF>
 void * responderWrapper(void *arguments)
 {
   struct arg_struct<DOF> *args = (arg_struct<DOF> *)arguments;
-  respondToRTMA(args->wam, args->system_center, args->mod, args->cw);
+  respondToRTMA(args->wam, args->system_center, args->mod, args->cw, args->lg);
   return NULL;
 }
 
@@ -272,7 +277,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   pthread_t rtmaThread, robotMoverThread;
 
   // Create thread arguments
-  struct arg_struct<DOF> args(wam, center_pos, mod, product_manager_, cw1);
+  struct arg_struct<DOF> args(wam, center_pos, mod, product_manager_, cw1, log1);
 
   //Start threads
   pthread_create(&rtmaThread, NULL, &responderWrapper<DOF>, (void *)&args);

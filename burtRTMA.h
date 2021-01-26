@@ -76,7 +76,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
               cp_type system_center,
               RTMA_Module &mod,
               //HapticsDemo<DOF> &ball)
-              ControllerWarper<DOF> &cw)
+              ControllerWarper<DOF> &cw,
+              LoggerClass<DOF> &lg)
 { 
   cf_type cforce;
 //  bool wamLocked = false; //.. this could be a garbage code -cg.
@@ -117,7 +118,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       //burt_status_data.timestamp = getTimestamp();
       //burt_status_data.state = thresholdMet;
       //burt_status_data.error = (int) hasError;
-
+      burt_status_data.RDT = cw.jj.get_rdt(); // ReaDTime for synchrony
       // Get Force Data //.. I doubt this line, how should cforce wrote? -CG
       burt_status_data.force_x = cforce[1];
       burt_status_data.force_y = cforce[0];
