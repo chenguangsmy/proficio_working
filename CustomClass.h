@@ -206,8 +206,8 @@ protected:
 			if_set_Imp = false;
 			if_set_JImp = false;
 		}
-		printf("K_q is: %.3f, %.3f, %.3f, %.3f\n", K_q(0,0), K_q(1,1), K_q(2,2), K_q(3,3));
-		printf("K_x is: %.3f, %.3f, %.3f; B_x is: %.3f, %.3f, %.3f \n", K_x(0,0), K_x(1,1), K_x(2,2), B_x(0,0), B_x(1,1), B_x(2,2));
+		//printf("K_q is: %.3f, %.3f, %.3f, %.3f\n", K_q(0,0), K_q(1,1), K_q(2,2), K_q(3,3));
+		//printf("K_x is: %.3f, %.3f, %.3f; B_x is: %.3f, %.3f, %.3f \n", K_x(0,0), K_x(1,1), K_x(2,2), B_x(0,0), B_x(1,1), B_x(2,2));
 		// Control Law Implamentation
 
 		// Joint impedance controller
