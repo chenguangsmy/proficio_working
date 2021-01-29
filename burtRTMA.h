@@ -65,7 +65,8 @@ BARRETT_UNITS_TYPEDEFS(6);
 //extern bool yDirectionError;
 extern bool forceMet; //thresholdMet;
 //extern double forceThreshold;
-
+extern std::string fname_rtma;
+extern bool fname_init; 
 
 /**
  * Thread funtion to handle messages from RTMA 
@@ -93,8 +94,14 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   double taskJ_center[4]; // task send joint position
   cp_type monkey_center(system_center);
   cp_type target;
-
 	CMessage Consumer_M;
+
+  // variables for save filename 
+  char data_dir[MAX_DATA_DIR_LEN];
+  std::string file_dir;
+  char file_name[20];
+  char subject_name[TAG_LENGTH];
+  int session_num;
 
   while (true)  // Allow the user to stop and resume with pendant buttons
   {
@@ -255,6 +262,31 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       break;
     }
   
+    else if (Consumer_M.msg_type == MT_SESSION_CONFIG)
+    {
+        printf("MT_SESSION_CONFIG. \n");
+        MDF_SESSION_CONFIG ssconfig;
+        Consumer_M.GetData(&ssconfig);
+        strcpy(data_dir, ssconfig.data_dir);
+        file_dir = data_dir;
+    }
+
+    else if (Consumer_M.msg_type == MT_XM_START_SESSION)
+    {
+        printf("MT_XM_START_SESSION receieved! \n");
+        MDF_XM_START_SESSION stsession;
+        Consumer_M.GetData(&stsession);
+        strcpy(subject_name, stsession.subject_name);
+        session_num = stsession.calib_session_id;
+        sprintf(file_name, "%sFT%d.csv", subject_name, session_num);
+        cout << "filename: " << file_name << endl;
+
+        fname_rtma = file_dir + '/' + file_name;
+        cout << "fname should be" << fname_rtma << endl;
+
+        fname_init = true;
+    }
+
     //if (yDirectionError) { /*cout << "Y direction Error" << endl;*/ }
   }
 }

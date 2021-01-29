@@ -70,6 +70,8 @@ v_type msg_tmp;
 barrett::systems::ExposedOutput<v_type> message;
 
 bool forceMet = false;
+std::string fname_rtma;
+bool fname_init = false; 
 bool trackOutput = false; // the variable prevent repeating printf -cg.
 //const jp_type center_pos1(-1.5, 0, 0, 1.5);
 cp_type center_pos(-0.513, 0.482, -0.002);
@@ -213,6 +215,8 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   mod.Subscribe( MT_MOVE_HOME ); // ...check this? what this do? --cg
   mod.Subscribe( MT_SAMPLE_GENERATED );
   mod.Subscribe( MT_EXIT ); 
+  mod.Subscribe( MT_SESSION_CONFIG );
+  mod.Subscribe( MT_XM_START_SESSION );
   printf("Module Supscription succeed!\n");  //
 
   wam.gravityCompensate();

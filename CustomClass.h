@@ -30,6 +30,9 @@ using detail::waitForEnter;
 #ifndef CONTROLLERWARPER_STUFF
 #define CONTROLLERWARPER_STUFF
 
+extern std::string fname_rtma;
+extern bool fname_init; 
+
 template<size_t DOF>
 class JointControlClass : public systems::System{ 
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
@@ -424,7 +427,12 @@ public:
 		logger.closeLog();
 		printf("Logging stopped.\n");
 		log::Reader<tuple_type> lr(tmpFile);
-		lr.exportCSV(tmpFileName);
+		if (fname_init){
+			lr.exportCSV(fname_rtma.c_str());
+		}
+		else{
+			lr.exportCSV(tmpFileName);
+		}
 		printf("Output written to %s.\n", tmpFileName);
 		std::remove(tmpFile);
 	}
