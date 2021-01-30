@@ -86,6 +86,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   
   bool freeMoving = false; //TODO: THIS SHOULD BE FALSE
   bool sendData = true;
+  bool fnameInit = false;
+  bool fdirInit = false;
   cp_type cp;
   cv_type cv;
   jp_type jp;
@@ -269,6 +271,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         Consumer_M.GetData(&ssconfig);
         strcpy(data_dir, ssconfig.data_dir);
         file_dir = data_dir;
+        file_dir.replace(6,2,"robot");
+        printf("data_dir is: %s", data_dir);
+        fnameInit = true;
     }
 
     else if (Consumer_M.msg_type == MT_XM_START_SESSION)
@@ -278,15 +283,16 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         Consumer_M.GetData(&stsession);
         strcpy(subject_name, stsession.subject_name);
         session_num = stsession.calib_session_id;
-        sprintf(file_name, "%sFT%d.csv", subject_name, session_num);
+        sprintf(file_name, "%sWAM%d.csv", subject_name, session_num);
         cout << "filename: " << file_name << endl;
-
-        fname_rtma = file_dir + '/' + file_name;
-        cout << "fname should be" << fname_rtma << endl;
-
-        fname_init = true;
+        fdirInit = true;
     }
 
     //if (yDirectionError) { /*cout << "Y direction Error" << endl;*/ }
+  }
+  if (fnameInit && fdirInit){
+        fname_rtma = file_dir + '/' + file_name;
+        cout << "fname should be" << fname_rtma << endl;
+        fname_init = true;
   }
 }

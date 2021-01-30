@@ -429,11 +429,13 @@ public:
 		log::Reader<tuple_type> lr(tmpFile);
 		if (fname_init){
 			lr.exportCSV(fname_rtma.c_str());
+			printf("save to: %s",fname_rtma.c_str());
 		}
 		else{
 			lr.exportCSV(tmpFileName);
+			printf("Output written to %s.\n", tmpFileName);
 		}
-		printf("Output written to %s.\n", tmpFileName);
+		
 		std::remove(tmpFile);
 	}
 };
