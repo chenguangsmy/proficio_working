@@ -100,7 +100,8 @@ public:
 protected:
 	double input_time;
 	double input_iteration;
-	double pretAmplitude;
+	double pretAmplitude_x;
+	double pretAmplitude_y;
 	double rampTime; // ramp stiffnes duing this duration
 	int iteration;
 	int iteration_MAX;
@@ -230,17 +231,17 @@ protected:
 			f_pretOutput[2] = 0.0;
 
 			// Make Preturbation unifore amplitude
-			pretAmplitude = 2.0;
+			pretAmplitude_x = 0.0;
 			if (f_pretOutput[0] >= 0 ) {
-				f_pretOutput[0] = pretAmplitude;
+				f_pretOutput[0] = pretAmplitude_x;
 			} else if (f_pretOutput[0] < 0 ){
-				f_pretOutput[0] = -pretAmplitude;
+				f_pretOutput[0] = -pretAmplitude_x;
 			}
-
+			pretAmplitude_y = 0.0;
 			if (f_pretOutput[1] >= 0 ) {
-				f_pretOutput[1] = pretAmplitude;
+				f_pretOutput[1] = pretAmplitude_y;
 			} else if (f_pretOutput[1] < 0 ){
-				f_pretOutput[1] = -pretAmplitude;
+				f_pretOutput[1] = -pretAmplitude_y;
 			}
 
 			// only in x, y direction
