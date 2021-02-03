@@ -74,21 +74,21 @@ public:
 		input_q_0[3] =  1.570; 
 
 		//End-effector stiffness
-		K_x(0,0) = 1000.0;
-		K_x(1,1) = 1000.0;
+		K_x(0,0) = 0.0;//1000.0;
+		K_x(1,1) = 0.0;//1000.0;
 	 	K_x(2,2) = 0.0; 
 
 		//End-effector damping
-	 	B_x(0,0) = 20;
-    B_x(1,1) = 20;
-    B_x(1,1) = 20;
+	 	B_x(0,0) = 0.0;//20;
+    	B_x(1,1) = 0.0;//20;
+    	B_x(1,1) = 0.0;//20;
 
 		// Nominal end-effector potion	(NEED TO CHECK THIS BEFORE TESTING)
 		input_x_0[0] = -0.513;  //position: raise hand on desk
 		input_x_0[1] = 0.482;
 		input_x_0[2] = -0.002;
 
-		iteration_MAX = 1;
+		iteration_MAX = 8;
 		iteration = 0; // do not input and output here
 		prevPret[0] = 0.0;
 		prevPret[1] = 0.0;
@@ -243,14 +243,14 @@ protected:
 				f_pretOutput[1] = -pretAmplitude;
 			}
 
+			// only in x, y direction
+			// f_pretOutput[0] = 0;
+			f_pretOutput[1] = 0;
 		
 			f_pret[0] = f_pretOutput[0];
 			f_pret[1] = f_pretOutput[1];
 			f_pret[2] = f_pretOutput[2]; 
 
-			// only in x, y direction
-			// f_pret[0] = 0;
-			f_pret[1] = 0;
 		}
 
 		tau_pret = J_x.transpose()*(f_pret);
