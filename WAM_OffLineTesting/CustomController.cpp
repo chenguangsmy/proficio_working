@@ -230,7 +230,7 @@ protected:
 			f_pretOutput[2] = 0.0;
 
 			// Make Preturbation unifore amplitude
-/*			pretAmplitude = 2.0;
+			pretAmplitude = 2.0;
 			if (f_pretOutput[0] >= 0 ) {
 				f_pretOutput[0] = pretAmplitude;
 			} else if (f_pretOutput[0] < 0 ){
@@ -242,11 +242,15 @@ protected:
 			} else if (f_pretOutput[1] < 0 ){
 				f_pretOutput[1] = -pretAmplitude;
 			}
-*/
+
 		
 			f_pret[0] = f_pretOutput[0];
 			f_pret[1] = f_pretOutput[1];
 			f_pret[2] = f_pretOutput[2]; 
+
+			// only in x, y direction
+			// f_pret[0] = 0;
+			f_pret[1] = 0;
 		}
 
 		tau_pret = J_x.transpose()*(f_pret);
