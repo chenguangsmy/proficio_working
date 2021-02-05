@@ -39,50 +39,74 @@ public:
 	Input<cv_type> wamCVInput;
 	Output<jt_type> wamJTOutput;
 	Output<cf_type> wamCFPretOutput;
+	Output<int> wamIterationOutput;
 	jp_type input_q_0;
 	cp_type input_x_0;
 
 protected:
 	typename Output<jt_type>::Value* outputValue1; 
 	typename Output<cf_type>::Value* outputValue2; 
+	typename Output<int>::Value* outputValue3; 
+
 	systems::Wam<DOF>& wam;
 	
 public:
 	explicit JointControlClass(systems::Wam<DOF>& wam, const std::string& sysName = "JointControlClass") :
-		systems::System(sysName), wam(wam), timeInput(this),wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this), wamJTOutput(this, &outputValue1), wamCFPretOutput(this, &outputValue2){
+		systems::System(sysName), wam(wam), timeInput(this), 
+		wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this), wamJTOutput(this, &outputValue1), 
+		wamCFPretOutput(this, &outputValue2)
+		, wamIterationOutput(this, &outputValue3)
+		{
 			
 		// Joint stiffness
-		K_q(0,0) = 5.0;
-		K_q(1,1) = 5.0;
-	 	K_q(2,2) = 5.0; 
-		K_q(3,3) = 5.0;
+		K_q(0,0) = 100.0;
+		K_q(1,1) = 0.0;
+	 	K_q(2,2) = 100.0; 
+		K_q(3,3) = 0.0;
+
 		// Joint damping
 	 	B_q = 0.1*K_q;
 
 	 	// Nominal joint space postion
-		input_q_0[0] = -1.581;
-		input_q_0[1] = -0.035; 
-		input_q_0[2] = -0.034; 
-		input_q_0[3] = 1.521; 
+		input_q_0[0] = -1.571;
+		input_q_0[1] =  0.007; 
+		input_q_0[2] = -0.004; 
+		input_q_0[3] =  1.570; 
 
 		//End-effector stiffness
-		K_x(0,0) = 2000.0;
-		K_x(1,1) = 2000.0;
-	 	K_x(2,2) = 2000.0; 
+		K_x(0,0) = 0.0;//1000.0;
+		K_x(1,1) = 0.0;//1000.0;
+	 	K_x(2,2) = 0.0; 
+
 		//End-effector damping
-	 	B_x = 0.02*K_x;
+	 	B_x(0,0) = 0.0;//20;
+    	B_x(1,1) = 0.0;//20;
+    	B_x(1,1) = 0.0;//20;
 
 		// Nominal end-effector potion	(NEED TO CHECK THIS BEFORE TESTING)
-		input_x_0[0] = -0.3841;  //position: raise hand on desk
-		input_x_0[1] = 0.5166;
-		input_x_0[2] = -0.0176;
+		input_x_0[0] = -0.513;  //position: raise hand on desk
+		input_x_0[1] = 0.482;
+		input_x_0[2] = -0.002;
 
+		iteration_MAX = 8;
+		iteration = 0; // do not input and output here
+		prevPret[0] = 0.0;
+		prevPret[1] = 0.0;
+		prevPret[2] = 0.0;		
 		}
 
 	virtual ~JointControlClass() { this->mandatoryCleanUp(); }
 
 protected:
-	double  input_time;
+	double input_time;
+	double input_iteration;
+	double pretAmplitude_x;
+	double pretAmplitude_y;
+	double rampTime; // ramp stiffnes duing this duration
+	int iteration;
+	int iteration_MAX;
+	cf_type input_prevPret;
+	cf_type prevPret;
 	jp_type input_q;
 	jv_type input_q_dot;
 	cp_type input_x;
@@ -91,11 +115,14 @@ protected:
 	cf_type forceOutput;
 	jt_type force2torqueOutput;
 	cf_type f_pretOutput;
+	double output_iteration;
 
 	// Initialize variables 
 	Matrix_4x4 K_q; 
+	Matrix_4x4 K_q0; 	// stand alone K_q value
 	Matrix_4x4 B_q; 
 	Matrix_3x3 K_x; 
+	Matrix_3x3 K_x0;
 	Matrix_3x3 B_x; 
 	Matrix_3x1 x_0; 	//Matrix_4x1 x_0;
 	Matrix_3x1 x;   	//Matrix_4x1 x; 
@@ -155,42 +182,77 @@ protected:
 		x_dot[1] = input_x_dot[1];
 		x_dot[2] = input_x_dot[2];
 
+		rampTime = 10.0;
+
 		// Import Jacobian
 		J_tot.block(0,0,6,4) = wam.getToolJacobian(); // Entire 6D Jacobian
 		J_x.block(0,0,3,4) = J_tot.block(0,0,3,4); // 3D Translational Jacobian
   
 		// Control Law Implamentation
 
+		// Ramp up stiffness for first 10 seconds
+
 		// Joint impedance controller
-		tau_q = K_q*(q_0 - q) - B_q*(q_dot);
+		if (input_time < rampTime ) {
+			tau_q = (input_time/rampTime)*K_q*(q_0 - q) - B_q*(q_dot);
+		}
+		else {
+			tau_q = K_q*(q_0 - q) - B_q*(q_dot);
+		}
 
 		// End-effector impedance controller
-		tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 	
+		if (input_time < rampTime ) {
+			tau_x = J_x.transpose()*((input_time/rampTime)*K_x*(x_0 - x) - B_x*(x_dot)); 	
+		}
+		else {
+			tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 
+		}
 
 		// Random Preturbation
-		f_pretOutput.setRandom();
-    	f_pretOutput[0] = f_pretOutput[0];
-    	f_pretOutput[1] = f_pretOutput[1];
-    	f_pretOutput[2] = f_pretOutput[2];
-		f_pretOutput[2] = 0.0;
+		// Less than iteration_MAX iterations since last update
+		if (iteration < iteration_MAX){
+			iteration++;
+			f_pretOutput[0] = prevPret[0];
+			f_pretOutput[1] = prevPret[1];
+			f_pretOutput[2] = prevPret[2];
 
-		// Make Preturbation unifore amplitude
-		if (f_pretOutput[0] >= 0 ) {
-			f_pretOutput[0] = 1;
-		} else if (f_pretOutput[0] < 0 ){
-			f_pretOutput[0] = -1;
+			f_pret[0] = f_pretOutput[0];
+			f_pret[1] = f_pretOutput[1];
+			f_pret[2] = f_pretOutput[2]; 
 		}
+		// More than iteration_MAX iterations since last update get new preturbaiton amplitude
+		else if (iteration >= iteration_MAX) {
+			// Reset the count
+			iteration = 1;
+			f_pretOutput.setRandom();
+    		f_pretOutput[0] = f_pretOutput[0];
+    		f_pretOutput[1] = f_pretOutput[1];
+    		f_pretOutput[2] = f_pretOutput[2];
+			f_pretOutput[2] = 0.0;
 
-		if (f_pretOutput[1] >= 0 ) {
-			f_pretOutput[1] = 1;
-		} else if (f_pretOutput[1] < 0 ){
-			f_pretOutput[1] = -1;
-		}
+			// Make Preturbation unifore amplitude
+			pretAmplitude_x = 0.0;
+			if (f_pretOutput[0] >= 0 ) {
+				f_pretOutput[0] = pretAmplitude_x;
+			} else if (f_pretOutput[0] < 0 ){
+				f_pretOutput[0] = -pretAmplitude_x;
+			}
+			pretAmplitude_y = 0.0;
+			if (f_pretOutput[1] >= 0 ) {
+				f_pretOutput[1] = pretAmplitude_y;
+			} else if (f_pretOutput[1] < 0 ){
+				f_pretOutput[1] = -pretAmplitude_y;
+			}
+
+			// only in x, y direction
+			// f_pretOutput[0] = 0;
+			f_pretOutput[1] = 0;
 		
+			f_pret[0] = f_pretOutput[0];
+			f_pret[1] = f_pretOutput[1];
+			f_pret[2] = f_pretOutput[2]; 
 
-		f_pret[0] = f_pretOutput[0];
-		f_pret[1] = f_pretOutput[1];
-		f_pret[2] = f_pretOutput[2]; 
+		}
 
 		tau_pret = J_x.transpose()*(f_pret);
 
@@ -198,16 +260,24 @@ protected:
 		tau = tau_q + tau_x + tau_pret;
 
 		// printf("tau: %.5f, %.5f, %.5f, \n", f_pret[0],f_pret[1],f_pret[2]);
-		 printf("time: %.5f, \n", input_time);
+		// printf("time: %.5f, \n", input_time);
 		
 		// Save outputs
+		prevPret[0] = f_pretOutput[0];
+		prevPret[1] = f_pretOutput[1];
+		prevPret[2] = f_pretOutput[2]; 
+
 		torqueOutput[0] = tau[0];
 		torqueOutput[1] = tau[1];
 		torqueOutput[2] = tau[2];
 		torqueOutput[3] = tau[3];
 
+		//printf("tau output: %.5f, %.5f, %.5f, interation: %d \n", tau[0],tau[1],tau[2], tau[3], iteration);
+		
 		this->outputValue1->setData(&torqueOutput);
 		this->outputValue2->setData(&f_pretOutput);
+		this->outputValue3->setData(&iteration);
+		
 	}
 
 private:
@@ -234,7 +304,8 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 
 	// //Set up data logging
 	systems::Ramp time(pm.getExecutionManager(), 1.0);
-	systems::TupleGrouper<double, jp_type, jv_type, cp_type, cv_type, jt_type, cf_type> tg;
+  
+	systems::TupleGrouper<double, jp_type, jv_type, cp_type, cv_type, jt_type, cf_type, int> tg;
 	systems::connect(time.output, tg.template getInput<0>());
 	systems::connect(wam.jpOutput, tg.template getInput<1>());
 	systems::connect(wam.jvOutput, tg.template getInput<2>());
@@ -243,9 +314,10 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 	//systems::connect(wam.toolOrientation.output, tg.template getInput<6>());
 	systems::connect(jj.wamJTOutput, tg.template getInput<5>());
 	systems::connect(jj.wamCFPretOutput, tg.template getInput<6>());
+	systems::connect(jj.wamIterationOutput, tg.template getInput<7>());
 
 
-	typedef boost::tuple<double, jp_type, jv_type, cp_type, cv_type, jt_type, cf_type> tuple_type;
+	typedef boost::tuple<double, jp_type, jv_type, cp_type, cv_type, jt_type, cf_type, int> tuple_type;
 
 	const size_t PERIOD_MULTIPLIER = 1;
 	systems::PeriodicDataLogger<tuple_type> logger(
@@ -254,19 +326,17 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 			PERIOD_MULTIPLIER);
 
 	// Connect torque controller
-	printf("Press [Enter] to start your custom system.");
-	waitForEnter();
-
-	time.start();
-	systems::connect(tg.output, logger.input);
-	printf("Logging started.\n");
-
 	systems::connect(time.output, jj.timeInput);
  	systems::connect(wam.jpOutput, jj.wamJPInput);
  	systems::connect(wam.jvOutput, jj.wamJVInput);
 	systems::connect(wam.toolPosition.output, jj.wamCPInput);	
  	systems::connect(wam.toolVelocity.output, jj.wamCVInput);
 
+	printf("Press [Enter] to start your custom system.");
+	waitForEnter();
+	systems::connect(tg.output, logger.input);
+	time.start();
+  
 	// Track refrence
 	wam.trackReferenceSignal(jj.wamJTOutput);	
 
