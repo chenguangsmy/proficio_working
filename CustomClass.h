@@ -49,7 +49,7 @@ public:
     Output<int> wamRDTOutput; // read-time to synchronize stand-alone data and wam data
 	jp_type input_q_0;
 	cp_type input_x_0;
-	//systems::Ramp time;
+	systems::Ramp time;
 
 protected:
 	typename Output<jt_type>::Value* outputValue1; 
@@ -67,7 +67,7 @@ public:
 	 systems::Wam<DOF>& wam, const std::string& sysName = "JointControlClass") :
 		pm(pm), systems::System(sysName), wam(wam), timeInput(this),
 		wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this),
-		//time((pm.getExecutionManager(), 1.0)), 
+		time(pm.getExecutionManager(), 1.0), 
 		wamJTOutput(this, &outputValue1), 
 		wamRDTOutput(this, &outputValue2),
 		wamCFPretOutput(this, &outputValue3), 
@@ -445,7 +445,7 @@ class ControllerWarper{
     	printf("Enter function: connectForces.");
   		barrett::systems::modXYZ<cp_type> mod_axes;
 		systems::connect(wam.kinematicsBase.kinOutput, tf2jt.kinInput);
-		//systems::connect(jj.time.output, jj.timeInput);
+		systems::connect(jj.time.output, jj.timeInput);
  		systems::connect(wam.jpOutput, jj.wamJPInput);
  		systems::connect(wam.jvOutput, jj.wamJVInput);
 		systems::connect(wam.toolPosition.output, jj.wamCPInput);	
@@ -501,7 +501,7 @@ public:
 public:
 	void datalogger_connect(){
 		printf("Start connecting! \n");
-		//systems::connect(controller1.jj.time.output, tg.template getInput<0>());
+		systems::connect(controller1.jj.time.output, tg.template getInput<0>());
 		systems::connect(wam.jpOutput, tg.template getInput<1>());
 		systems::connect(wam.jvOutput, tg.template getInput<2>());
 		systems::connect(wam.toolPosition.output, tg.template getInput<3>());
@@ -513,7 +513,7 @@ public:
 	}
 	void datalogger_start(){
 		printf("Start timming! \n");
-		//controller1.jj.time.start();
+		controller1.jj.time.start();
 		printf("Connect input! \n");
 		connect(tg.output, logger.input);
 		printf("Logging started.\n");
