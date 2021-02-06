@@ -192,7 +192,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cout << " ST 1, ";
           freeMoving = true;
           sendData = false;
-          cw.setForceMet(false);
+          
           // target: XYZ-IJK-0123456789
           monkey_center[0] = task_state_data.target[0]; // here we temperarily change to a const value, for tesging
           monkey_center[1] = task_state_data.target[1];
@@ -214,12 +214,14 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 3: //ForceRamp
           // wam.idle(); //try a remove, if it stiff the wam? -cg
           cout << " ST 3, ";
+          cw.jj.setpretAmp();
 //          wamLocked = false;
           //forceThreshold = 0; //task_state_data.target[3]; //TODO: SEND FROM JUDGE MESSAGE? OR SEPARTE CONFIGURE
           //cout << "force threshold is: " << task_state_data.target[3] << endl;
           break;
         case 4: //Move
           cout << " ST 4, ";
+          cw.jj.resetpretAmp();
           cw.setForceMet(true); //decrease the impedance suddenly
           //cw.setForceMet(false);//true); //debugging 
           break;
@@ -228,6 +230,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
         case 6:
           cout << " ST 6, ";
+          cw.setForceMet(false);
           break;
         case 7:
           cout << " ST 7, " << endl;

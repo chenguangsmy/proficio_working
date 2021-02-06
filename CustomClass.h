@@ -76,7 +76,7 @@ public:
 		input_q_0(input_q_0), K_x(K_x), B_x(B_x), input_x_0(input_x_0){
 			loop_iteration = 0;
 			loop_itMax = 500*0.1; 	// freq*s
-      rampTime = 5;
+      rampTime = 2.5;
 			rdt = 0;
 		 	if_set_JImp = false; 	// 
 			if_set_Imp = false;
@@ -129,6 +129,15 @@ public:
 		return 1;
 	}
 
+	int setpretAmp(){
+		pretAmplitude_x = 6.0;
+		pretAmplitude_y = 6.0;
+	}
+
+	int resetpretAmp(){
+		pretAmplitude_x = 0.0;
+		pretAmplitude_y = 0.0;
+	}
 protected:
 	double	input_time;
 	double  input_time0;	 // give a time offset when increase
@@ -289,16 +298,16 @@ protected:
     		f_pretOutput[0] = f_pretOutput[0];
     		f_pretOutput[1] = f_pretOutput[1];
     		f_pretOutput[2] = f_pretOutput[2];
-			f_pretOutput[2] = 0.0;
+			  f_pretOutput[2] = 0.0;
 
 			// Make Preturbation unifore amplitude
-			pretAmplitude_x = 0.0;
+			//pretAmplitude_x = 0.0;
 			if (f_pretOutput[0] >= 0 ) {
 				f_pretOutput[0] = pretAmplitude_x;
 			} else if (f_pretOutput[0] < 0 ){
 				f_pretOutput[0] = -pretAmplitude_x;
 			}
-			pretAmplitude_y = 0.0;
+			//pretAmplitude_y = 0.0;
 			if (f_pretOutput[1] >= 0 ) {
 				f_pretOutput[1] = pretAmplitude_y;
 			} else if (f_pretOutput[1] < 0 ){
