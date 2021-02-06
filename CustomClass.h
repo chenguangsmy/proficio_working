@@ -76,6 +76,7 @@ public:
 		input_q_0(input_q_0), K_x(K_x), B_x(B_x), input_x_0(input_x_0){
 			loop_iteration = 0;
 			loop_itMax = 500*0.1; 	// freq*s
+      rampTime = 5;
 			rdt = 0;
 		 	if_set_JImp = false; 	// 
 			if_set_Imp = false;
@@ -123,8 +124,14 @@ public:
 		return rdt;
 	}
 
+	int update_input_time0(){
+		input_time0 = input_time;
+		return 1;
+	}
+
 protected:
 	double	input_time;
+	double  input_time0;	 // give a time offset when increase
 	double	input_iteration;
 	double 	pretAmplitude_x;
 	double 	pretAmplitude_y;
@@ -240,16 +247,16 @@ protected:
 		}
 		*/
 		// Joint impedance controller
-		if (input_time < rampTime ) {
-			tau_q = (input_time/rampTime)*K_q*(q_0 - q) - B_q*(q_dot);
+		if ((input_time-input_time0) < rampTime ) {
+			tau_q = ((input_time-input_time0)/rampTime)*K_q*(q_0 - q) - B_q*(q_dot);
 		}
 		else {
 			tau_q = K_q*(q_0 - q) - B_q*(q_dot);
 		}
 
 		// End-effector impedance controller
-		if (input_time < rampTime ) {
-			tau_x = J_x.transpose()*((input_time/rampTime)*K_x*(x_0 - x) - B_x*(x_dot)); 	
+		if ((input_time-input_time0) < rampTime ) {
+			tau_x = J_x.transpose()*(((input_time-input_time0)/rampTime)*K_x*(x_0 - x) - B_x*(x_dot)); 	
 		}
 		else {
 			tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 
@@ -428,7 +435,8 @@ class ControllerWarper{
 		}
 		else {
 			// change the K_q to a high value here
-			jj.setImpedance_inc(K_x1, B_x1);
+			jj.update_input_time0();			// initializing ramp
+			jj.setImpedance(K_x1, B_x1);
 			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x1(0,0), K_x1(1,1), K_x1(2,2));
 			//jj.setJointImpedance(K_q1); // increase impedance steadily
 			//printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q0(0,0), K_q0(1,1), K_q0(2,2), K_q0(3,3));
