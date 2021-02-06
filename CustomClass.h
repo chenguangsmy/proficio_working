@@ -65,7 +65,8 @@ public:
 	 Matrix_4x4 K_q1, Matrix_4x4 B_q1,
 	 jp_type input_q_0, cp_type input_x_0, 
 	 systems::Wam<DOF>& wam, const std::string& sysName = "JointControlClass") :
-		pm(pm), systems::System(sysName), wam(wam), wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this),
+		pm(pm), systems::System(sysName), wam(wam), timeInput(this),
+		wamJPInput(this), wamJVInput(this), wamCPInput(this), wamCVInput(this),
 		//time((pm.getExecutionManager(), 1.0)), 
 		wamJTOutput(this, &outputValue1), 
 		wamRDTOutput(this, &outputValue2),
