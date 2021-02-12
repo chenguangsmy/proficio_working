@@ -76,7 +76,7 @@ public:
 		input_q_0(input_q_0), K_x(K_x), B_x(B_x), input_x_0(input_x_0){
 			loop_iteration = 0;
 			loop_itMax = 500*0.1; 	// freq*s
-      rampTime = 2.5;
+      		rampTime = 2.5;
 			rdt = 0;
 		 	if_set_JImp = false; 	// 
 			if_set_Imp = false;
@@ -316,7 +316,7 @@ protected:
 
 			// only in x, y direction
 			// f_pretOutput[0] = 0;
-			f_pretOutput[1] = 0;
+			// f_pretOutput[1] = 0;
 		
 			f_pret[0] = f_pretOutput[0];
 			f_pret[1] = f_pretOutput[1];
