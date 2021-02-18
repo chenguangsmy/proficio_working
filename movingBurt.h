@@ -124,7 +124,7 @@ void moveToCenter(barrett::systems::Wam<DOF>& wam,
               RTMA_Module &mod)
 {
   // wiat a while until the wam movement finished. 
-  wam.moveTo(system_center);
+  //wam.moveTo(system_center);
   usleep(2000);
   cout << "Proficio reached home" << endl;
   
