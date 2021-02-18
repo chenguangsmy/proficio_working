@@ -24,7 +24,7 @@ classdef importWAM < handle
         function this = importWAM()
             % UNTITLED Construct an instance of this class
             %   Detailed explanation goes here
-            this.q0 = [-1.581,-0.035,-0.034,1.521];
+            this.q0 = [-pi/2,0,0,pi/2];
             this.W_Tranform =[0 1 0 0; 0 0 1 0; 1 0 0 0; 0 0 0 1];
                             %[1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1];
             filee = 'dataFile_notTracked/noTorquePret.csv';
@@ -35,7 +35,7 @@ classdef importWAM < handle
             
             % Post Check Point Constraint
             % Use move joint postion
-            x = [0,0.14,0.7]';
+            x = [0,0.5,0.0]';
             q = [-pi/2,-pi/4,0,pi/2];
             pos = this.get_robotSinglePos(q);
             figure;

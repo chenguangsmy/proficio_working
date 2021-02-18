@@ -59,9 +59,9 @@ public:
 		{
 			
 		// Joint stiffness
-		K_q(0,0) = 100.0;
+		K_q(0,0) = 200.0;
 		K_q(1,1) = 0.0;
-	 	K_q(2,2) = 100.0; 
+	 	K_q(2,2) = 200.0; 
 		K_q(3,3) = 0.0;
 
 		// Joint damping
@@ -69,24 +69,24 @@ public:
 
 	 	// Nominal joint space postion
 		input_q_0[0] = -1.571;
-		input_q_0[1] =  0.007; 
-		input_q_0[2] = -0.004; 
+		input_q_0[1] = -0.7854; // important to becuase moveto used q_0 for initial postion
+		input_q_0[2] =  0.0; 
 		input_q_0[3] =  1.570; 
 
 		//End-effector stiffness
-		K_x(0,0) = 0.0;//1000.0;
-		K_x(1,1) = 0.0;//1000.0;
+		K_x(0,0) = 2500.0;
+		K_x(1,1) = 2500.0;
 	 	K_x(2,2) = 0.0; 
 
 		//End-effector damping
-	 	B_x(0,0) = 0.0;//20;
-    	B_x(1,1) = 0.0;//20;
-    	B_x(1,1) = 0.0;//20;
+	 	B_x(0,0) = 20;
+    	B_x(1,1) = 20;
+    	B_x(2,2) = 0.0;
 
 		// Nominal end-effector potion	(NEED TO CHECK THIS BEFORE TESTING)
-		input_x_0[0] = -0.513;  //position: raise hand on desk
-		input_x_0[1] = 0.482;
-		input_x_0[2] = -0.002;
+		input_x_0[0] = 0.0;  //position: raise hand on desk
+		input_x_0[1] = 0.5;
+		input_x_0[2] = 0.0;
 
 		iteration_MAX = 8;
 		iteration = 0; // do not input and output here
@@ -231,22 +231,18 @@ protected:
 			f_pretOutput[2] = 0.0;
 
 			// Make Preturbation unifore amplitude
-			pretAmplitude_x = 0.0;
+			pretAmplitude_x = 6.0;
 			if (f_pretOutput[0] >= 0 ) {
 				f_pretOutput[0] = pretAmplitude_x;
 			} else if (f_pretOutput[0] < 0 ){
 				f_pretOutput[0] = -pretAmplitude_x;
 			}
-			pretAmplitude_y = 0.0;
+			pretAmplitude_y = 6.0;
 			if (f_pretOutput[1] >= 0 ) {
 				f_pretOutput[1] = pretAmplitude_y;
 			} else if (f_pretOutput[1] < 0 ){
 				f_pretOutput[1] = -pretAmplitude_y;
 			}
-
-			// only in x, y direction
-			// f_pretOutput[0] = 0;
-			f_pretOutput[1] = 0;
 		
 			f_pret[0] = f_pretOutput[0];
 			f_pret[1] = f_pretOutput[1];
