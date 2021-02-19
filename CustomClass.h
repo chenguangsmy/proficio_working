@@ -328,7 +328,7 @@ protected:
 
 
 		// Sum torque commands
-		tau = tau_q + tau_x + tau_pret;
+		tau = tau_q + tau_x;// + tau_pret;
 		// Save outputs
 		// Save outputs
 		prevPret[0] = f_pretOutput[0];

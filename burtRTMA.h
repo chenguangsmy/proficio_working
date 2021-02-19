@@ -88,6 +88,10 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   bool sendData = true;
   bool fnameInit = false;
   bool fdirInit = false;
+  int  trialCount = -1;  // incremental, with 1st trial discard. 
+  int  trialCount_MAX = 10; // every 10 trials change the stiffness
+  int  seriesCount=  0;  // every 10 trials increase 1;
+  Matrix_3x3 K_xtmp;
   cp_type cp;
   cv_type cv;
   jp_type jp;
@@ -205,6 +209,21 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
           //cw.setCenter_joint(taskJ_center);
           //cw.setCenter_endpoint(monkey_center);
+          
+          if (trialCount<trialCount_MAX) 
+          {
+            K_xtmp(0,0) = seriesCount*500;
+            K_xtmp(1,1) = seriesCount*500;
+            K_xtmp(2,2) = 0;                // always set z-stiffness to 0;
+            cw.jj.setImpedance(K_xtmp, K_xtmp*0.1);
+          }
+          else if (trialCount == trialCount_MAX)
+          {
+            trialCount = trialCount - trialCount_MAX;
+            seriesCount++;
+          }
+          printf("trial:%02d,     seriesCount:%02d", trialCount, seriesCount);
+          trialCount++;
           break;
         case 2: // Present
           cout << " ST 2, ";
@@ -222,7 +241,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 4: //Move
           cout << " ST 4, ";
           cw.jj.resetpretAmp();
-          cw.setForceMet(true); //decrease the impedance suddenly
+//cw.setForceMet(true); //decrease the impedance suddenly
           //cw.setForceMet(false);//true); //debugging 
           break;
         case 5: // hold
@@ -230,7 +249,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
         case 6:
           cout << " ST 6, ";
-          cw.setForceMet(false);
+//cw.setForceMet(false);
           break;
         case 7:
           cout << " ST 7, " << endl;
