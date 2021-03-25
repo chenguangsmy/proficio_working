@@ -50,12 +50,15 @@ public:
 	jp_type input_q_0;
 	cp_type input_x_0;
 	systems::Ramp time;
+	Output<int>	wamTaskState;
 
 protected:
 	typename Output<jt_type>::Value* outputValue1; 
 	typename Output<int>::Value* outputValue2;
 	typename Output<cf_type>::Value* outputValue3; 	// should be CFPretOutput 
 	typename Output<int>::Value* outputValue4; 		// should be IterationOutput
+	typename Output<int>::Value* outputValue5; 		// should be holeOutput
+	
 	systems::Wam<DOF>& wam;
 	ProductManager& pm;
 	
@@ -72,6 +75,8 @@ public:
 		wamRDTOutput(this, &outputValue2),
 		wamCFPretOutput(this, &outputValue3), 
 		wamIterationOutput(this, &outputValue4),
+		wamTaskState(this, &outputValue5),
+
 		K_q(K_q), B_q(B_q), K_q1(K_q1), B_q1(B_q1),
 		input_q_0(input_q_0), K_x(K_x), B_x(B_x), input_x_0(input_x_0){
 			loop_iteration = 0;
@@ -83,6 +88,7 @@ public:
 			K_qQuantum = (K_q1 - K_q0)/double(loop_itMax);
 			iteration_MAX = 8;
 			iteration = 0;
+			task_state = 0;
       		//printf("K_qQ is: %.3f, %.3f, %.3f, %.3f\n", K_qQuantum(0,0), K_qQuantum(1,1), K_qQuantum(2,2), K_qQuantum(3,3));
 		}
 
@@ -90,7 +96,11 @@ public:
 
 	void setImpedance(Matrix_3x3 K_x1, Matrix_3x3 B_x1){ 
 		K_x = K_x1;
-		B_x = B_x1;
+		B_x = B_x1; 
+	}
+
+	void setTaskState(int ts){
+		task_state = ts;
 	}
 
 	void setJointImpedance(Matrix_4x4 K_q1, Matrix_3x3 B_q1){ //higher one, ST_HOLD
@@ -149,6 +159,7 @@ protected:
 	int 	iteration_MAX;
 	int 	loop_iteration;  // these are my code different from James
 	int		loop_itMax;
+	int		task_state;
 	cf_type input_prevPret;
 	cf_type prevPret;
 	jp_type input_q;
@@ -328,7 +339,7 @@ protected:
 
 
 		// Sum torque commands
-		tau = tau_q + tau_x;// + tau_pret;
+		tau = tau_q + tau_x + tau_pret;
 		// Save outputs
 		// Save outputs
 		prevPret[0] = f_pretOutput[0];
@@ -347,6 +358,7 @@ protected:
 		this->outputValue2->setData(&rdt);
 		this->outputValue3->setData(&f_pretOutput);
 		this->outputValue4->setData(&iteration);
+		this->outputValue5->setData(&task_state);
 	}
 
 private:
@@ -494,8 +506,8 @@ public:
   	ProductManager& pm;
 	systems::Wam<DOF>& wam;
 	//systems::Ramp time;
-	systems::TupleGrouper<double, jp_type, jv_type, cp_type, cv_type, jt_type, cf_type, int, int> tg;
-	typedef boost::tuple<double, jp_type, jv_type, cp_type, cv_type, jt_type, cf_type, int, int> tuple_type;
+	systems::TupleGrouper<double, jp_type, jv_type, cp_type, cv_type, jt_type, cf_type, int, int, int> tg;
+	typedef boost::tuple<double, jp_type, jv_type, cp_type, cv_type, jt_type, cf_type, int, int, int> tuple_type;
 	const size_t PERIOD_MULTIPLIER;
 	char *tmpFile;
 	const char* tmpFileName;
@@ -527,6 +539,7 @@ public:
 		systems::connect(controller1.jj.wamCFPretOutput, tg.template getInput<6>());
 		systems::connect(controller1.jj.wamIterationOutput, tg.template getInput<7>());
 		systems::connect(controller1.jj.wamRDTOutput, tg.template getInput<8>());
+		systems::connect(controller1.jj.wamTaskState, tg.template getInput<9>());
 	}
 	void datalogger_start(){
 		printf("Start timming! \n");
