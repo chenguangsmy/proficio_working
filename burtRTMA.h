@@ -191,6 +191,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       {
         case 1:   // set joint center and endpoint center
           cout << " ST 1, ";
+          barrett::btsleep(0.2);; // the allocated time is to make sure the Netbox have calibrated the net force. 
           freeMoving = true;
           sendData = false;
           // target: XYZ-IJK-0123456789
@@ -216,6 +217,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           // wam.idle(); //try a remove, if it stiff the wam? -cg
           cout << " ST 3, ";
           cw.jj.setpretAmp();
+          cw.jj.setPertMag(20); 
+          cw.jj.resetpretFlip(true);
 //          wamLocked = false;
           //forceThreshold = 0; //task_state_data.target[3]; //TODO: SEND FROM JUDGE MESSAGE? OR SEPARTE CONFIGURE
           //cout << "force threshold is: " << task_state_data.target[3] << endl;
@@ -223,6 +226,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 4: //Move
           cout << " ST 4, ";
           cw.setForceMet(true); //decrease the impedance suddenly
+          cw.jj.setPertMag(5); 
+          cw.jj.resetpretFlip(true);
           //cw.setForceMet(false);//true); //debugging 
           break;
         case 5: // hold

@@ -15,6 +15,8 @@
 #include <boost/tuple/tuple.hpp>
 #include <barrett/log.h>
 
+#define IS_PULSE_PERT 1
+
 typedef typename ::barrett::math::Matrix<4,4> Matrix_4x4; //self-def matrix type
 typedef typename ::barrett::math::Matrix<4,1> Matrix_4x1; //self-def matrix type
 typedef typename ::barrett::math::Matrix<2,1> Matrix_2x1; //self-def matrix type
@@ -148,6 +150,15 @@ public:
 		pretAmplitude_x = 0.0;
 		pretAmplitude_y = 0.0;
 	}
+
+	int resetpretFlip(bool flip){
+		pert_flip = flip; // 0 for no pert, 1 for pert
+	}
+
+	int setPertMag(double mag){
+		pert_mag = mag;
+		return 1;
+	}
 protected:
 	double	input_time;
 	double  input_time0;	 // give a time offset when increase
@@ -171,9 +182,12 @@ protected:
 	jt_type force2torqueOutput;
 	cf_type f_pretOutput;
 	double output_iteration;
+    double pert_mag; //impulse-perturbation magnitude (Newton)
 	int 	rdt; 
 	bool 	if_set_JImp;
 	bool 	if_set_Imp;
+	bool    pert_flip;
+
 	// Initialize variables 
 	Matrix_4x4 K_q;
 	Matrix_4x4 B_q;
@@ -291,6 +305,48 @@ protected:
 		// printf("K_x are: %.3f, %.3f, %.3f \n", K_x(0,0), K_x(1,1), K_x(2,2));
 */
 // Less than iteration_MAX iterations since last update
+		if (IS_PULSE_PERT) {
+      //printf("-");
+			//f_pretOutput.setRandom();
+      //printf("Pert_flip: %s\n", pert_flip ? "true" : "false");
+		if(pert_flip == true)
+			{
+				iteration = 0;
+				resetpretFlip(false);
+			}
+		iteration++;
+      //  printf("Pert_flip: %s\n", pert_flip ? "true" : "false");
+        
+      	if (iteration <= 1000)
+      		{
+       		f_pretOutput[0] = 0;
+        	f_pretOutput[1] = 0;
+       		f_pretOutput[2] = 0;
+      		}
+		else if (iteration < 1000 + 75) // as a fix start time for 2.85s.  // have a try by doing this
+			{
+     		//printf("Start the force impulse perturbation! \n");
+				f_pretOutput[0] = 0;
+				f_pretOutput[1] = pert_mag;
+				f_pretOutput[2] = 0;
+      		//  pert_on = 1;
+			}
+		else		// The impulse should last 150 ms
+			{
+        		//pert_on = 0;
+      			//  printf("End of the force impulse perturbation! \n");
+				f_pretOutput[0] = 0;
+				f_pretOutput[1] = 0;
+				f_pretOutput[2] = 0;
+			}
+      	
+
+			f_pret[0] = f_pretOutput[0];
+			f_pret[1] = f_pretOutput[1];
+			f_pret[2] = f_pretOutput[2];
+
+		}
+		else{
 		if (iteration < iteration_MAX){
 			iteration++;
 			f_pretOutput[0] = prevPret[0];
@@ -309,7 +365,7 @@ protected:
     		f_pretOutput[0] = f_pretOutput[0];
     		f_pretOutput[1] = f_pretOutput[1];
     		f_pretOutput[2] = f_pretOutput[2];
-			  f_pretOutput[2] = 0.0;
+			f_pretOutput[2] = 0.0;
 
 			// Make Preturbation unifore amplitude
 			//pretAmplitude_x = 0.0;
@@ -333,6 +389,7 @@ protected:
 			f_pret[1] = f_pretOutput[1];
 			f_pret[2] = f_pretOutput[2]; 
 
+		}
 		}
 
 		tau_pret = J_x.transpose()*(f_pret);
@@ -406,6 +463,7 @@ class ControllerWarper{
 	printf("Move to joint controller position, in CustomClass:: Controller Wrapper.");
 	wam.moveTo(jj.input_q_0);
 	barrett::btsleep(5.0);
+  //pert_on = 0;
 	}
 
 	~ControllerWarper(){}
