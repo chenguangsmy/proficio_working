@@ -96,6 +96,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   jv_type jv;
   jt_type jt;
   double taskJ_center[4]; // task send joint position
+  int     trial_count = 0;    // as a marker for counting which trial perturb
   cp_type monkey_center(system_center);
   cp_type target;
 	CMessage Consumer_M;
@@ -191,17 +192,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       freeMoving = false;
       sendData  = true;
       cw.jj.setTaskState(task_state_data.id);
-      if (1)
-      {
-          ifPert = true;
-          pert_time = 0; // TODO: randomize a time between 1s and 7s
-      
-      }
-      else 
-      {
-        ifPert = false; 
-        pert_time = -1; // never perturbed 
-      }
       switch(task_state_data.id)
       {
         case 1:   // set joint center and endpoint center
@@ -223,6 +213,22 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
           //cw.setCenter_joint(taskJ_center);
           //cw.setCenter_endpoint(monkey_center);
+          {
+          if (trial_count % 2 == 0)
+          {
+            printf("Probable perturb this time, ");
+            ifPert = true;
+            pert_time = rand() % (500*6) + 500; // TODO: randomize a time between 1s and 7s, 500Hz/s
+            printf("randTime: %d", pert_time);
+          }
+          else 
+          {
+            printf("Not perturb this time");
+            ifPert = false; 
+            pert_time = -1; // never perturbed 
+          }
+          trial_count ++; 
+          }
           break;
         case 2: // Present
         
@@ -235,8 +241,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cout << " ST 3, ";
           cw.jj.setpretAmp();
           cw.jj.setPertMag(pert_big); 
-          cw.jj.resetpretFlip(true);
-//          wamLocked = false;
+          cw.jj.resetpretFlip(ifPert);
+          cw.jj.setPertTime(pert_time);  // randomize a time
+          //wamLocked = false;
           //forceThreshold = 0; //task_state_data.target[3]; //TODO: SEND FROM JUDGE MESSAGE? OR SEPARTE CONFIGURE
           //cout << "force threshold is: " << task_state_data.target[3] << endl;
           break;
@@ -244,7 +251,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cout << " ST 4, ";
           cw.setForceMet(true); //decrease the impedance suddenly
           cw.jj.setPertMag(pert_small); 
-          cw.jj.resetpretFlip(true);
+          //cw.jj.resetpretFlip(true);
           //cw.setForceMet(false);//true); //debugging 
           break;
         case 5: // hold
