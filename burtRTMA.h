@@ -103,7 +103,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   std::string file_dir;
   char file_name[20];
   char subject_name[TAG_LENGTH];
-  int session_num;
+  int session_num; 
+  double pert_small = 5; //5N
+  double pert_big = 20;   //20N
 
   while (true)  // Allow the user to stop and resume with pendant buttons
   {
@@ -203,6 +205,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           taskJ_center[1] = task_state_data.target[9];
           taskJ_center[2] = task_state_data.target[10];
           taskJ_center[3] = task_state_data.target[11];
+          pert_small = -pert_small;
+          pert_big = -pert_big;
           //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
           //cw.setCenter_joint(taskJ_center);
           //cw.setCenter_endpoint(monkey_center);
@@ -217,7 +221,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           // wam.idle(); //try a remove, if it stiff the wam? -cg
           cout << " ST 3, ";
           cw.jj.setpretAmp();
-          cw.jj.setPertMag(20); 
+          cw.jj.setPertMag(pert_big); 
           cw.jj.resetpretFlip(true);
 //          wamLocked = false;
           //forceThreshold = 0; //task_state_data.target[3]; //TODO: SEND FROM JUDGE MESSAGE? OR SEPARTE CONFIGURE
@@ -226,7 +230,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 4: //Move
           cout << " ST 4, ";
           cw.setForceMet(true); //decrease the impedance suddenly
-          cw.jj.setPertMag(5); 
+          cw.jj.setPertMag(pert_small); 
           cw.jj.resetpretFlip(true);
           //cw.setForceMet(false);//true); //debugging 
           break;
