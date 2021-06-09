@@ -159,6 +159,11 @@ public:
 		pert_mag = mag;
 		return 1;
 	}
+
+	int setPertTime(int time){
+		pert_time = time;
+		return 1;
+	}
 protected:
 	double	input_time;
 	double  input_time0;	 // give a time offset when increase
@@ -186,7 +191,8 @@ protected:
 	int 	rdt; 
 	bool 	if_set_JImp;
 	bool 	if_set_Imp;
-	bool    pert_flip;
+	bool    pert_flip; 
+	int 	pert_time; // randomize a time in the burtRTMA.h to cound down perturbation.
 
 	// Initialize variables 
 	Matrix_4x4 K_q;
@@ -311,7 +317,7 @@ protected:
       //printf("Pert_flip: %s\n", pert_flip ? "true" : "false");
 		if(pert_flip == true)
 			{
-				iteration = 0;
+				iteration = 0; // start to count
 				resetpretFlip(false);
 			}
 		iteration++;

@@ -88,6 +88,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   bool sendData = true;
   bool fnameInit = false;
   bool fdirInit = false;
+  bool ifPert = false;    // only perturb at certain trials
+  int pert_time = 0;
   cp_type cp;
   cv_type cv;
   jp_type jp;
@@ -189,6 +191,17 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       freeMoving = false;
       sendData  = true;
       cw.jj.setTaskState(task_state_data.id);
+      if (1)
+      {
+          ifPert = true;
+          pert_time = 0; // TODO: randomize a time between 1s and 7s
+      
+      }
+      else 
+      {
+        ifPert = false; 
+        pert_time = -1; // never perturbed 
+      }
       switch(task_state_data.id)
       {
         case 1:   // set joint center and endpoint center
