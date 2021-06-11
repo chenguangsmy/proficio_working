@@ -325,12 +325,22 @@ protected:
       		}
         else if(iteration == 1000)
         {
-			f_pretOutput[1] = pert_mag/2;
+			f_pretOutput[1] = pert_mag/3; // /2;
 
         }
-       	else if(iteration == 1000+75)
+		else if(iteration == (1000+1))
+        {
+			f_pretOutput[1] = pert_mag*2/3; ///2;
+
+        }
+       	else if(iteration == (1000+75))
        	{
-			f_pretOutput[1] = pert_mag/2;
+			f_pretOutput[1] = pert_mag*2/3; ///2;
+
+       	}
+		else if(iteration == (1000+76))
+       	{
+			f_pretOutput[1] = pert_mag/3;  // /2;
 
        	}
 		else if (iteration < 1000 + 75) // as a fix start time for 2.85s.  // have a try by doing this
