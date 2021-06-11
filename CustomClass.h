@@ -317,18 +317,26 @@ protected:
 		iteration++;
       //  printf("Pert_flip: %s\n", pert_flip ? "true" : "false");
         
-      	if (iteration <= 1000)
+      	if (iteration < 1000)
       		{
        		f_pretOutput[0] = 0;
         	f_pretOutput[1] = 0;
        		f_pretOutput[2] = 0;
       		}
+        else if(iteration == 1000)
+        {
+			f_pretOutput[1] = pert_mag/2;
+
+        }
+       	else if(iteration == 1000+75)
+       	{
+			f_pretOutput[1] = pert_mag/2;
+
+       	}
 		else if (iteration < 1000 + 75) // as a fix start time for 2.85s.  // have a try by doing this
 			{
      		//printf("Start the force impulse perturbation! \n");
-				f_pretOutput[0] = 0;
 				f_pretOutput[1] = pert_mag;
-				f_pretOutput[2] = 0;
       		//  pert_on = 1;
 			}
 		else		// The impulse should last 150 ms
