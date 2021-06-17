@@ -329,7 +329,7 @@ protected:
         	f_pretOutput[1] = 0;
        		f_pretOutput[2] = 0;
       		}
-		else if (iteration < pert_time + 75) // as a fix start time for 2.85s.  // have a try by doing this
+		else if (iteration < pert_time + 150) // as a fix start time for 2.85s.  // have a try by doing this
 			{
      		//printf("Start the force impulse perturbation! \n");
 				f_pretOutput[0] = 0;

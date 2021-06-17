@@ -108,7 +108,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   char subject_name[TAG_LENGTH];
   int session_num; 
   double pert_small = 5; //5N
-  double pert_big = 20;   //20N
+  double pert_big = 25;   //20N
 
   while (true)  // Allow the user to stop and resume with pendant buttons
   {
