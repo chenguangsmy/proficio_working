@@ -8,6 +8,7 @@
 #include <barrett/standard_main_function.h>
 #include <barrett/math/matrix.h> 
 #include <math.h>
+#include "movingBurt.h"
 
 // Required to run logger
 #include <cstdlib>  // For mkstmp()
@@ -197,6 +198,12 @@ public:
 		if_release = ifr;
 		return 1;
 	}
+
+	bool getPertFinish(){
+		return if_pert_finish;
+	}
+
+
 protected:
 	double	input_time;
 	double  input_time0;	 // give a time offset when increase
@@ -351,14 +358,14 @@ protected:
 
 		if (iteration == pert_time + 500) {
 			if_pert_finish = true;
-      printf("Finished one perturbation! \n");
+      		printf("Finished one perturbation! \n");
 		}
       	if (if_pert_finish && if_release) { // seems not good, I can set a flag representing "pert_finished"
-			  // at the end of perturbation effect go away,
-			  // want to set the 'release', and disable further perturbations
-			  updateImpedanceWait();  // set release
-        printf("release here!");
-        if_release = false;
+			// at the end of perturbation effect go away,
+			// want to set the 'release', and disable further perturbations
+			// updateImpedanceWait();  // set release
+        	printf("release here!");
+        	if_release = false;
 			  disablePert();
 		  }
 

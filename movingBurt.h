@@ -185,4 +185,25 @@ void moveAStep(barrett::systems::Wam<DOF>& wam,
   //return NULL;
 }
 
+/*****************************************************************************************
+ * readyToMove
+ * 
+ * A sign showing that the perturbation is finished and robot can move elsewhere
+ ****************************************************************************************/
+template <size_t DOF>
+void readyToMove(barrett::systems::Wam<DOF>& wam,
+              cp_type system_center,
+              RTMA_Module &mod)
+{
+  // send the move complete message immediately 
+  cout << "Finish perturbation, boadcasting ready to move" << endl;
+  
+  // Send Denso home message
+  MDF_DENSO_MOVE_COMPLETE dmc;
+  CMessage MDMC( MT_DENSO_MOVE_COMPLETE );
+  MDMC.SetData( &dmc, sizeof(dmc) );
+  mod.SendMessage( &MDMC );
+}
+
+
 #endif

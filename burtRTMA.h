@@ -107,6 +107,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   char file_name[20];
   char subject_name[TAG_LENGTH];
   int session_num; 
+  bool readyToMove_nosent;
   double pert_small = 5; //5N
   double pert_big = 25;   //20N
 
@@ -234,7 +235,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           pert_time = int(double(task_state_data.pert_time) * 500.0); // to double
           printf("task_state_data.ifpert is: %d, pert_time: %d\n", ifPert, pert_time);
           cw.jj.setPertTime(pert_time);
-
+          readyToMove_nosent = true;
           break;
         case 2: // Present
         
@@ -255,8 +256,10 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
         case 4: //Move
           cout << " ST 4, ";  
+          readyToMove_nosent = false;
           if (ifPert){
             cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
+            cw.jj.updateImpedanceWait();
           }
           else {
             cw.setForceMet(true);         //save the release in the buffer
@@ -351,10 +354,16 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         }
     }
     //if (yDirectionError) { /*cout << "Y direction Error" << endl;*/ }
+  if (cw.jj.getPertFinish() && readyToMove_nosent){ // finished the perturbation 
+    //printf("Test finished, ready to move!");
+    readyToMove(wam, monkey_center, mod);
+    readyToMove_nosent = false; //sent
+  }
   }
   if (fnameInit && fdirInit){
         fname_rtma = file_dir + '/' + file_name;
         cout << "fname should be" << fname_rtma << endl;
         fname_init = true;
   }
+
 }
