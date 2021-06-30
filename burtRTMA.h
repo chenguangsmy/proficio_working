@@ -231,8 +231,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           }*/
           //printf("task_state_data.ifpert is: %d", task_state_data.ifpert);
           ifPert = int(task_state_data.ifpert) == 0 ? false : true;
-          pert_time = double(task_state_data.pert_time) * 500.0; // to double
-          printf("task_state_data.ifpert is: %d, pert_time: %03.2f\n", ifPert, pert_time);
+          pert_time = int(double(task_state_data.pert_time) * 500.0); // to double
+          printf("task_state_data.ifpert is: %d, pert_time: %d\n", ifPert, pert_time);
           cw.jj.setPertTime(pert_time);
 
           break;
@@ -245,19 +245,24 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 3: //ForceRamp
           // wam.idle(); //try a remove, if it stiff the wam? -cg
           cout << " ST 3, ";
-          cw.jj.setpretAmp();
-          cw.jj.setPertMag(pert_big); 
-          cw.jj.disableRelease();
+          if (ifPert){
+            cw.jj.setpretAmp();
+            cw.jj.setPertMag(pert_big); 
+          }
           //wamLocked = false;
           //forceThreshold = 0; //task_state_data.target[3]; //TODO: SEND FROM JUDGE MESSAGE? OR SEPARTE CONFIGURE
           //cout << "force threshold is: " << task_state_data.target[3] << endl;
           break;
         case 4: //Move
-          cout << " ST 4, ";
-          cw.jj.enableRelease();
-          //cw.setForceMet(true); //decrease the impedance suddenly 
+          cout << " ST 4, ";  
+          if (ifPert){
+            cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
+          }
+          else {
+            cw.setForceMet(true);         //save the release in the buffer
+            cw.jj.updateImpedanceWait();  // immediate release
+          }
           //cw.jj.setPertMag(pert_small); 
-          cw.jj.disablePert(); // it will hurt people if pert still exist!
           //cw.jj.setPertTime(pert_time);  // randomize a time
           //cw.setForceMet(false);//true); //debugging 
           break;
@@ -270,6 +275,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 7:
           cout << " ST 7, " << endl;
           cw.setForceMet(false);
+          cw.jj.disablePertCount(); // avoid perturbation at this time
           cw.jj.resetpretAmp();
           freeMoving = true;
           break;
@@ -333,14 +339,15 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 
     else if(Consumer_M.msg_type == MT_FORCE_FEEDBACK)
     {
+      // Make the perturb start to count when force is at threshold, if force outof threshold, recount
         //printf("MT_FORCE_FEEDBACK!\n");
         MDF_FORCE_FEEDBACK frc_fb; 
         Consumer_M.GetData(&frc_fb);
         if (frc_fb.force_bias > frc_fb.range[0] && frc_fb.force_bias < frc_fb.range[1] && ifPert) {
-            cw.jj.enablePert();
+          cw.jj.enablePertCount();
         }
         else {
-          cw.jj.disablePert();
+          cw.jj.disablePertCount();
         }
     }
     //if (yDirectionError) { /*cout << "Y direction Error" << endl;*/ }

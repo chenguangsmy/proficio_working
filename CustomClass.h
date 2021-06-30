@@ -92,7 +92,6 @@ public:
 			iteration = 0;
 			task_state = 0;
 			pert_enable = false;
-			release_enable = false;
       		//printf("K_qQ is: %.3f, %.3f, %.3f, %.3f\n", K_qQuantum(0,0), K_qQuantum(1,1), K_qQuantum(2,2), K_qQuantum(3,3));
 		}
 
@@ -109,6 +108,7 @@ public:
 	}
 
 	void updateImpedanceWait(){ 
+    //	printf("release now! \n");
 		K_x = K_x0;
 		B_x = B_x0; 
 	}
@@ -169,17 +169,19 @@ public:
 
 	int enablePert(){
 		pert_enable = true;
-		release_enable = false;
 	}
 	int disablePert(){
+    if (~atpert){ // to insure the perturb is not going to disrupted
 		pert_enable = false;
+    }
+	}
+	int enablePertCount(){
+		pert_count_enable = true;
+	}
+	int disablePertCount(){
+		pert_count_enable = false;
+		if_pert_finish = false;
 		iteration = 0;
-	}
-	int enableRelease(){
-		release_enable = true;
-	}
-	int disableRelease(){
-		release_enable = false; 
 	}
 	int setPertMag(double mag){
 		pert_mag = mag;
@@ -188,6 +190,11 @@ public:
 
 	int setPertTime(int time){
 		pert_time = time;
+		return 1;
+	}
+
+	int setIfRelease(bool ifr){
+		if_release = ifr;
 		return 1;
 	}
 protected:
@@ -219,8 +226,12 @@ protected:
 	bool 	if_set_Imp;
 	bool    pert_flip; 
 	bool 	pert_enable;
+	bool    pert_count_enable;
+    bool  	atpert; 
+	bool	if_release;
+	bool  	if_pert_finish;
 	int 	pert_time; // randomize a time in the burtRTMA.h to cound down perturbation.
-	bool	release_enable; 
+
 	// Initialize variables 
 	Matrix_4x4 K_q;
 	Matrix_4x4 B_q;
@@ -298,23 +309,6 @@ protected:
 		J_tot.block(0,0,6,4) = wam.getToolJacobian(); // Entire 6D Jacobian
 		J_x.block(0,0,3,4) = J_tot.block(0,0,3,4); // 3D Translational Jacobian
 
-		// Updating K_q incrementally
-		/*if (if_set_JImp){// slowly ramp the impedance
-			loop_iteration++;
-			K_q = K_q + K_qQuantum;
-			B_q = B_q + B_qQuantum;
-		}
-		if (if_set_Imp){// ramp the endpoint impedance
-			loop_iteration++;
-			K_x = K_x + K_xQuantum;
-			B_x = B_x + B_xQuantum;
-		}
-		if (loop_iteration >= loop_itMax){
-			loop_iteration = 0;
-			if_set_Imp = false;
-			if_set_JImp = false;
-		}
-		*/
 		// Joint impedance controller
 		if ((input_time-input_time0) < rampTime ) {
 			tau_q = ((input_time-input_time0)/rampTime)*K_q*(q_0 - q) - B_q*(q_dot);
@@ -331,54 +325,40 @@ protected:
 			tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 
 		}
 
-		//printf("K_q is: %.3f, %.3f, %.3f, %.3f\n", K_q(0,0), K_q(1,1), K_q(2,2), K_q(3,3));
-		//printf("K_x is: %.3f, %.3f, %.3f; B_x is: %.3f, %.3f, %.3f \n", K_x(0,0), K_x(1,1), K_x(2,2), B_x(0,0), B_x(1,1), B_x(2,2));
 		// Control Law Implamentation
-/*
-		// End-effector impedance controller
-		tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 	
-		// printf("K_x are: %.3f, %.3f, %.3f \n", K_x(0,0), K_x(1,1), K_x(2,2));
-*/
-// Less than iteration_MAX iterations since last update
+
+		// iteration_MAX - stochastic perturbation
 		if (IS_PULSE_PERT) { // inpulse perturbation here
-      //printf("-");
-			//f_pretOutput.setRandom();
-      //printf("Pert_flip: %s\n", pert_flip ? "true" : "false");
-		/*if(pert_flip == true)
-			{
-				iteration = 0; // start to count
-				resetpretFlip(false);
-			}*/
-		if (pert_enable){
-			iteration++;
-		}
-      //  printf("Pert_flip: %s\n", pert_flip ? "true" : "false");
-        
-      	if ((iteration <= pert_time) || (iteration >= pert_time + 150))
-      		{
-       		f_pretOutput[0] = 0;
-        	f_pretOutput[1] = 0;
-       		f_pretOutput[2] = 0;
-      		}
-		//else if (iteration < pert_time + 150) // as a fix start time for 2.85s.  // have a try by doing this
-		else // as a fix start time for 2.85s.  // have a try by doing this	
-			{
-     		//printf("Start the force impulse perturbation! \n");
-				f_pretOutput[0] = 0;
-				f_pretOutput[1] = pert_mag;
-				f_pretOutput[2] = 0;
-      		//  pert_on = 1;
+
+			if (pert_count_enable || atpert){ 
+				// if starting count, or already perturb the first pulse:
+				iteration++;
 			}
-		/*else		// The impulse should last 150 ms
-			{
-        		//pert_on = 0;
-      			//  printf("End of the force impulse perturbation! \n");
-				f_pretOutput[0] = 0;
-				f_pretOutput[1] = 0;
-				f_pretOutput[2] = 0;
-			}*/
-      	if ((iteration > (pert_time + 500)) && release_enable){
-			  updateImpedanceWait();
+        
+      		if ((iteration <= pert_time) || (iteration >= pert_time + 150)){ // no pulse
+       			f_pretOutput[0] = 0;
+        		f_pretOutput[1] = 0;
+       			f_pretOutput[2] = 0;
+            	atpert = false;
+      		}
+			else { 	// halve pulse
+		    	f_pretOutput[0] = 0;
+				f_pretOutput[1] = pert_mag;
+				f_pretOutput[2] = 0; 
+            	atpert = true;
+      		        
+			}
+
+		if (iteration == pert_time + 500) {
+			if_pert_finish = true;
+      printf("Finished one perturbation! \n");
+		}
+      	if (if_pert_finish && if_release) { // seems not good, I can set a flag representing "pert_finished"
+			  // at the end of perturbation effect go away,
+			  // want to set the 'release', and disable further perturbations
+			  updateImpedanceWait();  // set release
+        printf("release here!");
+        if_release = false;
 			  disablePert();
 		  }
 
@@ -549,6 +529,7 @@ class ControllerWarper{
 		if (wasMet){
 			// change the K_q to a low value here
 			jj.setImpedanceWait(K_x0, B_x0);
+			jj.setIfRelease(true);
 			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x0(0,0), K_x0(1,1), K_x0(2,2));
 			//jj.setJointImpedance(K_q0); // decrease impedance suddenly
 			//printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q1(0,0), K_q1(1,1), K_q1(2,2), K_q1(3,3));
@@ -557,6 +538,7 @@ class ControllerWarper{
 			// change the K_q to a high value here
 			jj.update_input_time0();			// initializing ramp
 			jj.setImpedance(K_x1, B_x1);
+			jj.setIfRelease(false);
 			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x1(0,0), K_x1(1,1), K_x1(2,2));
 			//jj.setJointImpedance(K_q1); // increase impedance steadily
 			//printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q0(0,0), K_q0(1,1), K_q0(2,2), K_q0(3,3));
