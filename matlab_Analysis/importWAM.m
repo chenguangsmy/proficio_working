@@ -27,7 +27,7 @@ classdef importWAM < handle
             this.q0 = [-pi/2,0,0,pi/2];
             this.W_Tranform =[0 1 0 0; 0 0 1 0; 1 0 0 0; 0 0 0 1];
                             %[1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1];
-            filee = 'dataFile_notTracked/noTorquePret.csv';
+            filee = 'dataFile_notTracked/KingKongWAM01898.csv';
             this.importWAMData(filee);
 %             check_stiffness(this);
 %             import_WAM_model(this);
