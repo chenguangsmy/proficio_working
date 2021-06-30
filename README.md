@@ -64,7 +64,7 @@ This project need to be refined later.
 $ git clone https://github.com/chenguangsmy/proficio_working.git
 
 ## location on cleave.mbp: 
-`/Users/cleave/Documents/proj/BallisticReleaseTaskCode/proficio_working`
+`/Users/cleave/Documents/projPittt/RTMA.BallisticRelease/proficio_working`
 
 ## location on cleave.aln:
 `/home/cleave/proj.prac/proficio_working`
@@ -74,3 +74,10 @@ $ git clone https://github.com/chenguangsmy/proficio_working.git
 * RTMA task config: `rg2/config/Wam.2dDebug.KingKong/TrialStatus.conf`, sending target code into `burtRTMA.h`
 * RTMA task config: `rg2/config/Wam.2dDebug.KingKong/XM.target_simple.config`, sending target `burtRTMA.h`
     * This item may conflict with the `XM.target_simple.config`, I need to check the `executive.m` file to have a fine look. 
+
+# recent logic about perturbation and release (2021-06-30): 
+1. GatingForceJudge send force message. Depending on the force, the robot begin to start the perturbation. 
+2. Perturbation works only on `wam_2dBallistic` module, whereas whether release work on `GatingForceJudge` module. 
+3. For the confliction on the `task_id`, I give enough time in the movement period, and let `wam_2dBallistic` release after the perturbation is totally finished, even though at which time the release signal could passed for hundreds of milliseconds.  
+
+This would cause the task state and the perturbation signal are hard to align, then I need to chagne it. 
