@@ -123,11 +123,11 @@ void moveToCenter(barrett::systems::Wam<DOF>& wam,
               cp_type system_center,
               RTMA_Module &mod)
 {
-  /* //-cg debugging, 2020-12-28
-  wam.moveTo(system_center);
+  // wiat a while until the wam movement finished. 
+  //wam.moveTo(system_center);
   usleep(2000);
   cout << "Proficio reached home" << endl;
-  */
+  
   // Send Denso home message
   MDF_DENSO_MOVE_COMPLETE dmc;
   CMessage MDMC( MT_DENSO_MOVE_COMPLETE );

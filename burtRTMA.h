@@ -7,12 +7,10 @@
  * 
  * movetoCenter -> moves the burt to a predefined center postion
  * 
- * moveAstep -> moves the burt one step toward a position
- * 
  * Author(s): Ivana Stevens 2019, Chenguang Z. 2020
  * 
  */
- 
+
 #include "/home/robot/src/Proficio_Systems/magnitude.h" //...do we use these files?
 #include "/home/robot/src/Proficio_Systems/normalize.h"
 #include "/home/robot/rg2/include/RTMA_config.h"
@@ -67,17 +65,20 @@ BARRETT_UNITS_TYPEDEFS(6);
 //extern bool yDirectionError;
 extern bool forceMet; //thresholdMet;
 //extern double forceThreshold;
-
+extern std::string fname_rtma;
+extern bool fname_init; 
 
 /**
  * Thread funtion to handle messages from RTMA 
  */
+// replace DOF with 4, try
 template <size_t DOF>
 void respondToRTMA(barrett::systems::Wam<DOF>& wam,
               cp_type system_center,
               RTMA_Module &mod,
               //HapticsDemo<DOF> &ball)
-              ControllerWarper<DOF> &cw)
+              ControllerWarper<DOF> &cw,
+              LoggerClass<DOF> &lg)
 { 
   cf_type cforce;
 //  bool wamLocked = false; //.. this could be a garbage code -cg.
@@ -85,16 +86,29 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   
   bool freeMoving = false; //TODO: THIS SHOULD BE FALSE
   bool sendData = true;
+  bool fnameInit = false;
+  bool fdirInit = false;
+  bool ifPert = false;    // only perturb at certain trials
+  int pert_time = 0;
   cp_type cp;
   cv_type cv;
   jp_type jp;
   jv_type jv;
   jt_type jt;
-  //cp_type monkey_center(0.350, -0.120, 0.250);
+  double taskJ_center[4]; // task send joint position
+  int     trial_count = 0;    // as a marker for counting which trial perturb
   cp_type monkey_center(system_center);
   cp_type target;
-
 	CMessage Consumer_M;
+
+  // variables for save filename 
+  char data_dir[MAX_DATA_DIR_LEN];
+  std::string file_dir;
+  char file_name[20];
+  char subject_name[TAG_LENGTH];
+  int session_num; 
+  double pert_small = 5; //5N
+  double pert_big = 25;   //20N
 
   while (true)  // Allow the user to stop and resume with pendant buttons
   {
@@ -118,7 +132,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       //burt_status_data.timestamp = getTimestamp();
       //burt_status_data.state = thresholdMet;
       //burt_status_data.error = (int) hasError;
-
+      burt_status_data.RDT = cw.jj.get_rdt(); // ReaDTime for synchrony
       // Get Force Data //.. I doubt this line, how should cforce wrote? -CG
       burt_status_data.force_x = cforce[1];
       burt_status_data.force_y = cforce[0];
@@ -174,36 +188,82 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       //printf("M: MT_TASK_STATE_CONFIG \n");
       MDF_TASK_STATE_CONFIG task_state_data;
       Consumer_M.GetData( &task_state_data);
-      //cout << "task id : " << task_state_data.id << endl;
+      //cout << "task id : " << task_state_data.id << "pert_time:" <<task_state_data.pert_time<<endl;
       freeMoving = false;
       sendData  = true;
+      cw.jj.setTaskState(task_state_data.id);
       switch(task_state_data.id)
       {
-        case 1:
+        case 1:   // set joint center and endpoint center
           cout << " ST 1, ";
+          barrett::btsleep(0.2);; // the allocated time is to make sure the Netbox have calibrated the net force. 
           freeMoving = true;
           sendData = false;
-          cw.setForceMet(false);//true);
-          monkey_center[0] = task_state_data.target[30]; // here we temperarily change to a const value, for tesging
-          monkey_center[1] = task_state_data.target[31];
-          monkey_center[2] = task_state_data.target[32];
+          // target: XYZ-IJK-0123456789
+          monkey_center[0] = task_state_data.target[0]; // here we temperarily change to a const value, for tesging
+          monkey_center[1] = task_state_data.target[1];
+          monkey_center[2] = task_state_data.target[2];
+          
+          taskJ_center[0] = task_state_data.target[8];
+          taskJ_center[1] = task_state_data.target[9];
+          taskJ_center[2] = task_state_data.target[10];
+          taskJ_center[3] = task_state_data.target[11];
+          //pert_small = -pert_small;
+          pert_big = -pert_big;
           //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
-          cw.setCenter(monkey_center);
+          //cw.setCenter_joint(taskJ_center);
+          //cw.setCenter_endpoint(monkey_center);
+          /*{
+          if (1) //trial_count % 2 == 0)
+          {
+            printf("Probable perturb this time, ");
+            ifPert = true;
+            pert_time = rand() % (500*4) + 500; // TODO: randomize a time between 1s and 5s, 500Hz/s
+            printf("randTime: %d", pert_time);
+          }
+          else 
+          {
+            printf("Not perturb this time");
+            ifPert = false; 
+            pert_time = -1; // never perturbed 
+          }
+          trial_count ++; 
+          }*/
+          //printf("task_state_data.ifpert is: %d", task_state_data.ifpert);
+          ifPert = int(task_state_data.ifpert) == 0 ? false : true;
+          pert_time = int(double(task_state_data.pert_time) * 500.0); // to double
+          printf("task_state_data.ifpert is: %d, pert_time: %d\n", ifPert, pert_time);
+          cw.jj.setPertTime(pert_time);
+
           break;
-        case 2:
+        case 2: // Present
+        
           cout << " ST 2, ";
+          
           //cout << " case 2 " << endl;
           break;
         case 3: //ForceRamp
           // wam.idle(); //try a remove, if it stiff the wam? -cg
           cout << " ST 3, ";
-//          wamLocked = false;
+          if (ifPert){
+            cw.jj.setpretAmp();
+            cw.jj.setPertMag(pert_big); 
+          }
+          //wamLocked = false;
           //forceThreshold = 0; //task_state_data.target[3]; //TODO: SEND FROM JUDGE MESSAGE? OR SEPARTE CONFIGURE
           //cout << "force threshold is: " << task_state_data.target[3] << endl;
           break;
         case 4: //Move
-          cout << " ST 4, ";
-          cw.setForceMet(true); 
+          cout << " ST 4, ";  
+          if (ifPert){
+            cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
+          }
+          else {
+            cw.setForceMet(true);         //save the release in the buffer
+            cw.jj.updateImpedanceWait();  // immediate release
+          }
+          //cw.jj.setPertMag(pert_small); 
+          //cw.jj.setPertTime(pert_time);  // randomize a time
           //cw.setForceMet(false);//true); //debugging 
           break;
         case 5: // hold
@@ -214,22 +274,17 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
         case 7:
           cout << " ST 7, " << endl;
+          cw.setForceMet(false);
+          cw.jj.disablePertCount(); // avoid perturbation at this time
+          cw.jj.resetpretAmp();
           freeMoving = true;
-          //cw.setForceMet(false);//true);
-          /*Shuqi Liu - 2019/10/09-19:01 Stay at current location*/
-/*          if (!wamLocked)
-          {
-            cout << "Locking Wam" << endl;
-            //wam.moveTo(wam.getToolPosition());
-            cout<<"wam pos"<<wam.getToolPosition()<<endl;
-            wamLocked = true;
-          }
-*/
           break;
         default:
           break;
       }      
       //printf("ST: %d, ", task_state_data.id);
+      ///printf("task_state_data.ifpertRcv: %d, pert_time: %f, release_time: %f \n", int(task_state_data.ifpert), double(task_state_data.pert_time), double(task_state_data.release_time));
+      //printf("task_state_data.ifpertRcv: %f, pert_time: %d, release_time: %d \n", double(task_state_data.ifpert), int(task_state_data.pert_time), int(task_state_data.release_time));
     }
 
     // Have Burt move in steps toward home postion
@@ -242,6 +297,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       moveToCenter(wam, monkey_center, mod);  // do not fully delete this part! Msg contain! 
       // re-track force output here?  
       cw.trackSignal(); //maybe not needed as idle no longer exist. 
+
     }
 
     // Ping sent   Acknowlegde ping...
@@ -256,6 +312,49 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       break;
     }
   
+    else if (Consumer_M.msg_type == MT_SESSION_CONFIG)
+    {
+        printf("MT_SESSION_CONFIG. \n");
+        MDF_SESSION_CONFIG ssconfig;
+        Consumer_M.GetData(&ssconfig);
+        strcpy(data_dir, ssconfig.data_dir);
+        file_dir = data_dir;
+        file_dir.replace(6,2,"robot");
+        printf("data_dir is: %s", data_dir);
+        fnameInit = true;
+        cw.setForceMet(false);
+    }
+
+    else if (Consumer_M.msg_type == MT_XM_START_SESSION)
+    {
+        printf("MT_XM_START_SESSION receieved! \n");
+        MDF_XM_START_SESSION stsession;
+        Consumer_M.GetData(&stsession);
+        strcpy(subject_name, stsession.subject_name);
+        session_num = stsession.calib_session_id;
+        sprintf(file_name, "%sWAM%d.csv", subject_name, session_num);
+        cout << "filename: " << file_name << endl;
+        fdirInit = true;
+    }
+
+    else if(Consumer_M.msg_type == MT_FORCE_FEEDBACK)
+    {
+      // Make the perturb start to count when force is at threshold, if force outof threshold, recount
+        //printf("MT_FORCE_FEEDBACK!\n");
+        MDF_FORCE_FEEDBACK frc_fb; 
+        Consumer_M.GetData(&frc_fb);
+        if (frc_fb.force_bias > frc_fb.range[0] && frc_fb.force_bias < frc_fb.range[1] && ifPert) {
+          cw.jj.enablePertCount();
+        }
+        else {
+          cw.jj.disablePertCount();
+        }
+    }
     //if (yDirectionError) { /*cout << "Y direction Error" << endl;*/ }
+  }
+  if (fnameInit && fdirInit){
+        fname_rtma = file_dir + '/' + file_name;
+        cout << "fname should be" << fname_rtma << endl;
+        fname_init = true;
   }
 }

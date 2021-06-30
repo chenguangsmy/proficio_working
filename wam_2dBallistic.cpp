@@ -70,9 +70,11 @@ v_type msg_tmp;
 barrett::systems::ExposedOutput<v_type> message;
 
 bool forceMet = false;
+std::string fname_rtma;
+bool fname_init = false; 
 bool trackOutput = false; // the variable prevent repeating printf -cg.
 //const jp_type center_pos1(-1.5, 0, 0, 1.5);
-cp_type center_pos(-0.511, 0.485, 0.001);
+cp_type center_pos(-0.513, 0.482, -0.002);
 
 
 // end mutex
@@ -102,15 +104,20 @@ struct arg_struct {
   RTMA_Module &mod;
   barrett::ProductManager& product_manager;
   ControllerWarper<DOF>& cw;
+  LoggerClass<DOF>& lg;
+
   arg_struct(barrett::systems::Wam<DOF>& wam,
               cp_type system_center,
               RTMA_Module &mod,
               barrett::ProductManager& product_manager,
-              ControllerWarper<DOF>& cw) : wam(wam), 
+              ControllerWarper<DOF>& cw,
+              LoggerClass<DOF>& lg
+              ) : wam(wam), 
                 system_center(system_center), 
                 mod(mod), 
                 product_manager(product_manager),
-                cw(cw) {}
+                cw(cw),
+                lg(lg) {}
 };
 
 
@@ -121,7 +128,7 @@ template <size_t DOF>
 void * responderWrapper(void *arguments)
 {
   struct arg_struct<DOF> *args = (arg_struct<DOF> *)arguments;
-  respondToRTMA(args->wam, args->system_center, args->mod, args->cw);
+  respondToRTMA(args->wam, args->system_center, args->mod, args->cw, args->lg);
   return NULL;
 }
 
@@ -208,44 +215,55 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   mod.Subscribe( MT_MOVE_HOME ); // ...check this? what this do? --cg
   mod.Subscribe( MT_SAMPLE_GENERATED );
   mod.Subscribe( MT_EXIT ); 
+  mod.Subscribe( MT_SESSION_CONFIG );
+  mod.Subscribe( MT_XM_START_SESSION );
+  mod.Subscribe( MT_FORCE_FEEDBACK); 
   printf("Module Supscription succeed!\n");  //
 
   wam.gravityCompensate();
   // wam.moveTo(center_pos);
   // set a series of initial value for the CustomController;
-  Matrix_4x4 K_q00; //... initialize these set of variables from RTMA system --cg
-	Matrix_4x4 K_q01;
-	Matrix_3x3 K_x00;
-  Matrix_3x3 K_x01;
-	jp_type input_q_000;
-	cp_type input_x_000;
+  Matrix_4x4 K_q0;  // joint_stiffness,     loose
+	Matrix_4x4 K_q1;  //                      stiff
+  Matrix_4x4 B_q0;  
+  Matrix_4x4 B_q1;  
+	Matrix_3x3 K_x0;  // endpoint_stiffness,  loose
+  Matrix_3x3 K_x1;  //                      stiff
+  Matrix_3x3 B_x0;
+  Matrix_3x3 B_x1;
+	jp_type input_q_0;
+	cp_type input_x_0;
 
-	K_q00(0,0) = 10.0; // keep wam upright
-	K_q00(1,1) = 10.0;
-	K_q00(2,2) = 10.0;
-	K_q00(3,3) = 10.0;
-	K_x00(0,0) = 0.0;
-	K_x00(1,1) = 0.0;
-	K_x00(2,2) = 0.0;
+	K_q0(0,0) = 200.0; // keep wam upright
+	K_q0(1,1) = 0.0;
+	K_q0(2,2) = 200.0;
+	K_q0(3,3) = 0.0;
+  K_q1 = K_q0; 
 
-  K_x01(0,0) = 500;
-	K_x01(1,1) = 500;
-	K_x01(2,2) = 500;
+  B_q0 = 0.1 * K_q0;
+  B_q1 = 0.1 * K_q1;
 
-	K_q01(0,0) = 10;
-	K_q01(1,1) = 10;
-	K_q01(2,2) = 10;
-	K_q01(3,3) = 0;
+	K_x0(0,0) = 0.0;
+	K_x0(1,1) = 0.0;
+	K_x0(2,2) = 0.0;
+  K_x1(0,0) = 2500;
+	K_x1(1,1) = 2500;
+	K_x1(2,2) = 2500;
 
-	input_q_000[0] =-1.570;
-	input_q_000[1] = 0.002;
-	input_q_000[2] = 0.002;
-	input_q_000[3] = 1.569;
-	input_x_000[0] =-0.511;
-	input_x_000[1] = 0.485;
-	input_x_000[2] = 0.002;
+  B_x0 = 0.1 * K_x0;
+  B_x1(0,0) = 20.0;
+  B_x1(1,1) = 20.0;
+  B_x1(2,2) = 20.0;
 
-  ControllerWarper<DOF> cw1(product_manager_, wam, K_q00, K_x00, K_x01, input_q_000,input_x_000); 
+	input_q_0[0] =-1.571;
+	input_q_0[1] = 0.0;
+	input_q_0[2] = 0.0;
+	input_q_0[3] = 1.571;
+	input_x_0[0] =-0.513;
+	input_x_0[1] = 0.482;
+	input_x_0[2] =-0.000;
+
+  ControllerWarper<DOF> cw1(product_manager_, wam, K_q0, K_q1, B_q0, B_q1, K_x0, K_x1, B_x0, B_x1, input_q_0, input_x_0); 
   LoggerClass<DOF> log1(product_manager_, wam, loggerfname, logtmpFile, cw1);
 
   if (!cw1.init()) {
@@ -264,7 +282,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   pthread_t rtmaThread, robotMoverThread;
 
   // Create thread arguments
-  struct arg_struct<DOF> args(wam, center_pos, mod, product_manager_, cw1);
+  struct arg_struct<DOF> args(wam, center_pos, mod, product_manager_, cw1, log1);
 
   //Start threads
   pthread_create(&rtmaThread, NULL, &responderWrapper<DOF>, (void *)&args);
