@@ -155,6 +155,14 @@ public:
 		pert_flip = flip; // 0 for no pert, 1 for pert
 	}
 
+	int enablePert(){
+		pert_enable = true;
+	}
+	int disablePert(){
+		pert_enable = false;
+		iteration = 0;
+	}
+
 	int setPertMag(double mag){
 		pert_mag = mag;
 		return 1;
@@ -192,6 +200,7 @@ protected:
 	bool 	if_set_JImp;
 	bool 	if_set_Imp;
 	bool    pert_flip; 
+	bool 	pert_enable;
 	int 	pert_time; // randomize a time in the burtRTMA.h to cound down perturbation.
 
 	// Initialize variables 
@@ -311,16 +320,18 @@ protected:
 		// printf("K_x are: %.3f, %.3f, %.3f \n", K_x(0,0), K_x(1,1), K_x(2,2));
 */
 // Less than iteration_MAX iterations since last update
-		if (IS_PULSE_PERT) {
+		if (IS_PULSE_PERT) { // inpulse perturbation here
       //printf("-");
 			//f_pretOutput.setRandom();
       //printf("Pert_flip: %s\n", pert_flip ? "true" : "false");
-		if(pert_flip == true)
+		/*if(pert_flip == true)
 			{
 				iteration = 0; // start to count
 				resetpretFlip(false);
-			}
-		iteration++;
+			}*/
+		if (pert_enable){
+			iteration++;
+		}
       //  printf("Pert_flip: %s\n", pert_flip ? "true" : "false");
         
       	if (iteration <= pert_time)
@@ -352,7 +363,7 @@ protected:
 			f_pret[2] = f_pretOutput[2];
 
 		}
-		else{
+		else{ // stochastic perturbation here
 		if (iteration < iteration_MAX){
 			iteration++;
 			f_pretOutput[0] = prevPret[0];

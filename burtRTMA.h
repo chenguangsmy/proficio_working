@@ -188,7 +188,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       //printf("M: MT_TASK_STATE_CONFIG \n");
       MDF_TASK_STATE_CONFIG task_state_data;
       Consumer_M.GetData( &task_state_data);
-      //cout << "task id : " << task_state_data.id << endl;
+      //cout << "task id : " << task_state_data.id << "pert_time:" <<task_state_data.pert_time<<endl;
       freeMoving = false;
       sendData  = true;
       cw.jj.setTaskState(task_state_data.id);
@@ -208,17 +208,17 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           taskJ_center[1] = task_state_data.target[9];
           taskJ_center[2] = task_state_data.target[10];
           taskJ_center[3] = task_state_data.target[11];
-          pert_small = -pert_small;
+          //pert_small = -pert_small;
           pert_big = -pert_big;
           //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
           //cw.setCenter_joint(taskJ_center);
           //cw.setCenter_endpoint(monkey_center);
-          {
-          if (trial_count % 2 == 0)
+          /*{
+          if (1) //trial_count % 2 == 0)
           {
             printf("Probable perturb this time, ");
             ifPert = true;
-            pert_time = rand() % (500*6) + 500; // TODO: randomize a time between 1s and 7s, 500Hz/s
+            pert_time = rand() % (500*4) + 500; // TODO: randomize a time between 1s and 5s, 500Hz/s
             printf("randTime: %d", pert_time);
           }
           else 
@@ -228,7 +228,13 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
             pert_time = -1; // never perturbed 
           }
           trial_count ++; 
-          }
+          }*/
+          //printf("task_state_data.ifpert is: %d", task_state_data.ifpert);
+          ifPert = int(task_state_data.ifpert) == 0 ? false : true;
+          pert_time = double(task_state_data.pert_time) * 500.0; // to double
+          printf("task_state_data.ifpert is: %d, pert_time: %03.2f\n", ifPert, pert_time);
+          cw.jj.setPertTime(pert_time);
+
           break;
         case 2: // Present
         
@@ -241,17 +247,16 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cout << " ST 3, ";
           cw.jj.setpretAmp();
           cw.jj.setPertMag(pert_big); 
-          cw.jj.resetpretFlip(ifPert);
-          cw.jj.setPertTime(pert_time);  // randomize a time
           //wamLocked = false;
           //forceThreshold = 0; //task_state_data.target[3]; //TODO: SEND FROM JUDGE MESSAGE? OR SEPARTE CONFIGURE
           //cout << "force threshold is: " << task_state_data.target[3] << endl;
           break;
         case 4: //Move
           cout << " ST 4, ";
-          cw.setForceMet(true); //decrease the impedance suddenly
-          cw.jj.setPertMag(pert_small); 
-          //cw.jj.resetpretFlip(true);
+          cw.setForceMet(true); //decrease the impedance suddenly 
+          //cw.jj.setPertMag(pert_small); 
+          cw.jj.disablePert(); // it will hurt people if pert still exist!
+          //cw.jj.setPertTime(pert_time);  // randomize a time
           //cw.setForceMet(false);//true); //debugging 
           break;
         case 5: // hold
@@ -270,6 +275,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
       }      
       //printf("ST: %d, ", task_state_data.id);
+      ///printf("task_state_data.ifpertRcv: %d, pert_time: %f, release_time: %f \n", int(task_state_data.ifpert), double(task_state_data.pert_time), double(task_state_data.release_time));
+      //printf("task_state_data.ifpertRcv: %f, pert_time: %d, release_time: %d \n", double(task_state_data.ifpert), int(task_state_data.pert_time), int(task_state_data.release_time));
     }
 
     // Have Burt move in steps toward home postion
@@ -307,6 +314,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         file_dir.replace(6,2,"robot");
         printf("data_dir is: %s", data_dir);
         fnameInit = true;
+        cw.setForceMet(false);
     }
 
     else if (Consumer_M.msg_type == MT_XM_START_SESSION)
@@ -321,6 +329,18 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         fdirInit = true;
     }
 
+    else if(Consumer_M.msg_type == MT_FORCE_FEEDBACK)
+    {
+        //printf("MT_FORCE_FEEDBACK!\n");
+        MDF_FORCE_FEEDBACK frc_fb; 
+        Consumer_M.GetData(&frc_fb);
+        if (frc_fb.force_bias > frc_fb.range[0] && frc_fb.force_bias < frc_fb.range[1] && ifPert) {
+            cw.jj.enablePert();
+        }
+        else {
+          cw.jj.disablePert();
+        }
+    }
     //if (yDirectionError) { /*cout << "Y direction Error" << endl;*/ }
   }
   if (fnameInit && fdirInit){

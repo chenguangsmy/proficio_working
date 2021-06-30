@@ -217,6 +217,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   mod.Subscribe( MT_EXIT ); 
   mod.Subscribe( MT_SESSION_CONFIG );
   mod.Subscribe( MT_XM_START_SESSION );
+  mod.Subscribe( MT_FORCE_FEEDBACK); 
   printf("Module Supscription succeed!\n");  //
 
   wam.gravityCompensate();
