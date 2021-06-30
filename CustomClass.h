@@ -91,6 +91,8 @@ public:
 			iteration_MAX = 8;
 			iteration = 0;
 			task_state = 0;
+			pert_enable = false;
+			release_enable = false;
       		//printf("K_qQ is: %.3f, %.3f, %.3f, %.3f\n", K_qQuantum(0,0), K_qQuantum(1,1), K_qQuantum(2,2), K_qQuantum(3,3));
 		}
 
@@ -99,6 +101,16 @@ public:
 	void setImpedance(Matrix_3x3 K_x1, Matrix_3x3 B_x1){ 
 		K_x = K_x1;
 		B_x = B_x1; 
+	}
+
+	void setImpedanceWait(Matrix_3x3 K_x1, Matrix_3x3 B_x1){ 
+		K_x0 = K_x1;
+		B_x0 = B_x1; 
+	}
+
+	void updateImpedanceWait(){ 
+		K_x = K_x0;
+		B_x = B_x0; 
 	}
 
 	void setTaskState(int ts){
@@ -157,12 +169,18 @@ public:
 
 	int enablePert(){
 		pert_enable = true;
+		release_enable = false;
 	}
 	int disablePert(){
 		pert_enable = false;
 		iteration = 0;
 	}
-
+	int enableRelease(){
+		release_enable = true;
+	}
+	int disableRelease(){
+		release_enable = false; 
+	}
 	int setPertMag(double mag){
 		pert_mag = mag;
 		return 1;
@@ -202,7 +220,7 @@ protected:
 	bool    pert_flip; 
 	bool 	pert_enable;
 	int 	pert_time; // randomize a time in the burtRTMA.h to cound down perturbation.
-
+	bool	release_enable; 
 	// Initialize variables 
 	Matrix_4x4 K_q;
 	Matrix_4x4 B_q;
@@ -216,6 +234,8 @@ protected:
 	Matrix_3x3 B_xQuantum;
 	Matrix_3x3 K_x; 
 	Matrix_3x3 B_x; 
+	Matrix_3x3 K_x0;	// wait impedance, after enable release, it will become current impedance. 
+	Matrix_3x3 B_x0; 
 	Matrix_3x1 x_0; 	//Matrix_4x1 x_0;
 	Matrix_3x1 x;   	//Matrix_4x1 x; 
 	Matrix_3x1 x_dot;	//Matrix_4x1 x_dot;
@@ -334,13 +354,14 @@ protected:
 		}
       //  printf("Pert_flip: %s\n", pert_flip ? "true" : "false");
         
-      	if (iteration <= pert_time)
+      	if ((iteration <= pert_time) || (iteration >= pert_time + 150))
       		{
        		f_pretOutput[0] = 0;
         	f_pretOutput[1] = 0;
        		f_pretOutput[2] = 0;
       		}
-		else if (iteration < pert_time + 150) // as a fix start time for 2.85s.  // have a try by doing this
+		//else if (iteration < pert_time + 150) // as a fix start time for 2.85s.  // have a try by doing this
+		else // as a fix start time for 2.85s.  // have a try by doing this	
 			{
      		//printf("Start the force impulse perturbation! \n");
 				f_pretOutput[0] = 0;
@@ -348,15 +369,18 @@ protected:
 				f_pretOutput[2] = 0;
       		//  pert_on = 1;
 			}
-		else		// The impulse should last 150 ms
+		/*else		// The impulse should last 150 ms
 			{
         		//pert_on = 0;
       			//  printf("End of the force impulse perturbation! \n");
 				f_pretOutput[0] = 0;
 				f_pretOutput[1] = 0;
 				f_pretOutput[2] = 0;
-			}
-      	
+			}*/
+      	if ((iteration > (pert_time + 500)) && release_enable){
+			  updateImpedanceWait();
+			  disablePert();
+		  }
 
 			f_pret[0] = f_pretOutput[0];
 			f_pret[1] = f_pretOutput[1];
@@ -524,7 +548,7 @@ class ControllerWarper{
 		
 		if (wasMet){
 			// change the K_q to a low value here
-			jj.setImpedance(K_x0, B_x0);
+			jj.setImpedanceWait(K_x0, B_x0);
 			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x0(0,0), K_x0(1,1), K_x0(2,2));
 			//jj.setJointImpedance(K_q0); // decrease impedance suddenly
 			//printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q1(0,0), K_q1(1,1), K_q1(2,2), K_q1(3,3));

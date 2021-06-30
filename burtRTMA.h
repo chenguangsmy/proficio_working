@@ -247,13 +247,15 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cout << " ST 3, ";
           cw.jj.setpretAmp();
           cw.jj.setPertMag(pert_big); 
+          cw.jj.disableRelease();
           //wamLocked = false;
           //forceThreshold = 0; //task_state_data.target[3]; //TODO: SEND FROM JUDGE MESSAGE? OR SEPARTE CONFIGURE
           //cout << "force threshold is: " << task_state_data.target[3] << endl;
           break;
         case 4: //Move
           cout << " ST 4, ";
-          cw.setForceMet(true); //decrease the impedance suddenly 
+          cw.jj.enableRelease();
+          //cw.setForceMet(true); //decrease the impedance suddenly 
           //cw.jj.setPertMag(pert_small); 
           cw.jj.disablePert(); // it will hurt people if pert still exist!
           //cw.jj.setPertTime(pert_time);  // randomize a time
