@@ -115,13 +115,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   {
     // Read Messages
     read_rlt = mod.ReadMessage( &Consumer_M, 0.1);
-  /*  if (read_rlt) {
-      printf("Msg readed! \n");
-    }
-    else {
-      printf("No Msg can be read in this 0.1s\n");
-    };
-    */
+
     // Send Position Data
     if (Consumer_M.msg_type == MT_SAMPLE_GENERATED && sendData)
     {
@@ -186,7 +180,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     // Task State config, set stiffness and zero-force position
     if (Consumer_M.msg_type == MT_TASK_STATE_CONFIG)
     {
-      //printf("M: MT_TASK_STATE_CONFIG \n");
       MDF_TASK_STATE_CONFIG task_state_data;
       Consumer_M.GetData( &task_state_data);
       //cout << "task id : " << task_state_data.id << "pert_time:" <<task_state_data.pert_time<<endl;
@@ -197,7 +190,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       {
         case 1:   // set joint center and endpoint center
           cout << " ST 1, ";
-          barrett::btsleep(0.2);; // the allocated time is to make sure the Netbox have calibrated the net force. 
+          barrett::btsleep(0.2); // the allocated time is to make sure the Netbox have calibrated the net force. 
           freeMoving = true;
           sendData = false;
           // target: XYZ-IJK-0123456789
@@ -214,23 +207,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
           //cw.setCenter_joint(taskJ_center);
           //cw.setCenter_endpoint(monkey_center);
-          /*{
-          if (1) //trial_count % 2 == 0)
-          {
-            printf("Probable perturb this time, ");
-            ifPert = true;
-            pert_time = rand() % (500*4) + 500; // TODO: randomize a time between 1s and 5s, 500Hz/s
-            printf("randTime: %d", pert_time);
-          }
-          else 
-          {
-            printf("Not perturb this time");
-            ifPert = false; 
-            pert_time = -1; // never perturbed 
-          }
-          trial_count ++; 
-          }*/
-          //printf("task_state_data.ifpert is: %d", task_state_data.ifpert);
           ifPert = int(task_state_data.ifpert) == 0 ? false : true;
           pert_time = int(double(task_state_data.pert_time) * 500.0); // to double
           printf("task_state_data.ifpert is: %d, pert_time: %d\n", ifPert, pert_time);
@@ -241,22 +217,23 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         
           cout << " ST 2, ";
           
-          //cout << " case 2 " << endl;
           break;
         case 3: //ForceRamp
-          // wam.idle(); //try a remove, if it stiff the wam? -cg
+          // stiff the Wam and wait for perturb, 
+          // after the perturbation, send messages to the GatingForceJudge. 
           cout << " ST 3, ";
-          if (ifPert){
-            cw.jj.setpretAmp();
+          if (ifPert){ // should perturb
+            //cw.jj.setpretAmp();
             cw.jj.setPertMag(pert_big); 
           }
-          //wamLocked = false;
-          //forceThreshold = 0; //task_state_data.target[3]; //TODO: SEND FROM JUDGE MESSAGE? OR SEPARTE CONFIGURE
-          //cout << "force threshold is: " << task_state_data.target[3] << endl;
+          else{
+            cw.jj.setPertMag(0.0);
+          }
           break;
         case 4: //Move
           cout << " ST 4, ";  
-          readyToMove_nosent = false;
+          cw.jj.setPertMag(0.0);
+          readyToMove_nosent = false;  // have sent, hence no longer send the message.
           if (ifPert){
             cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
             cw.jj.updateImpedanceWait();
@@ -342,22 +319,26 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 
     else if(Consumer_M.msg_type == MT_FORCE_FEEDBACK)
     {
-      // Make the perturb start to count when force is at threshold, if force outof threshold, recount
-        //printf("MT_FORCE_FEEDBACK!\n");
+      // scan the Force Feedback, inorder to make:
+      // If required perturb, in force zone, but not finished perturb, enable perturb count
+      // If require perturb, out force zone, but not finished perturb perturbed, reset perturb count (disablePertCount). 
         MDF_FORCE_FEEDBACK frc_fb; 
         Consumer_M.GetData(&frc_fb);
-        if (frc_fb.force_bias > frc_fb.range[0] && frc_fb.force_bias < frc_fb.range[1] && ifPert) {
-          cw.jj.enablePertCount();
-        }
-        else {
-          cw.jj.disablePertCount();
+        if (ifPert){
+          if (frc_fb.force_bias >= frc_fb.range[0] && frc_fb.force_bias <= frc_fb.range[1]) { // in force zone
+            if (~cw.jj.getPertFinish()){
+            cw.jj.enablePertCount();
+            }
+          }
+          else { // out force zone
+            // only not at the perturbed time nor perturb finished do reset perturb
+            if (~cw.jj.getAtpert() && (~cw.jj.getPertFinish()))
+            cw.jj.disablePertCount();
+          }
         }
     }
-    //if (yDirectionError) { /*cout << "Y direction Error" << endl;*/ }
   if (cw.jj.getPertFinish() && readyToMove_nosent){ // finished the perturbation 
-    //printf("Test finished, ready to move!");
-    readyToMove(wam, monkey_center, mod);
-    readyToMove_nosent = false; //sent
+    readyToMove(wam, monkey_center, mod);   // boardcast readyToMove so that the `GatingForceJudge` knows
   }
   }
   if (fnameInit && fdirInit){

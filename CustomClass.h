@@ -92,7 +92,6 @@ public:
 			iteration_MAX = 8;
 			iteration = 0;
 			task_state = 0;
-			pert_enable = false;
       		//printf("K_qQ is: %.3f, %.3f, %.3f, %.3f\n", K_qQuantum(0,0), K_qQuantum(1,1), K_qQuantum(2,2), K_qQuantum(3,3));
 		}
 
@@ -154,12 +153,12 @@ public:
 		return 1;
 	}
 
-	int setpretAmp(){
+	int setpretAmp(){ // used in stochastic perturbation
 		pretAmplitude_x = 6.0;
 		pretAmplitude_y = 6.0;
 	}
 
-	int resetpretAmp(){
+	int resetpretAmp(){ // used in stochastic perturbation
 		pretAmplitude_x = 0.0;
 		pretAmplitude_y = 0.0;
 	}
@@ -176,6 +175,9 @@ public:
 		pert_enable = false;
     }
 	}
+	bool getAtpert(){
+		return atpert;
+	}
 	int enablePertCount(){
 		pert_count_enable = true;
 	}
@@ -191,11 +193,6 @@ public:
 
 	int setPertTime(int time){
 		pert_time = time;
-		return 1;
-	}
-
-	int setIfRelease(bool ifr){
-		if_release = ifr;
 		return 1;
 	}
 
@@ -235,7 +232,6 @@ protected:
 	bool 	pert_enable;
 	bool    pert_count_enable;
     bool  	atpert; 
-	bool	if_release;
 	bool  	if_pert_finish;
 	int 	pert_time; // randomize a time in the burtRTMA.h to cound down perturbation.
 
@@ -356,23 +352,13 @@ protected:
       		        
 			}
 
-		if (iteration == pert_time + 500) {
-			if_pert_finish = true;
-      		printf("Finished one perturbation! \n");
-		}
-      	if (if_pert_finish && if_release) { // seems not good, I can set a flag representing "pert_finished"
-			// at the end of perturbation effect go away,
-			// want to set the 'release', and disable further perturbations
-			// updateImpedanceWait();  // set release
-        	printf("release here!");
-        	if_release = false;
-			  disablePert();
-		  }
+			if (iteration >= pert_time + 500) {
+				if_pert_finish = true;
+			}
 
 			f_pret[0] = f_pretOutput[0];
 			f_pret[1] = f_pretOutput[1];
 			f_pret[2] = f_pretOutput[2];
-
 		}
 		else{ // stochastic perturbation here
 		if (iteration < iteration_MAX){
@@ -536,19 +522,14 @@ class ControllerWarper{
 		if (wasMet){
 			// change the K_q to a low value here
 			jj.setImpedanceWait(K_x0, B_x0);
-			jj.setIfRelease(true);
 			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x0(0,0), K_x0(1,1), K_x0(2,2));
-			//jj.setJointImpedance(K_q0); // decrease impedance suddenly
-			//printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q1(0,0), K_q1(1,1), K_q1(2,2), K_q1(3,3));
 		}
 		else {
 			// change the K_q to a high value here
 			jj.update_input_time0();			// initializing ramp
 			jj.setImpedance(K_x1, B_x1);
-			jj.setIfRelease(false);
 			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x1(0,0), K_x1(1,1), K_x1(2,2));
-			//jj.setJointImpedance(K_q1); // increase impedance steadily
-			//printf("\nset impedance to: %.3f, %.3f, %.3f, %.3f\n", K_q0(0,0), K_q0(1,1), K_q0(2,2), K_q0(3,3));
+			
 		}
 	}
 
