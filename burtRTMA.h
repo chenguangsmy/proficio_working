@@ -14,6 +14,7 @@
 #include "/home/robot/src/Proficio_Systems/magnitude.h" //...do we use these files?
 #include "/home/robot/src/Proficio_Systems/normalize.h"
 #include "/home/robot/rg2/include/RTMA_config.h"
+#include "/home/robot/rg2/include/ipdProj_config.h"
 #include <unistd.h>
 
 #include "/home/robot/RTMA/include/RTMA.h"
