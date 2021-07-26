@@ -14,7 +14,7 @@
 #include "/home/robot/src/Proficio_Systems/magnitude.h" //...do we use these files?
 #include "/home/robot/src/Proficio_Systems/normalize.h"
 #include "/home/robot/rg2/include/RTMA_config.h"
-#include "/home/robot/rg2/include/ipdProj_config.h"
+//#include "/home/robot/rg2/include/ipdProj_config.h"
 #include <unistd.h>
 
 #include "/home/robot/RTMA/include/RTMA.h"
@@ -224,7 +224,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           // after the perturbation, send messages to the GatingForceJudge. 
           cout << " ST 3, ";
           if (ifPert){ // should perturb
-            //cw.jj.setpretAmp();
+            cw.jj.setpretAmp();
             cw.jj.setPertMag(pert_big); 
           }
           else{
@@ -326,7 +326,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         MDF_FORCE_FEEDBACK frc_fb; 
         Consumer_M.GetData(&frc_fb);
         if (ifPert){
-          if (frc_fb.force_bias >= frc_fb.range[0] && frc_fb.force_bias <= frc_fb.range[1]) { // in force zone
+          if (frc_fb.force_bias >= -frc_fb.range && frc_fb.force_bias <= frc_fb.range) { // in force zone
             if (~cw.jj.getPertFinish()){
             cw.jj.enablePertCount();
             }
