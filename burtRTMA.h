@@ -99,6 +99,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   double taskJ_center[4]; // task send joint position
   int     trial_count = 0;    // as a marker for counting which trial perturb
   cp_type monkey_center(system_center);
+  cy_type robot_center(system_center);
   cp_type target;
 	CMessage Consumer_M;
 
@@ -110,7 +111,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   int session_num; 
   bool readyToMove_nosent;
   double pert_small = 5; //5N
-  double pert_big = 25;   //20N
+  double pert_big = 8;   //25N
 
   while (true)  // Allow the user to stop and resume with pendant buttons
   {
@@ -195,14 +196,18 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           freeMoving = true;
           sendData = false;
           // target: XYZ-IJK-0123456789
-          monkey_center[0] = task_state_data.target[0]; // here we temperarily change to a const value, for tesging
-          monkey_center[1] = task_state_data.target[1];
-          monkey_center[2] = task_state_data.target[2];
+          robot_center[0] = task_state_data.target[0]; // here we temperarily change to a const value, for tesging
+          robot_center[1] = task_state_data.target[1];
+          robot_center[2] = task_state_data.target[2];
           
           taskJ_center[0] = task_state_data.target[8];
           taskJ_center[1] = task_state_data.target[9];
           taskJ_center[2] = task_state_data.target[10];
           taskJ_center[3] = task_state_data.target[11];
+
+          monkey_center[0] = task_state_data.target[30]; // here we temperarily change to a const value, for tesging
+          monkey_center[1] = task_state_data.target[31];
+          monkey_center[2] = task_state_data.target[32];
           //pert_small = -pert_small;
           pert_big = -pert_big;
           //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
@@ -275,7 +280,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       Consumer_M.GetData( &startButton); 
       cw.moveToq0(); //make sure on the right joint position
       // cout<<"move to: "<< monkey_center[0] << "; "<< monkey_center[1] << "; "<< monkey_center[2] <<endl;
-      moveToCenter(wam, monkey_center, mod);  // do not fully delete this part! Msg contain! 
+      moveToCenter(wam, robot_center, mod);  // do not fully delete this part! Msg contain! 
       // re-track force output here?  
       cw.trackSignal(); //maybe not needed as idle no longer exist. 
 
@@ -339,7 +344,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         }
     }
   if (cw.jj.getPertFinish() && readyToMove_nosent){ // finished the perturbation 
-    readyToMove(wam, monkey_center, mod);   // boardcast readyToMove so that the `GatingForceJudge` knows
+    readyToMove(wam, robot_center, mod);   // boardcast readyToMove so that the `GatingForceJudge` knows
   }
   }
   if (fnameInit && fdirInit){
