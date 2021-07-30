@@ -99,7 +99,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   double taskJ_center[4]; // task send joint position
   int     trial_count = 0;    // as a marker for counting which trial perturb
   cp_type monkey_center(system_center);
-  cy_type robot_center(system_center);
+  cp_type robot_center(system_center);
   cp_type target;
 	CMessage Consumer_M;
 
@@ -112,6 +112,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   bool readyToMove_nosent;
   double pert_small = 5; //5N
   double pert_big = 8;   //25N
+  double force_thresh = 0; // force_tar in ballistic release
+  double robot_x0 = 0; // should be: robot_x0 = force_tar/300; //(300 as the robot stiffness)
 
   while (true)  // Allow the user to stop and resume with pendant buttons
   {
@@ -207,7 +209,12 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 
           monkey_center[0] = task_state_data.target[30]; // here we temperarily change to a const value, for tesging
           monkey_center[1] = task_state_data.target[31];
-          monkey_center[2] = task_state_data.target[32];
+          monkey_center[2] = task_state_data.target[32];  
+
+          force_thresh = task_state_data.target[7]; 
+          printf("force for this target: %f N \n", force_thresh);
+          robot_x0  = - (force_thresh)/300; // only for the front
+          robot_center[1]  = robot_center[1] + robot_x0; 
           //pert_small = -pert_small;
           pert_big = -pert_big;
           //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
@@ -218,6 +225,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           printf("task_state_data.ifpert is: %d, pert_time: %d\n", ifPert, pert_time);
           cw.jj.setPertTime(pert_time);
           readyToMove_nosent = true;
+          // set input x0  
+          cw.jj.setx0(robot_center);
+          
           break;
         case 2: // Present
         
