@@ -52,6 +52,10 @@ public:
     Output<int> wamRDTOutput; // read-time to synchronize stand-alone data and wam data
 	jp_type input_q_0;
 	cp_type input_x_0;
+	bool    setx0flag;
+	int     x0iterator; 			// from 0 to 99
+	cp_type input_x0_stt;
+	cp_type input_x0_edn;
 	systems::Ramp time;
 	Output<int>	wamTaskState;
 
@@ -92,6 +96,8 @@ public:
 			iteration_MAX = 8;
 			iteration = 0;
 			task_state = 0;
+			setx0flag = false; 
+			x0iterator = 0;
       		//printf("K_qQ is: %.3f, %.3f, %.3f, %.3f\n", K_qQuantum(0,0), K_qQuantum(1,1), K_qQuantum(2,2), K_qQuantum(3,3));
 		}
 
@@ -138,6 +144,13 @@ public:
 
 	void setx0(cp_type center_pos){
 		input_x_0 = center_pos;
+	}
+
+	void setx0Gradual(cp_type center_pos){
+		input_x0_stt = input_x_0;
+		input_x0_edn = center_pos;
+		x0iterator = 1;
+		setx0flag = true; 
 	}
 
 	void setq0(jp_type center_pos){
@@ -405,7 +418,13 @@ protected:
 
 		}
 		}
-
+		if (setx0flag) { // let the shift finished in 128 iterations
+			input_x_0 = (input_x0_edn - input_x0_stt)/128*(x0iterator+1);
+			x0iterator++;
+			if (x0iterator>127) {
+				setx0flag = false;
+				}
+		}
 		tau_pret = J_x.transpose()*(f_pret);
 
 

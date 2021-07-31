@@ -226,7 +226,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.setPertTime(pert_time);
           readyToMove_nosent = true;
           // set input x0  
-          cw.jj.setx0(robot_center);
+          cw.jj.setx0Gradual(robot_center);
           
           break;
         case 2: // Present
