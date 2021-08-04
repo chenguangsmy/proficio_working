@@ -251,11 +251,11 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.setPertMag(0.0);
           readyToMove_nosent = false;  // have sent, hence no longer send the message.
           if (ifPert){
-            cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
+            cw.setForceMet(false); // save the release in the buffer, wait finish pert to relese
             cw.jj.updateImpedanceWait();
           }
           else {
-            cw.setForceMet(true);         //save the release in the buffer
+            cw.setForceMet(false);         //save the release in the buffer
             cw.jj.updateImpedanceWait();  // immediate release
           }
           //cw.jj.setPertMag(pert_small); 
@@ -270,7 +270,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
         case 7:
           cout << " ST 7, " << endl;
-          cw.setForceMet(false);
+          //cw.setForceMet(false);
+          cw.setForceMet(true);
           cw.jj.disablePertCount(); // avoid perturbation at this time
           cw.jj.resetpretAmp();
           freeMoving = true;
