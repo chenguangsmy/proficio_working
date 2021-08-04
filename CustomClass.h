@@ -261,6 +261,7 @@ protected:
 	Matrix_3x3 B_xQuantum;
 	Matrix_3x3 K_x; 
 	Matrix_3x3 B_x; 
+	Matrix_3x3 K_x_tmp;  // avoid washout the K_x accidentally. 
 	Matrix_3x3 K_x0;	// wait impedance, after enable release, it will become current impedance. 
 	Matrix_3x3 B_x0; 
 	Matrix_3x1 x_0; 	//Matrix_4x1 x_0;
@@ -333,12 +334,17 @@ protected:
 			tau_q = K_q*(q_0 - q) - B_q*(q_dot);
 		}
 
+		// avoid too much movement.  
+		K_x_tmp = K_x; 
+		if (abs(x_0[0] - x[0]) > 0.1) {
+			K_x(0,0) = 0;
+		}
 		// End-effector impedance controller
 		if ((input_time-input_time0) < rampTime ) {
-			tau_x = J_x.transpose()*(((input_time-input_time0)/rampTime)*K_x*(x_0 - x) - B_x*(x_dot)); 	
+			tau_x = J_x.transpose()*(((input_time-input_time0)/rampTime)*K_x_tmp*(x_0 - x) - B_x*(x_dot)); 	
 		}
 		else {
-			tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 
+			tau_x = J_x.transpose()*(K_x_tmp*(x_0 - x) - B_x*(x_dot)); 
 		}
 
 		// Control Law Implamentation
