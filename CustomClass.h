@@ -153,6 +153,10 @@ public:
 		setx0flag = true; 
 	}
 
+	void seeKxtmp(){
+		printf("K_x_tmp: %f, %f, %f", K_x_tmp(0,0), K_x_tmp(1,1), K_x_tmp(2,2));
+	}
+
 	void setq0(jp_type center_pos){
 		input_q_0 = center_pos;
 	}
@@ -337,8 +341,9 @@ protected:
 		// avoid too much movement.  
 		K_x_tmp = K_x; 
 		if (abs(x_0[0] - x[0]) > 0.1) {
-			K_x(0,0) = 0;
+			K_x_tmp(0,0) = 0;
 		}
+
 		// End-effector impedance controller
 		if ((input_time-input_time0) < rampTime ) {
 			tau_x = J_x.transpose()*(((input_time-input_time0)/rampTime)*K_x_tmp*(x_0 - x) - B_x*(x_dot)); 	
@@ -346,7 +351,10 @@ protected:
 		else {
 			tau_x = J_x.transpose()*(K_x_tmp*(x_0 - x) - B_x*(x_dot)); 
 		}
-
+    if (rdt % 500 == 0){
+			//printf("displacement K %f, %f, %f, dispx: %f\n", K_x(0,0), K_x(1,1), K_x(2,2), x_0[0] - x[0]);
+      //printf("induced torque %f, %f \n", tau_x[1], tau_x[3]);
+		}
 		// Control Law Implamentation
 
 		// iteration_MAX - stochastic perturbation
