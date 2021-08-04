@@ -419,9 +419,9 @@ protected:
 		}
 		}
 		if (setx0flag) { // let the shift finished in 128 iterations
-			input_x_0 = (input_x0_edn - input_x0_stt)/128*(x0iterator+1);
+			input_x_0 = (input_x0_edn - input_x0_stt)/512*(x0iterator+1) + input_x0_stt;
 			x0iterator++;
-			if (x0iterator>127) {
+			if (x0iterator>511) {
 				setx0flag = false;
 				}
 		}
