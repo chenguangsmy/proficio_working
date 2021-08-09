@@ -99,6 +99,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   double taskJ_center[4]; // task send joint position
   int     trial_count = 0;    // as a marker for counting which trial perturb
   int     readyToMoveIter = 0;    // mark as send ready to move tiems
+  int     task_state = 0;
   cp_type monkey_center(system_center);
   cp_type robot_center(system_center);
   cp_type target;
@@ -191,6 +192,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       freeMoving = false;
       sendData  = true;
       cw.jj.setTaskState(task_state_data.id);
+      task_state = task_state_data.id;
       switch(task_state_data.id)
       {
         case 1:   // set joint center and endpoint center
@@ -342,7 +344,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         Consumer_M.GetData(&frc_fb);
         if (ifPert){
           if (~cw.jj.getPertFinish()){
-            if (frc_fb.force_bias >= -frc_fb.range && frc_fb.force_bias <= frc_fb.range) { // in force zone
+            if (frc_fb.force_bias >= -frc_fb.range && frc_fb.force_bias <= frc_fb.range && task_state == 3) { // in force zone
               cw.jj.enablePertCount();
             }
           }
