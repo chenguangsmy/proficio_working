@@ -112,7 +112,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   int session_num; 
   bool readyToMove_nosent;
   double pert_small = 5; //5N
-  double pert_big = 8;   //25N
+  double pert_big = -15;   //25N
   double force_thresh = 0; // force_tar in ballistic release
   double robot_x0 = 0; // should be: robot_x0 = force_tar/300; //(300 as the robot stiffness)
 
@@ -217,7 +217,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           robot_x0  = - (force_thresh)/300; // only for the front
           robot_center[1]  = robot_center[1] + robot_x0; 
           //pert_small = -pert_small;
-          pert_big = -pert_big;
+          //pert_big = -pert_big;
           //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
           //cw.setCenter_joint(taskJ_center);
           //cw.setCenter_endpoint(monkey_center);
@@ -274,6 +274,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.disablePertCount(); // avoid perturbation at this time
           cw.jj.resetpretAmp();
           freeMoving = true;
+          cw.moveToq0(); //make sure on the right joint position
           break;
         default:
           break;
@@ -288,7 +289,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     {
       MDF_MOVE_HOME startButton;
       Consumer_M.GetData( &startButton); 
-      cw.moveToq0(); //make sure on the right joint position
       // cout<<"move to: "<< monkey_center[0] << "; "<< monkey_center[1] << "; "<< monkey_center[2] <<endl;
       moveToCenter(wam, robot_center, mod);  // do not fully delete this part! Msg contain! 
       // re-track force output here?  

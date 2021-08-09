@@ -144,6 +144,7 @@ public:
 	}
 
 	void setx0(cp_type center_pos){
+		printf("set center to: %f, %f, %f\n", center_pos[0], center_pos[1], center_pos[2]);
 		input_x_0 = center_pos;
 	}
 
