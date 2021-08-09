@@ -148,7 +148,8 @@ public:
 	}
 
 	void setx0Gradual(cp_type center_pos){
-		input_x0_stt = input_x_0;
+		//input_x0_stt = input_x_0;
+		input_x0_stt = wamCPInput.getValue();
 		input_x0_edn = center_pos;
 		x0iterator = 1;
 		setx0flag = true; 

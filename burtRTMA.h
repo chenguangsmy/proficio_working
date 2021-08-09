@@ -226,7 +226,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           printf("task_state_data.ifpert is: %d, pert_time: %d\n", ifPert, pert_time);
           readyToMove_nosent = true;
           // set input x0  
-          // cw.jj.setx0Gradual(robot_center);
+          cw.jj.setx0Gradual(robot_center);
           break;
         case 2: // Present
           cw.jj.setPertTime(pert_time);
@@ -269,7 +269,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
         case 7:
           cout << " ST 7, " << endl;
-          //cw.jj.setx0(robot_center);
+          cw.jj.setx0(robot_center);
           cw.setForceMet(false);
           cw.jj.disablePertCount(); // avoid perturbation at this time
           cw.jj.resetpretAmp();
