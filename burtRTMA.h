@@ -100,6 +100,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   int     trial_count = 0;    // as a marker for counting which trial perturb
   int     readyToMoveIter = 0;    // mark as send ready to move tiems
   int     task_state = 0;
+  int     target_dir = 0;
   cp_type monkey_center(system_center);
   cp_type robot_center(system_center);
   cp_type target;
@@ -205,6 +206,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           robot_center[1] = task_state_data.target[1];
           robot_center[2] = task_state_data.target[2];
           
+          target_dir = task_state_data.target[4];
+
           taskJ_center[0] = task_state_data.target[8];
           taskJ_center[1] = task_state_data.target[9];
           taskJ_center[2] = task_state_data.target[10];
@@ -216,7 +219,14 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 
           force_thresh = task_state_data.target[7]; 
           printf("force for this target: %f N \n", force_thresh);
-          robot_x0  = - (force_thresh)/300; // only for the front
+          if (target_dir == 0 || target_dir == 6){
+            robot_x0  = + (force_thresh)/300; // only for the front
+          }
+          else if ((target_dir == 4 || target_dir == 2))
+          {
+            robot_x0  = - (force_thresh)/300;
+          }
+          
           robot_center[1]  = robot_center[1] + robot_x0; 
           //pert_small = -pert_small;
           //pert_big = -pert_big;
