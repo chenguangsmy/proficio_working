@@ -237,6 +237,7 @@ protected:
 	jp_type input_q;
 	jv_type input_q_dot;
 	cp_type input_x;
+	cp_type mov_pos;
 	cv_type input_x_dot;
 	jt_type torqueOutput;
 	cf_type forceOutput;
@@ -356,18 +357,25 @@ protected:
 				// if starting count, or already perturb the first pulse:
 				iteration++;
 			}
-        
-      		if ((iteration <= pert_time) || (iteration >= pert_time + 150)){ // no pulse
-       			f_pretOutput[0] = 0;
-        		f_pretOutput[1] = 0;
-       			f_pretOutput[2] = 0;
-            	atpert = false;
+      		//if ((iteration <= pert_time) || (iteration >= pert_time + 150)){ // no pulse
+			if (iteration == pert_time){ 
+				// position, + edge
+       			mov_pos = input_x;
+				mov_pos[1] = mov_pos[1] + pert_mag/100.0; // as a magnitude of cm, magnitude can change sign
+				wam.moveTo(mov_pos);
+            	atpert = true;
       		}
+			else if (iteration == pert_time + 150){
+				// position, - edge
+				mov_pos = input_x;
+				wam.moveTo(mov_pos); // as a magnitude of cm
+				atpert = false; 
+			  }
 			else { 	// halve pulse
+				
 		    	f_pretOutput[0] = 0;
 				f_pretOutput[1] = pert_mag;
 				f_pretOutput[2] = 0; 
-            	atpert = true;
       		        
 			}
 
