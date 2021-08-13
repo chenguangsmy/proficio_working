@@ -227,7 +227,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
             robot_x0  = - (force_thresh)/300;
           }
           
-          robot_center[1]  = robot_center[1] + robot_x0; 
+          //robot_center[1]  = robot_center[1] + robot_x0; 
           //pert_small = -pert_small;
           //pert_big = -pert_big;
           //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
@@ -238,27 +238,30 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           printf("task_state_data.ifpert is: %d, pert_time: %d\n", ifPert, pert_time);
           readyToMove_nosent = true;
           // set input x0  
-          cw.jj.setx0Gradual(robot_center);
+          //cw.jj.setx0Gradual(robot_center);
+          wam.moveTo(robot_center);
           break;
         case 2: // Present
-          cw.jj.setPertTime(pert_time);
-          cw.jj.disablePertCount();
+          //cw.jj.setPertTime(pert_time);
+          //cw.jj.disablePertCount();
+          wam.moveTo(robot_center);
           cout << " ST 2, ";
           break;
         case 3: //ForceRamp
           // stiff the Wam and wait for perturb, 
           // after the perturbation, send messages to the GatingForceJudge. 
           cout << " ST 3, ";
-          if (ifPert){ // should perturb
+          wam.moveTo(robot_center);
+          /*if (ifPert){ // should perturb
             //cw.jj.setpretAmp(); // used in stochastic pert
             cw.jj.setPertMag(pert_big); 
           }
           else{
             cw.jj.setPertMag(0.0);
-          }
+          }*/
           break;
         case 4: //Move
-          cout << " ST 4, ";
+          /*cout << " ST 4, ";
           cw.jj.setPertMag(0.0);
           readyToMove_nosent = false;  // have sent, hence no longer send the message.
           if (ifPert){
@@ -271,7 +274,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           }
           //cw.jj.setPertMag(pert_small); 
           //cw.jj.setPertTime(pert_time);  // randomize a time
-          //cw.setForceMet(false);//true); //debugging 
+          //cw.setForceMet(false);//true); //debugging */
+          cw.setForceMet(true);
           break;
         case 5: // hold
           cout << " ST 5, ";
@@ -280,13 +284,14 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cout << " ST 6, ";
           break;
         case 7:
-          cout << " ST 7, " << endl;
+          /*cout << " ST 7, " << endl;
           cw.jj.setx0(robot_center);
           cw.setForceMet(false);
           cw.jj.disablePertCount(); // avoid perturbation at this time
           cw.jj.resetpretAmp();
           freeMoving = true;
-          cw.moveToq0(); //make sure on the right joint position
+          cw.moveToq0(); //make sure on the right joint position*/
+          wam.moveTo(robot_center);
           break;
         default:
           break;

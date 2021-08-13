@@ -576,6 +576,7 @@ class ControllerWarper{
 		// track reference
 		// wam.trackReferenceSignal(jtSum.output);
 		wam.trackReferenceSignal(jj.wamJTOutput);
+		//systems::connect(jj.wamJTOutput, wam.jtSum.getInput(0));
 		TrackRef = true;
   		BARRETT_UNITS_FIXED_SIZE_TYPEDEFS;
 	}

@@ -334,7 +334,8 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 	time.start();
   
 	// Track refrence
-	wam.trackReferenceSignal(jj.wamJTOutput);	
+	//wam.trackReferenceSignal(jj.wamJTOutput);
+	systems::connect(jj.wamJTOutput, wam.jtSum.getInput(0));	
 
 	pm.getSafetyModule()->waitForMode(SafetyModule::IDLE);
 
