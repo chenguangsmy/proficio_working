@@ -74,7 +74,8 @@ std::string fname_rtma;
 bool fname_init = false; 
 bool trackOutput = false; // the variable prevent repeating printf -cg.
 //const jp_type center_pos1(-1.5, 0, 0, 1.5);
-cp_type center_pos(-0.513, 0.482, -0.002);
+//cp_type center_pos(-0.513, 0.482, -0.002); // original one
+cp_type center_pos(-0.513, 0.452, -0.002);
 
 
 // end mutex
@@ -246,14 +247,14 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	K_x0(0,0) = 0.0;
 	K_x0(1,1) = 0.0;
 	K_x0(2,2) = 0.0;
-  K_x1(0,0) = 300;
-	K_x1(1,1) = 300;
-	K_x1(2,2) = 300;
+  K_x1(0,0) = 50;
+	K_x1(1,1) = 50;
+	K_x1(2,2) = 50;
 
   B_x0 = 0.1 * K_x0;
-  B_x1(0,0) = 20.0;
-  B_x1(1,1) = 20.0;
-  B_x1(2,2) = 20.0;
+  B_x1(0,0) = 0;//20.0;
+  B_x1(1,1) = 0;//20.0;
+  B_x1(2,2) = 0;//20.0;
 
 	input_q_0[0] =-1.571;
 	input_q_0[1] = 0.0;

@@ -361,21 +361,23 @@ protected:
 			if (iteration == pert_time){ 
 				// position, + edge
         		mov_pos = input_x;
-				mov_pos[1] = mov_pos[1] + pert_mag/100.0; // as a magnitude of cm, magnitude can change sign
+            mov_pos[1] = mov_pos[1] + pert_mag/100.0; // as a magnitude of cm, magnitude can change sign
         		printf("position perturbation START\n");
-				//wam.moveTo(mov_pos);
+            wam.idle();
+            wam.moveTo(mov_pos);
             	atpert = true;
 			}
 			else if (iteration == pert_time + 1000){  //150){  //longer time for the position perturbation
-				// position, - edge
-				mov_pos = input_x;
-				//wam.moveTo(mov_pos); // as a magnitude of cm
-				atpert = false; 
-        		printf("position perturbation STOP\n");
+            // position, - edge
+            mov_pos = input_x;
+            wam.idle();
+            wam.moveTo(mov_pos); // as a magnitude of cm
+            atpert = false; 
+            printf("position perturbation STOP\n");
 			  }
 			else { 	// halve pulse
 				
-		    	f_pretOutput[0] = 0;
+        f_pretOutput[0] = 0;
 				f_pretOutput[1] = pert_mag;
 				f_pretOutput[2] = 0; 
       		        

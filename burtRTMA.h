@@ -103,6 +103,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   int     target_dir = 0;
   cp_type monkey_center(system_center);
   cp_type robot_center(system_center);
+  cp_type pert_center(robot_center);
   cp_type target;
 	CMessage Consumer_M;
 
@@ -117,6 +118,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   double pert_big = -15;   //25N
   double force_thresh = 0; // force_tar in ballistic release
   double robot_x0 = 0; // should be: robot_x0 = force_tar/300; //(300 as the robot stiffness)
+  
+  pert_center[1] = pert_center[1] - 0.005;
 
   while (true)  // Allow the user to stop and resume with pendant buttons
   {
@@ -244,14 +247,13 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 2: // Present
           //cw.jj.setPertTime(pert_time);
           //cw.jj.disablePertCount();
-          wam.moveTo(robot_center);
           cout << " ST 2, ";
           break;
         case 3: //ForceRamp
           // stiff the Wam and wait for perturb, 
           // after the perturbation, send messages to the GatingForceJudge. 
-          cout << " ST 3, ";
           wam.moveTo(robot_center);
+          cout << " ST 3, ";
           /*if (ifPert){ // should perturb
             //cw.jj.setpretAmp(); // used in stochastic pert
             cw.jj.setPertMag(pert_big); 
@@ -261,8 +263,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           }*/
           break;
         case 4: //Move
-          /*cout << " ST 4, ";
-          cw.jj.setPertMag(0.0);
+          cout << " ST 4, ";
+          /*cw.jj.setPertMag(0.0);
           readyToMove_nosent = false;  // have sent, hence no longer send the message.
           if (ifPert){
             cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
@@ -275,10 +277,13 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           //cw.jj.setPertMag(pert_small); 
           //cw.jj.setPertTime(pert_time);  // randomize a time
           //cw.setForceMet(false);//true); //debugging */
-          cw.setForceMet(true); // release part
+          //cw.setForceMet(true); // release part
+          //wam.idle();
+          wam.moveTo(pert_center);
           break;
         case 5: // hold
           cout << " ST 5, ";
+          wam.moveTo(robot_center);
           break;
         case 6:
           cout << " ST 6, ";
