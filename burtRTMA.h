@@ -275,7 +275,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           //cw.jj.setPertMag(pert_small); 
           //cw.jj.setPertTime(pert_time);  // randomize a time
           //cw.setForceMet(false);//true); //debugging */
-          cw.setForceMet(true);
+          cw.setForceMet(true); // release part
           break;
         case 5: // hold
           cout << " ST 5, ";
