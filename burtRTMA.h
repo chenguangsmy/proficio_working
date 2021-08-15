@@ -227,7 +227,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
             robot_x0  = - (force_thresh)/300;
           }
           
-          robot_center[1]  = robot_center[1] + robot_x0; 
+          robot_center[1]  = robot_center[1] - robot_x0; 
           //pert_small = -pert_small;
           //pert_big = -pert_big;
           //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
