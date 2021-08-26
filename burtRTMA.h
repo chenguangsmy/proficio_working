@@ -90,7 +90,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   bool fnameInit = false;
   bool fdirInit = false;
   bool ifPert = false;    // only perturb at certain trials
-  int pert_time = 0;
+//  int pert_time = 0;    // don't need any more after use GatingForceJudge to trigger the pert
   cp_type cp;
   cv_type cv;
   jp_type jp;
@@ -234,14 +234,14 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           //cw.setCenter_joint(taskJ_center);
           //cw.setCenter_endpoint(monkey_center);
           ifPert = int(task_state_data.ifpert) == 0 ? false : true;
-          pert_time = int(double(task_state_data.pert_time) * 500.0); // to double
-          printf("task_state_data.ifpert is: %d, pert_time: %d\n", ifPert, pert_time);
+          //pert_time = int(double(task_state_data.pert_time) * 500.0); // to double
+          //printf("task_state_data.ifpert is: %d, pert_time: %d\n", ifPert, pert_time);
           readyToMove_nosent = true;
           // set input x0  
           cw.jj.setx0Gradual(robot_center);
           break;
         case 2: // Present
-          cw.jj.setPertTime(pert_time);
+          //cw.jj.setPertTime(pert_time);
           cw.jj.disablePertCount();
           cout << " ST 2, ";
           break;
@@ -309,12 +309,14 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     }
 
     // Ping sent   Acknowlegde ping...
-    else if (Consumer_M.msg_type == MT_PING) {
+    else if (Consumer_M.msg_type == MT_PING) 
+    {
       cw.init();
     }
 
     // Exit the function
-    else if (Consumer_M.msg_type == MT_EXIT) { // add finish recording here
+    else if (Consumer_M.msg_type == MT_EXIT) 
+    { // add finish recording here
       wam.moveHome();
       wam.idle();
       break;
@@ -347,34 +349,33 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 
     else if(Consumer_M.msg_type == MT_FORCE_FEEDBACK)
     {
-      // scan the Force Feedback, inorder to make:
-      // If required perturb, in force zone, but not finished perturb, enable perturb count
-      // If require perturb, out force zone, but not finished perturb perturbed, reset perturb count (disablePertCount). 
+      // scan the Force Feedback, nothing to do here actually:
         MDF_FORCE_FEEDBACK frc_fb; 
         Consumer_M.GetData(&frc_fb);
-        if (ifPert){
-          if (~cw.jj.getPertFinish()){
-            if (frc_fb.force_bias >= -frc_fb.range && frc_fb.force_bias <= frc_fb.range && task_state == 3) { // in force zone
-              cw.jj.enablePertCount();
-            }
-          }
-          else { // out force zone
-            // only not at the perturbed time nor perturb finished do reset perturb
-            if (~cw.jj.getAtpert() && (~cw.jj.getPertFinish())){
-              cw.jj.resetPertCount();
-            }
-          }
-        }
     }
-  if (cw.jj.getPertFinish() && readyToMove_nosent && readyToMoveIter<10){ // finished the perturbation 
+
+    else if(Consumer_M.msg_type == MT_WAMPERT_STATUS)
+    {
+      MDF_WAMPERT_STATUS pert_sat;
+      Consumer_M.GetData(&pert_sat);
+
+      if (ifPert && pert_sat.perturb_start){
+        cw.jj.enablePertCount();
+        cw.jj.setPertTime(0); // start perturbation immediately
+      }
+    }
+  if (cw.jj.getPertFinish() && readyToMove_nosent && readyToMoveIter<10) // finished the perturbation 
+  {
     readyToMove(wam, robot_center, mod);   // boardcast readyToMove so that the `GatingForceJudge` knows
     readyToMoveIter++;
+  
   }
-  }
-  if (fnameInit && fdirInit){
+
+  if (fnameInit && fdirInit)
+  {
         fname_rtma = file_dir + '/' + file_name;
         cout << "fname should be" << fname_rtma << endl;
         fname_init = true;
   }
-
+  }
 }

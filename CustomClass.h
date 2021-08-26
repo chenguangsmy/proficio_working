@@ -357,14 +357,15 @@ protected:
 				iteration++;
 			}
         
-      		if ((iteration <= pert_time) || (iteration >= pert_time + 150)){ // no pulse
+      		if ((iteration <= pert_time) || (iteration >= pert_time + 150)){ // no pulse --- perturbation duration
+//      if ((iteration <= pert_time) || (iteration >= pert_time + 400)){ // no pulse
        			f_pretOutput[0] = 0;
         		f_pretOutput[1] = 0;
        			f_pretOutput[2] = 0;
-            	atpert = false;
+            atpert = false;
       		}
 			else { 	// halve pulse
-		    	f_pretOutput[0] = 0;
+        f_pretOutput[0] = 0;
 				f_pretOutput[1] = pert_mag;
 				f_pretOutput[2] = 0; 
             	atpert = true;
