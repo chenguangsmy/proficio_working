@@ -370,12 +370,12 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     readyToMoveIter++;
   
   }
-
+  }
   if (fnameInit && fdirInit)
   {
         fname_rtma = file_dir + '/' + file_name;
         cout << "fname should be" << fname_rtma << endl;
         fname_init = true;
   }
-  }
+
 }
