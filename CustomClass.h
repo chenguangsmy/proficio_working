@@ -365,7 +365,7 @@ protected:
             atpert = false;
       		}
 			else { 	// halve pulse
-        f_pretOutput[0] = 0;
+        		f_pretOutput[0] = 0;
 				f_pretOutput[1] = pert_mag;
 				f_pretOutput[2] = 0; 
             	atpert = true;

@@ -135,7 +135,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       //burt_status_data.state = thresholdMet;
       //burt_status_data.error = (int) hasError;
       burt_status_data.RDT = cw.jj.get_rdt(); // ReaDTime for synchrony
-      // Get Force Data //.. I doubt this line, how should cforce wrote? -CG
+      // Get Force Data //.. actually not wrote cforce. (only command)
       burt_status_data.force_x = cforce[1];
       burt_status_data.force_y = cforce[0];
       burt_status_data.force_z = cforce[2];
@@ -261,7 +261,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cout << " ST 4, ";
           cw.jj.setPertMag(0.0);
           readyToMove_nosent = false;  // have sent, hence no longer send the message.
-          if (ifPert){
+          if (ifPert){ //cg 0827--- consider to change this as no longer differences
             cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
             cw.jj.updateImpedanceWait();
           }
@@ -269,9 +269,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
             cw.setForceMet(true);         //save the release in the buffer
             cw.jj.updateImpedanceWait();  // immediate release
           }
-          //cw.jj.setPertMag(pert_small); 
-          //cw.jj.setPertTime(pert_time);  // randomize a time
-          //cw.setForceMet(false);//true); //debugging 
           break;
         case 5: // hold
           cout << " ST 5, ";
@@ -301,7 +298,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     {
       MDF_MOVE_HOME startButton;
       Consumer_M.GetData( &startButton); 
-      // cout<<"move to: "<< monkey_center[0] << "; "<< monkey_center[1] << "; "<< monkey_center[2] <<endl;
+      cout<<"move to: "<< monkey_center[0] << "; "<< monkey_center[1] << "; "<< monkey_center[2] <<endl; // testing
       moveToCenter(wam, robot_center, mod);  // do not fully delete this part! Msg contain! 
       // re-track force output here?  
       cw.trackSignal(); //maybe not needed as idle no longer exist. 
@@ -358,18 +355,18 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     {
       MDF_WAMPERT_STATUS pert_sat;
       Consumer_M.GetData(&pert_sat);
-
       if (ifPert && pert_sat.perturb_start){
+        printf("get perturbation message");
         cw.jj.enablePertCount();
         cw.jj.setPertTime(0); // start perturbation immediately
       }
     }
-  if (cw.jj.getPertFinish() && readyToMove_nosent && readyToMoveIter<10) // finished the perturbation 
-  {
-    readyToMove(wam, robot_center, mod);   // boardcast readyToMove so that the `GatingForceJudge` knows
-    readyToMoveIter++;
-  
-  }
+    if (cw.jj.getPertFinish() && readyToMove_nosent && readyToMoveIter<5) // finished the perturbation 
+    {
+      printf("\n Entered ready to move: ");
+      readyToMove(wam, robot_center, mod);   // boardcast readyToMove so that the `GatingForceJudge` knows
+      readyToMoveIter++;
+    }
   }
   if (fnameInit && fdirInit)
   {
@@ -377,5 +374,5 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         cout << "fname should be" << fname_rtma << endl;
         fname_init = true;
   }
-
+  
 }
