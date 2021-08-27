@@ -201,6 +201,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           barrett::btsleep(0.2); // the allocated time is to make sure the Netbox have calibrated the net force. 
           freeMoving = true;
           sendData = false;
+          readyToMoveIter = 0;
           // target: XYZ-IJK-0123456789
           robot_center[0] = task_state_data.target[0]; // here we temperarily change to a const value, for testing
           robot_center[1] = task_state_data.target[1];
@@ -262,14 +263,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cout << " ST 4, ";
           cw.jj.setPertMag(0.0);
           readyToMove_nosent = false;  // have sent, hence no longer send the message.
-          if (ifPert){ //cg 0827--- consider to change this as no longer differences
-            cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
-            cw.jj.updateImpedanceWait();
-          }
-          else {
-            cw.setForceMet(true);         //save the release in the buffer
-            cw.jj.updateImpedanceWait();  // immediate release
-          }
+          cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
+          cw.jj.updateImpedanceWait();
+
           break;
         case 5: // hold
           cout << " ST 5, ";
@@ -363,7 +359,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         cw.jj.setPertTime(0); // start perturbation immediately
       }
     }
-  if (cw.jj.getPertFinish() && readyToMove_nosent && readyToMoveIter<10) // finished the perturbation 
+  if (cw.jj.getPertFinish() && readyToMove_nosent && readyToMoveIter<5) // finished the perturbation 
   {
     readyToMove(wam, robot_center, mod);   // boardcast readyToMove so that the `GatingForceJudge` knows
     readyToMoveIter++;
