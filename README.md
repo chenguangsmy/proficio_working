@@ -35,6 +35,9 @@ This project need to be refined later.
   ).
   (<font color=red>Do we need to change K_q better? </font>)   
 
+* `readyToMove()`
+  Send message `DENSO_MOVE_COMPLETE`, to let other modules prepared. 
+
 ## useful *.h files
 * CustomClass.h
   * class `JointControlClass`: robot controller. It is a mixture controller containing jp, cp, and pert (joint position, cartesian tool position, and perturbation controller). In the controller, the convert between joint and cartesian positions are using Jacobian matrix , which is acquired from the wam. 
@@ -75,9 +78,10 @@ $ git clone https://github.com/chenguangsmy/proficio_working.git
 * RTMA task config: `rg2/config/Wam.2dDebug.KingKong/XM.target_simple.config`, sending target `burtRTMA.h`
     * This item may conflict with the `XM.target_simple.config`, I need to check the `executive.m` file to have a fine look. 
 
-# recent logic about perturbation and release (2021-06-30): 
-1. GatingForceJudge send force message. Depending on the force, the robot begin to start the perturbation. 
-2. Perturbation works only on `wam_2dBallistic` module, whereas whether release work on `GatingForceJudge` module. 
-3. For the confliction on the `task_id`, I give enough time in the movement period, and let `wam_2dBallistic` release after the perturbation is totally finished, even though at which time the release signal could passed for hundreds of milliseconds.  
+# recent logic about perturbation and release (2021-08-27): 
+1. `GatingForceJudge` judge force, when force keeps for a certain duration, it sends message `MT_WAMPERT_STATUS`. 
+2. Perturbation was turned on immediately `wam_2dBallistic` module hear the `MT_WAMPERT_STATUS`, after perturbation, `wam_2dBallistic` module will send out a message of `MT_WAMPERT_STATUS`. 
+3. During perturbation, no matter what the force is, the time is counting up in `GatingForceJudge` module, after perturbation, the time only counting up when force in the force zone. 
+4. Once the time was achieved the release time, `GatingForceJudge` update to next task state, whereas `wam_2dBallistic` module was listening.
 
-This would cause the task state and the perturbation signal are hard to align, then I need to chagne it. 
+Maybe the better way later is to use task states to govern when to perturb, like having two task_state files, the one with perturb and the one without. 

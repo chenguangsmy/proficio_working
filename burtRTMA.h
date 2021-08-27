@@ -355,18 +355,18 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     {
       MDF_WAMPERT_STATUS pert_sat;
       Consumer_M.GetData(&pert_sat);
+
       if (ifPert && pert_sat.perturb_start){
-        printf("get perturbation message");
         cw.jj.enablePertCount();
         cw.jj.setPertTime(0); // start perturbation immediately
       }
     }
-    if (cw.jj.getPertFinish() && readyToMove_nosent && readyToMoveIter<5) // finished the perturbation 
-    {
-      printf("\n Entered ready to move: ");
-      readyToMove(wam, robot_center, mod);   // boardcast readyToMove so that the `GatingForceJudge` knows
-      readyToMoveIter++;
-    }
+  if (cw.jj.getPertFinish() && readyToMove_nosent && readyToMoveIter<10) // finished the perturbation 
+  {
+    readyToMove(wam, robot_center, mod);   // boardcast readyToMove so that the `GatingForceJudge` knows
+    readyToMoveIter++;
+  
+  }
   }
   if (fnameInit && fdirInit)
   {
