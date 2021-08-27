@@ -191,7 +191,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       Consumer_M.GetData( &task_state_data);
       //cout << "task id : " << task_state_data.id << "pert_time:" <<task_state_data.pert_time<<endl;
       freeMoving = false;
-      sendData  = true;
+      
       cw.jj.setTaskState(task_state_data.id);
       task_state = task_state_data.id;
       switch(task_state_data.id)
@@ -243,6 +243,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 2: // Present
           //cw.jj.setPertTime(pert_time);
           cw.jj.disablePertCount();
+          sendData = true;
           cout << " ST 2, ";
           break;
         case 3: //ForceRamp
@@ -275,6 +276,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
         case 6:
           cout << " ST 6, ";
+          sendData  = false;
           break;
         case 7:
           cout << " ST 7, " << endl;
