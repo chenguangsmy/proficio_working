@@ -53,7 +53,7 @@ public:
 	jp_type input_q_0;
 	cp_type input_x_0;
 	bool    setx0flag;
-	int     x0iterator; 			// from 0 to 99
+	int     x0iterator; 			// from 0 to 512
 	cp_type input_x0_stt;
 	cp_type input_x0_edn;
 	systems::Ramp time;
@@ -104,6 +104,7 @@ public:
 	virtual ~JointControlClass() { this->mandatoryCleanUp(); }
 
 	void setImpedance(Matrix_3x3 K_x1, Matrix_3x3 B_x1){ 
+		printf("x0: %f, %f, %f", input_x_0[0], input_x_0[1], input_x_0[2]);
 		K_x = K_x1;
 		B_x = B_x1; 
 	}
@@ -143,11 +144,13 @@ public:
 	}
 
 	void setx0(cp_type center_pos){
+		printf("set center to: %f, %f, %f\n", center_pos[0], center_pos[1], center_pos[2]);
 		input_x_0 = center_pos;
 	}
 
 	void setx0Gradual(cp_type center_pos){
-		input_x0_stt = input_x_0;
+		//input_x0_stt = input_x_0;
+		input_x0_stt = wamCPInput.getValue();
 		input_x0_edn = center_pos;
 		x0iterator = 1;
 		setx0flag = true; 
@@ -167,8 +170,8 @@ public:
 	}
 
 	int setpretAmp(){ // used in stochastic perturbation
-		pretAmplitude_x = 6.0;
-		pretAmplitude_y = 6.0;
+		pretAmplitude_x = 12.0;
+		pretAmplitude_y = 12.0;
 	}
 
 	int resetpretAmp(){ // used in stochastic perturbation
@@ -197,6 +200,9 @@ public:
 	int disablePertCount(){
 		pert_count_enable = false;
 		if_pert_finish = false;
+		iteration = 0;
+	}
+	int resetPertCount(){
 		iteration = 0;
 	}
 	int setPertMag(double mag){
@@ -351,14 +357,15 @@ protected:
 				iteration++;
 			}
         
-      		if ((iteration <= pert_time) || (iteration >= pert_time + 150)){ // no pulse
+      		if ((iteration <= pert_time) || (iteration >= pert_time + 150)){ // no pulse --- perturbation duration
+//      if ((iteration <= pert_time) || (iteration >= pert_time + 400)){ // no pulse
        			f_pretOutput[0] = 0;
         		f_pretOutput[1] = 0;
        			f_pretOutput[2] = 0;
-            	atpert = false;
+            atpert = false;
       		}
 			else { 	// halve pulse
-		    	f_pretOutput[0] = 0;
+        		f_pretOutput[0] = 0;
 				f_pretOutput[1] = pert_mag;
 				f_pretOutput[2] = 0; 
             	atpert = true;

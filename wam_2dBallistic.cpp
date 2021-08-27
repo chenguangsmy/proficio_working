@@ -218,6 +218,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   mod.Subscribe( MT_SESSION_CONFIG );
   mod.Subscribe( MT_XM_START_SESSION );
   mod.Subscribe( MT_FORCE_FEEDBACK); 
+  mod.Subscribe( MT_WAMPERT_STATUS);  // a message describing when to start perturbation
   printf("Module Supscription succeed!\n");  //
 
   wam.gravityCompensate();
@@ -251,9 +252,9 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	K_x1(2,2) = 300;
 
   B_x0 = 0.1 * K_x0;
-  B_x1(0,0) = 20.0;
-  B_x1(1,1) = 20.0;
-  B_x1(2,2) = 20.0;
+  B_x1(0,0) = 5.0; //20.0;
+  B_x1(1,1) = 5.0; //20.0;
+  B_x1(2,2) = 5.0; //20.0;
 
 	input_q_0[0] =-1.571;
 	input_q_0[1] = 0.0;

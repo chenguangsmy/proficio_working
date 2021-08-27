@@ -90,7 +90,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   bool fnameInit = false;
   bool fdirInit = false;
   bool ifPert = false;    // only perturb at certain trials
-  int pert_time = 0;
+//  int pert_time = 0;    // don't need any more after use GatingForceJudge to trigger the pert
   cp_type cp;
   cv_type cv;
   jp_type jp;
@@ -98,6 +98,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   jt_type jt;
   double taskJ_center[4]; // task send joint position
   int     trial_count = 0;    // as a marker for counting which trial perturb
+  int     readyToMoveIter = 0;    // mark as send ready to move tiems
+  int     task_state = 0;
+  int     target_dir = 0;
   cp_type monkey_center(system_center);
   cp_type robot_center(system_center);
   cp_type target;
@@ -111,7 +114,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   int session_num; 
   bool readyToMove_nosent;
   double pert_small = 5; //5N
-  double pert_big = 8;   //25N
+  double pert_big = -15;   //25N
   double force_thresh = 0; // force_tar in ballistic release
   double robot_x0 = 0; // should be: robot_x0 = force_tar/300; //(300 as the robot stiffness)
 
@@ -132,7 +135,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       //burt_status_data.state = thresholdMet;
       //burt_status_data.error = (int) hasError;
       burt_status_data.RDT = cw.jj.get_rdt(); // ReaDTime for synchrony
-      // Get Force Data //.. I doubt this line, how should cforce wrote? -CG
+      // Get Force Data //.. actually not wrote cforce. (only command)
       burt_status_data.force_x = cforce[1];
       burt_status_data.force_y = cforce[0];
       burt_status_data.force_z = cforce[2];
@@ -190,6 +193,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       freeMoving = false;
       sendData  = true;
       cw.jj.setTaskState(task_state_data.id);
+      task_state = task_state_data.id;
       switch(task_state_data.id)
       {
         case 1:   // set joint center and endpoint center
@@ -198,10 +202,12 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           freeMoving = true;
           sendData = false;
           // target: XYZ-IJK-0123456789
-          robot_center[0] = task_state_data.target[0]; // here we temperarily change to a const value, for tesging
+          robot_center[0] = task_state_data.target[0]; // here we temperarily change to a const value, for testing
           robot_center[1] = task_state_data.target[1];
           robot_center[2] = task_state_data.target[2];
           
+          target_dir = task_state_data.target[4];
+
           taskJ_center[0] = task_state_data.target[8];
           taskJ_center[1] = task_state_data.target[9];
           taskJ_center[2] = task_state_data.target[10];
@@ -213,33 +219,38 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 
           force_thresh = task_state_data.target[7]; 
           printf("force for this target: %f N \n", force_thresh);
-          robot_x0  = - (force_thresh)/300; // only for the front
-          robot_center[1]  = robot_center[1] + robot_x0; 
+          if (target_dir == 0 || target_dir == 6){
+            robot_x0  = + (force_thresh)/300; // only for the front
+          }
+          else if ((target_dir == 4 || target_dir == 2))
+          {
+            robot_x0  = - (force_thresh)/300;
+          }
+          
+          robot_center[1]  = robot_center[1] - robot_x0; 
           //pert_small = -pert_small;
-          pert_big = -pert_big;
+          //pert_big = -pert_big;
           //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
           //cw.setCenter_joint(taskJ_center);
           //cw.setCenter_endpoint(monkey_center);
           ifPert = int(task_state_data.ifpert) == 0 ? false : true;
-          pert_time = int(double(task_state_data.pert_time) * 500.0); // to double
-          printf("task_state_data.ifpert is: %d, pert_time: %d\n", ifPert, pert_time);
-          cw.jj.setPertTime(pert_time);
+          //pert_time = int(double(task_state_data.pert_time) * 500.0); // to double
+          //printf("task_state_data.ifpert is: %d, pert_time: %d\n", ifPert, pert_time);
           readyToMove_nosent = true;
           // set input x0  
           cw.jj.setx0Gradual(robot_center);
-          
           break;
         case 2: // Present
-        
+          //cw.jj.setPertTime(pert_time);
+          cw.jj.disablePertCount();
           cout << " ST 2, ";
-          
           break;
         case 3: //ForceRamp
           // stiff the Wam and wait for perturb, 
           // after the perturbation, send messages to the GatingForceJudge. 
           cout << " ST 3, ";
           if (ifPert){ // should perturb
-            cw.jj.setpretAmp();
+            //cw.jj.setpretAmp(); // used in stochastic pert
             cw.jj.setPertMag(pert_big); 
           }
           else{
@@ -247,10 +258,10 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           }
           break;
         case 4: //Move
-          cout << " ST 4, ";  
+          cout << " ST 4, ";
           cw.jj.setPertMag(0.0);
           readyToMove_nosent = false;  // have sent, hence no longer send the message.
-          if (ifPert){
+          if (ifPert){ //cg 0827--- consider to change this as no longer differences
             cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
             cw.jj.updateImpedanceWait();
           }
@@ -258,9 +269,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
             cw.setForceMet(true);         //save the release in the buffer
             cw.jj.updateImpedanceWait();  // immediate release
           }
-          //cw.jj.setPertMag(pert_small); 
-          //cw.jj.setPertTime(pert_time);  // randomize a time
-          //cw.setForceMet(false);//true); //debugging 
           break;
         case 5: // hold
           cout << " ST 5, ";
@@ -270,10 +278,12 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
         case 7:
           cout << " ST 7, " << endl;
+          cw.jj.setx0(robot_center);
           cw.setForceMet(false);
           cw.jj.disablePertCount(); // avoid perturbation at this time
           cw.jj.resetpretAmp();
           freeMoving = true;
+          cw.moveToq0(); //make sure on the right joint position
           break;
         default:
           break;
@@ -288,8 +298,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     {
       MDF_MOVE_HOME startButton;
       Consumer_M.GetData( &startButton); 
-      cw.moveToq0(); //make sure on the right joint position
-      // cout<<"move to: "<< monkey_center[0] << "; "<< monkey_center[1] << "; "<< monkey_center[2] <<endl;
+      cout<<"move to: "<< monkey_center[0] << "; "<< monkey_center[1] << "; "<< monkey_center[2] <<endl; // testing
       moveToCenter(wam, robot_center, mod);  // do not fully delete this part! Msg contain! 
       // re-track force output here?  
       cw.trackSignal(); //maybe not needed as idle no longer exist. 
@@ -297,12 +306,14 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     }
 
     // Ping sent   Acknowlegde ping...
-    else if (Consumer_M.msg_type == MT_PING) {
+    else if (Consumer_M.msg_type == MT_PING) 
+    {
       cw.init();
     }
 
     // Exit the function
-    else if (Consumer_M.msg_type == MT_EXIT) { // add finish recording here
+    else if (Consumer_M.msg_type == MT_EXIT) 
+    { // add finish recording here
       wam.moveHome();
       wam.idle();
       break;
@@ -335,32 +346,33 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 
     else if(Consumer_M.msg_type == MT_FORCE_FEEDBACK)
     {
-      // scan the Force Feedback, inorder to make:
-      // If required perturb, in force zone, but not finished perturb, enable perturb count
-      // If require perturb, out force zone, but not finished perturb perturbed, reset perturb count (disablePertCount). 
+      // scan the Force Feedback, nothing to do here actually:
         MDF_FORCE_FEEDBACK frc_fb; 
         Consumer_M.GetData(&frc_fb);
-        if (ifPert){
-          if (frc_fb.force_bias >= -frc_fb.range && frc_fb.force_bias <= frc_fb.range) { // in force zone
-            if (~cw.jj.getPertFinish()){
-            cw.jj.enablePertCount();
-            }
-          }
-          else { // out force zone
-            // only not at the perturbed time nor perturb finished do reset perturb
-            if (~cw.jj.getAtpert() && (~cw.jj.getPertFinish()))
-            cw.jj.disablePertCount();
-          }
-        }
     }
-  if (cw.jj.getPertFinish() && readyToMove_nosent){ // finished the perturbation 
+
+    else if(Consumer_M.msg_type == MT_WAMPERT_STATUS)
+    {
+      MDF_WAMPERT_STATUS pert_sat;
+      Consumer_M.GetData(&pert_sat);
+
+      if (ifPert && pert_sat.perturb_start){
+        cw.jj.enablePertCount();
+        cw.jj.setPertTime(0); // start perturbation immediately
+      }
+    }
+  if (cw.jj.getPertFinish() && readyToMove_nosent && readyToMoveIter<10) // finished the perturbation 
+  {
     readyToMove(wam, robot_center, mod);   // boardcast readyToMove so that the `GatingForceJudge` knows
+    readyToMoveIter++;
+  
   }
   }
-  if (fnameInit && fdirInit){
+  if (fnameInit && fdirInit)
+  {
         fname_rtma = file_dir + '/' + file_name;
         cout << "fname should be" << fname_rtma << endl;
         fname_init = true;
   }
-
+  
 }
