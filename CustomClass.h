@@ -16,7 +16,7 @@
 #include <boost/tuple/tuple.hpp>
 #include <barrett/log.h>
 
-#define IS_PULSE_PERT 1
+#define IS_PULSE_PERT 0
 
 typedef typename ::barrett::math::Matrix<4,4> Matrix_4x4; //self-def matrix type
 typedef typename ::barrett::math::Matrix<4,1> Matrix_4x1; //self-def matrix type
@@ -170,8 +170,8 @@ public:
 	}
 
 	int setpretAmp(){ // used in stochastic perturbation
-		pretAmplitude_x = 12.0;
-		pretAmplitude_y = 12.0;
+		pretAmplitude_x = 5.0;
+		pretAmplitude_y = 5.0;
 	}
 
 	int resetpretAmp(){ // used in stochastic perturbation
@@ -350,21 +350,25 @@ protected:
 		// Control Law Implamentation
 
 		// iteration_MAX - stochastic perturbation
-		if (IS_PULSE_PERT) { // inpulse perturbation here
+		if (IS_PULSE_PERT) 
+		{ // inpulse perturbation here
 
-			if (pert_count_enable || atpert){ 
+			if (pert_count_enable || atpert)
+			{ 
 				// if starting count, or already perturb the first pulse:
 				iteration++;
 			}
         
-      		if ((iteration <= pert_time) || (iteration >= pert_time + 150)){ // no pulse --- perturbation duration
+      		if ((iteration <= pert_time) || (iteration >= pert_time + 150))
+			  { // no pulse --- perturbation duration
 //      if ((iteration <= pert_time) || (iteration >= pert_time + 400)){ // no pulse
        			f_pretOutput[0] = 0;
         		f_pretOutput[1] = 0;
        			f_pretOutput[2] = 0;
-            atpert = false;
+            	atpert = false;
       		}
-			else { 	// halve pulse
+			else 
+			{ 	// halve pulse
         		f_pretOutput[0] = 0;
 				f_pretOutput[1] = pert_mag;
 				f_pretOutput[2] = 0; 
@@ -372,7 +376,8 @@ protected:
       		        
 			}
 
-			if (iteration >= pert_time + 500) {
+			if (iteration >= pert_time + 500) 
+			{
 				if_pert_finish = true;
 			}
 

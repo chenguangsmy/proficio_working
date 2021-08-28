@@ -206,8 +206,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           robot_center[0] = task_state_data.target[0]; // here we temperarily change to a const value, for testing
           robot_center[1] = task_state_data.target[1];
           robot_center[2] = task_state_data.target[2];
-          
-          target_dir = task_state_data.target[4];
 
           taskJ_center[0] = task_state_data.target[8];
           taskJ_center[1] = task_state_data.target[9];
@@ -218,17 +216,29 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           monkey_center[1] = task_state_data.target[31];
           monkey_center[2] = task_state_data.target[32];  
 
-          force_thresh = task_state_data.target[7]; 
           printf("force for this target: %f N \n", force_thresh);
-          if (target_dir == 0 || target_dir == 6){
-            robot_x0  = + (force_thresh)/300; // only for the front
-          }
-          else if ((target_dir == 4 || target_dir == 2))
+          robot_x0 = force_thresh/300;
+          switch(target_dir)
           {
-            robot_x0  = - (force_thresh)/300;
+              case 0: // right 
+                robot_center[0] -= robot_x0;
+                pert_big = -abs(pert_big);
+                break;
+              case 2: // front
+                robot_center[1] -= robot_x0;
+                pert_big = -abs(pert_big);
+                break;
+              case 4: // left 
+                robot_center[0] += robot_x0;
+                pert_big = abs(pert_big);
+                break;
+              case 6: 
+                robot_center[1] += robot_x0;
+                pert_big = abs(pert_big);
+                break;
           }
+
           
-          robot_center[1]  = robot_center[1] - robot_x0; 
           //pert_small = -pert_small;
           //pert_big = -pert_big;
           //cout << " case 1 Target : " << target[0] << "," << target[1] << "," << target[2] << endl;
@@ -251,8 +261,11 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           // stiff the Wam and wait for perturb, 
           // after the perturbation, send messages to the GatingForceJudge. 
           cout << " ST 3, ";
+          target_dir = task_state_data.target[4];
+          force_thresh = task_state_data.target[7]; 
+          printf("\n Direction: %d, force: %f\n\n", target_dir, force_thresh); 
           if (ifPert){ // should perturb
-            //cw.jj.setpretAmp(); // used in stochastic pert
+            cw.jj.setpretAmp(); // used in stochastic pert
             cw.jj.setPertMag(pert_big); 
           }
           else{
@@ -272,6 +285,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
         case 6:
           cout << " ST 6, ";
+          cw.jj.resetpretAmp();
           sendData  = false;
           break;
         case 7:
@@ -279,7 +293,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.setx0(robot_center);
           cw.setForceMet(false);
           cw.jj.disablePertCount(); // avoid perturbation at this time
-          cw.jj.resetpretAmp();
           freeMoving = true;
           cw.moveToq0(); //make sure on the right joint position
           break;
