@@ -16,7 +16,7 @@
 #include <boost/tuple/tuple.hpp>
 #include <barrett/log.h>
 
-#define IS_PULSE_PERT 0
+#define IS_PULSE_PERT 1
 
 typedef typename ::barrett::math::Matrix<4,4> Matrix_4x4; //self-def matrix type
 typedef typename ::barrett::math::Matrix<4,1> Matrix_4x1; //self-def matrix type
@@ -183,6 +183,12 @@ public:
 		pert_flip = flip; // 0 for no pert, 1 for pert
 	}
 
+	int setFoffset(double Fy){
+		f_offset[0] = 0;
+		f_offset[1] = Fy;
+		f_offset[2] = 0;
+	}
+
 	int enablePert(){
 		pert_enable = true;
 	}
@@ -283,6 +289,7 @@ protected:
 	Matrix_3x1 f_pret;
 	Matrix_6x4 J_tot;
 	Matrix_3x4 J_x;
+	Matrix_3x1 f_offset;
 
 	virtual void operate() {
 		
@@ -346,6 +353,8 @@ protected:
 		else {
 			tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 
 		}
+    
+    //tau_x = J_x.transpose()*f_offset; ... a force
 
 		// Control Law Implamentation
 
@@ -359,9 +368,10 @@ protected:
 				iteration++;
 			}
         
-      		if ((iteration <= pert_time) || (iteration >= pert_time + 150))
-			  { // no pulse --- perturbation duration
-//      if ((iteration <= pert_time) || (iteration >= pert_time + 400)){ // no pulse
+//      		if ((iteration <= pert_time) || (iteration >= pert_time + 150))
+//			  { // no pulse --- perturbation duration
+      if ((iteration <= pert_time) || (iteration >= pert_time + 400)){ // no pulse
+      //if ((iteration <= pert_time) || (iteration >= pert_time + 1000)){ // no pulse
        			f_pretOutput[0] = 0;
         		f_pretOutput[1] = 0;
        			f_pretOutput[2] = 0;
@@ -439,9 +449,10 @@ protected:
 		}
 		tau_pret = J_x.transpose()*(f_pret);
 
-
+    
 		// Sum torque commands
 		tau = tau_q + tau_x + tau_pret;
+    //tau = tau_x + tau_pret;
 		// Save outputs
 		// Save outputs
 		prevPret[0] = f_pretOutput[0];

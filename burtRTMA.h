@@ -215,6 +215,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           monkey_center[0] = task_state_data.target[30]; // here we temperarily change to a const value, for tesging
           monkey_center[1] = task_state_data.target[31];
           monkey_center[2] = task_state_data.target[32];  
+          
+          pert_big = task_state_data.pert_mag;
 
           printf("force for this target: %f N \n", force_thresh);
           robot_x0 = force_thresh/300;
@@ -222,21 +224,18 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           {
               case 0: // right 
                 robot_center[0] -= robot_x0;
-                pert_big = -abs(pert_big);
                 break;
               case 2: // front
                 robot_center[1] -= robot_x0;
-                pert_big = -abs(pert_big);
                 break;
               case 4: // left 
                 robot_center[0] += robot_x0;
-                pert_big = abs(pert_big);
                 break;
               case 6: 
                 robot_center[1] += robot_x0;
-                pert_big = abs(pert_big);
                 break;
           }
+          pert_big = pert_big;
 
           
           //pert_small = -pert_small;
@@ -254,6 +253,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 2: // Present
           //cw.jj.setPertTime(pert_time);
           cw.jj.disablePertCount();
+          cw.jj.setFoffset(10.0);
           sendData = true;
           cout << " ST 2, ";
           break;
@@ -278,7 +278,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           readyToMove_nosent = false;  // have sent, hence no longer send the message.
           cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
           cw.jj.updateImpedanceWait();
-
+          cw.jj.setFoffset(0.0);
           break;
         case 5: // hold
           cout << " ST 5, ";
