@@ -275,9 +275,11 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
         case 6:
           cout << " ST 6, ";
+          cw.jj.setUpdateJaccobian(true);
           break;
         case 7:
           cout << " ST 7, " << endl;
+          cw.jj.setUpdateJaccobian(false);
           cw.jj.setx0(robot_center);
           cw.setForceMet(false);
           cw.jj.disablePertCount(); // avoid perturbation at this time

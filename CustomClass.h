@@ -98,6 +98,7 @@ public:
 			task_state = 0;
 			setx0flag = false; 
 			x0iterator = 0;
+			if_Jacobbian_update = true;
       		//printf("K_qQ is: %.3f, %.3f, %.3f, %.3f\n", K_qQuantum(0,0), K_qQuantum(1,1), K_qQuantum(2,2), K_qQuantum(3,3));
 		}
 
@@ -219,6 +220,11 @@ public:
 		return if_pert_finish;
 	}
 
+	int setUpdateJaccobian(bool ifUpdate){
+		if_Jacobbian_update = ifUpdate;
+		return 1;
+	}
+
 
 protected:
 	double	input_time;
@@ -252,6 +258,7 @@ protected:
 	bool    pert_count_enable;
     bool  	atpert; 
 	bool  	if_pert_finish;
+	bool    if_Jacobbian_update;
 	int 	pert_time; // randomize a time in the burtRTMA.h to cound down perturbation.
 
 	// Initialize variables 
@@ -329,7 +336,9 @@ protected:
 
 		// Import Jacobian
 		J_tot.block(0,0,6,4) = wam.getToolJacobian(); // Entire 6D Jacobian
-		J_x.block(0,0,3,4) = J_tot.block(0,0,3,4); // 3D Translational Jacobian
+		if(if_Jacobbian_update){
+			J_x.block(0,0,3,4) = J_tot.block(0,0,3,4); // 3D Translational Jacobian
+		}
 
 		// Joint impedance controller
 		if ((input_time-input_time0) < rampTime ) {
