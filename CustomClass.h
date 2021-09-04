@@ -170,8 +170,8 @@ public:
 	}
 
 	int setpretAmp(){ // used in stochastic perturbation
-		pretAmplitude_x = 5.0;
-		pretAmplitude_y = 5.0;
+		pretAmplitude_x = 12.0;
+		pretAmplitude_y = 12.0;
 	}
 
 	int resetpretAmp(){ // used in stochastic perturbation
@@ -181,12 +181,6 @@ public:
 
 	int resetpretFlip(bool flip){
 		pert_flip = flip; // 0 for no pert, 1 for pert
-	}
-
-	int setFoffset(double Fy){
-		f_offset[0] = 0;
-		f_offset[1] = Fy;
-		f_offset[2] = 0;
 	}
 
 	int enablePert(){
@@ -289,7 +283,6 @@ protected:
 	Matrix_3x1 f_pret;
 	Matrix_6x4 J_tot;
 	Matrix_3x4 J_x;
-	Matrix_3x1 f_offset;
 
 	virtual void operate() {
 		
@@ -353,32 +346,25 @@ protected:
 		else {
 			tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 
 		}
-    
-    //tau_x = J_x.transpose()*f_offset; ... a force
 
 		// Control Law Implamentation
 
 		// iteration_MAX - stochastic perturbation
-		if (IS_PULSE_PERT) 
-		{ // inpulse perturbation here
+		if (IS_PULSE_PERT) { // inpulse perturbation here
 
-			if (pert_count_enable || atpert)
-			{ 
+			if (pert_count_enable || atpert){ 
 				// if starting count, or already perturb the first pulse:
 				iteration++;
 			}
         
-//      		if ((iteration <= pert_time) || (iteration >= pert_time + 150))
-//			  { // no pulse --- perturbation duration
-      if ((iteration <= pert_time) || (iteration >= pert_time + 400)){ // no pulse
-      //if ((iteration <= pert_time) || (iteration >= pert_time + 1000)){ // no pulse
+      		if ((iteration <= pert_time) || (iteration >= pert_time + 150)){ // no pulse --- perturbation duration
+//      if ((iteration <= pert_time) || (iteration >= pert_time + 400)){ // no pulse
        			f_pretOutput[0] = 0;
         		f_pretOutput[1] = 0;
        			f_pretOutput[2] = 0;
-            	atpert = false;
+            atpert = false;
       		}
-			else 
-			{ 	// halve pulse
+			else { 	// halve pulse
         		f_pretOutput[0] = 0;
 				f_pretOutput[1] = pert_mag;
 				f_pretOutput[2] = 0; 
@@ -386,8 +372,7 @@ protected:
       		        
 			}
 
-			if (iteration >= pert_time + 500) 
-			{
+			if (iteration >= pert_time + 500) {
 				if_pert_finish = true;
 			}
 
@@ -449,10 +434,9 @@ protected:
 		}
 		tau_pret = J_x.transpose()*(f_pret);
 
-    
+
 		// Sum torque commands
 		tau = tau_q + tau_x + tau_pret;
-    //tau = tau_x + tau_pret;
 		// Save outputs
 		// Save outputs
 		prevPret[0] = f_pretOutput[0];
