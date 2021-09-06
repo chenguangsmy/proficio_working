@@ -298,6 +298,8 @@ protected:
 	Matrix_3x1 f_offset;
 
 	virtual void operate() {
+
+		printf("Is feedbackVal Defined: %d \n", wam.tpController.feedbackInput.valueDefined());
 		
 		input_time = timeInput.getValue();
 		input_q = wamJPInput.getValue();
@@ -341,10 +343,15 @@ protected:
 		x_dot[2] = input_x_dot[2];
 
 		// Import Jacobian
-		J_tot.block(0,0,6,4) = wam.getToolJacobian(); // Entire 6D Jacobian
+		
 		if(if_Jacobbian_update){
+      J_tot.block(0,0,6,4) = wam.getToolJacobian(); // Entire 6D Jacobian
 			J_x.block(0,0,3,4) = J_tot.block(0,0,3,4); // 3D Translational Jacobian
+
 		}
+    else {
+
+    }
 
 		// Joint impedance controller
 		if ((input_time-input_time0) < rampTime ) {

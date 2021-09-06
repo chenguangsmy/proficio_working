@@ -259,6 +259,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 3: //ForceRamp
           // stiff the Wam and wait for perturb, 
           // after the perturbation, send messages to the GatingForceJudge. 
+          // cw.jj.setUpdateJaccobian(false);
           cout << " ST 3, ";
           target_dir = task_state_data.target[4];
           force_thresh = task_state_data.target[7]; 
@@ -292,7 +293,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cout << " ST 7, " << endl;
           cw.jj.setx0(robot_center);
           cw.setForceMet(false);
-          cw.jj.setUpdateJaccobian(false);
           cw.jj.disablePertCount(); // avoid perturbation at this time
           freeMoving = true;
           cw.moveToq0(); //make sure on the right joint position
