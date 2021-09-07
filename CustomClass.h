@@ -298,8 +298,6 @@ protected:
 	Matrix_3x1 f_offset;
 
 	virtual void operate() {
-
-		printf("Is feedbackVal Defined: %d \n", wam.tpController.feedbackInput.valueDefined());
 		
 		input_time = timeInput.getValue();
 		input_q = wamJPInput.getValue();
