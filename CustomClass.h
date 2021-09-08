@@ -217,6 +217,12 @@ public:
 		return 1;
 	}
 
+	int setPertPositionMag(double mag){
+		pert_pos_mag = mag; 
+		printf("\n position perturbation %.2f\n", mag);
+		return 1;
+	}
+
 	int setPertTime(int time){
 		pert_time = time;
 		return 1;
@@ -255,6 +261,7 @@ protected:
 	cf_type f_pretOutput;
 	double output_iteration;
     double pert_mag; //impulse-perturbation magnitude (Newton)
+	double pert_pos_mag; //impulse-perturbation magnitude (m)
 	int 	rdt; 
 	bool 	if_set_JImp;
 	bool 	if_set_Imp;
@@ -343,7 +350,7 @@ protected:
 		// Import Jacobian
 		
 		if(if_Jacobbian_update){
-      J_tot.block(0,0,6,4) = wam.getToolJacobian(); // Entire 6D Jacobian
+      		J_tot.block(0,0,6,4) = wam.getToolJacobian(); // Entire 6D Jacobian
 			J_x.block(0,0,3,4) = J_tot.block(0,0,3,4); // 3D Translational Jacobian
 
 		}
@@ -367,7 +374,7 @@ protected:
 			tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 
 		}
     
-    tau_x = J_x.transpose()*f_offset; // a  offset force
+    //tau_x = J_x.transpose()*f_offset; // a  offset force
 
 		// Control Law Implamentation
 
@@ -392,10 +399,16 @@ protected:
       		}
 			else 
 			{ 	// halve pulse
-        		f_pretOutput[0] = 0;
+				f_pretOutput[0] = 0;
 				f_pretOutput[1] = pert_mag;
 				f_pretOutput[2] = 0; 
-            	atpert = true;
+
+				x_0[0] = input_x_0[0];
+				x_0[1] = input_x_0[1] + pert_pos_mag;
+				x_0[2] = input_x_0[2];
+				tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); //over-write tau_x
+        //printf("p");
+        atpert = true;
       		        
 			}
 

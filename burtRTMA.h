@@ -103,6 +103,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   int     target_dir = 0;
   cp_type monkey_center(system_center);
   cp_type robot_center(system_center);
+  cp_type perturbed_center(system_center);  // the perturbation position (at perturbed)
   cp_type target;
 	CMessage Consumer_M;
 
@@ -266,7 +267,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           printf("\n Direction: %d, force: %f\n\n", target_dir, force_thresh); 
           if (ifPert){ // should perturb
             cw.jj.setpretAmp(); // used in stochastic pert
-            cw.jj.setPertMag(pert_big); 
+            cw.jj.setPertMag(0); 
+            cw.jj.setPertPositionMag(task_state_data.pertdx0_mag);
           }
           else{
             cw.jj.setPertMag(0.0);
