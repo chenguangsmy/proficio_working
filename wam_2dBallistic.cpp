@@ -235,9 +235,9 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	jp_type input_q_0;
 	cp_type input_x_0;
 
-	K_q0(0,0) = 200.0; // keep wam upright
+	K_q0(0,0) = 0.0; //200.0; // keep wam upright
 	K_q0(1,1) = 0.0;
-	K_q0(2,2) = 200.0;
+	K_q0(2,2) = 0.0; //200.0;
 	K_q0(3,3) = 0.0;
   K_q1 = K_q0; 
 

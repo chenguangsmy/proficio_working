@@ -407,8 +407,8 @@ protected:
 				x_0[1] = input_x_0[1] + pert_pos_mag;
 				x_0[2] = input_x_0[2];
 				tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); //over-write tau_x
-        //printf("p");
-        atpert = true;
+        		//printf("p");
+        		atpert = true;
       		        
 			}
 
@@ -582,6 +582,22 @@ class ControllerWarper{
 
 	void startController(){
 		// connect 
+	}
+
+	int setK1(double K_input){
+		K_x1(0,0) = K_input;
+		K_x1(1,1) = K_input;
+		K_x1(2,2) = K_input;
+		printf("cw: setKx to .2%f \n", K_input);
+		return 1;
+	}
+
+	int setB1(double B_input){
+		B_x1(0,0) = B_input;
+		B_x1(1,1) = B_input;
+		B_x1(2,2) = B_input;
+		printf("cw: setBx to .2%f \n", B_input);
+		return 1;
 	}
 
 	void setForceMet(bool wasMet){
