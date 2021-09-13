@@ -219,7 +219,7 @@ public:
 
 	int setPertPositionMag(double mag){
 		pert_pos_mag = mag; 
-		printf("\n position perturbation %.2f\n", mag);
+		printf("\n position perturbation %f\n", mag);
 		return 1;
 	}
 
