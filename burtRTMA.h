@@ -269,12 +269,14 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           printf("\n Direction: %d, force: %f\n\n", target_dir, force_thresh); 
           if (ifPert){ // should perturb
             cw.jj.setpretAmp(); // used in stochastic pert
-            //cw.jj.setPertMag(task_state_data.pert_mag); //
+            cw.jj.setPertMag(task_state_data.pert_mag); //
             cw.jj.setPertPositionMag(0); //cw.jj.setPertPositionMag(task_state_data.pertdx0_mag);
             perturbed_center = monkey_center;
             perturbed_center[1] += task_state_data.pertdx0_mag;
-            wam.moveTo(perturbed_center); // what about the velocity?
-            wam.moveTo(monkey_center);
+            //wam.moveTo(perturbed_center, false, task_state_data.pert_mag/5.0); // what about the velocity?  
+            //wam.moveTo(perturbed_center); // what about the velocity?  
+            //btsleep(5);
+            //wam.moveTo(monkey_center);
             // a direct moveto command
           }
           else{
@@ -283,6 +285,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
         case 4: //Move
           cout << " ST 4, ";
+          
           cw.jj.setPertMag(0.0);
           readyToMove_nosent = false;  // have sent, hence no longer send the message.
           cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
