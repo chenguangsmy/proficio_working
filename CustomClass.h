@@ -16,8 +16,6 @@
 #include <boost/tuple/tuple.hpp>
 #include <barrett/log.h>
 
-#define IS_PULSE_PERT 1
-
 typedef typename ::barrett::math::Matrix<4,4> Matrix_4x4; //self-def matrix type
 typedef typename ::barrett::math::Matrix<4,1> Matrix_4x1; //self-def matrix type
 typedef typename ::barrett::math::Matrix<2,1> Matrix_2x1; //self-def matrix type
@@ -98,6 +96,7 @@ public:
 			task_state = 0;
 			setx0flag = false; 
 			x0iterator = 0;
+			if_Jacobbian_update = true;
       		//printf("K_qQ is: %.3f, %.3f, %.3f, %.3f\n", K_qQuantum(0,0), K_qQuantum(1,1), K_qQuantum(2,2), K_qQuantum(3,3));
 		}
 
@@ -170,8 +169,8 @@ public:
 	}
 
 	int setpretAmp(){ // used in stochastic perturbation
-		pretAmplitude_x = 12.0;
-		pretAmplitude_y = 12.0;
+		pretAmplitude_x = 5.0;
+		pretAmplitude_y = 5.0;
 	}
 
 	int resetpretAmp(){ // used in stochastic perturbation
@@ -181,6 +180,12 @@ public:
 
 	int resetpretFlip(bool flip){
 		pert_flip = flip; // 0 for no pert, 1 for pert
+	}
+
+	int setFoffset(double Fy){
+		f_offset[0] = 0;
+		f_offset[1] = Fy;
+		f_offset[2] = 0;
 	}
 
 	int enablePert(){
@@ -210,6 +215,12 @@ public:
 		return 1;
 	}
 
+	int setPertPositionMag(double mag){
+		pert_pos_mag = mag; 
+		printf("\n position perturbation %f\n", mag);
+		return 1;
+	}
+
 	int setPertTime(int time){
 		pert_time = time;
 		return 1;
@@ -219,6 +230,15 @@ public:
 		return if_pert_finish;
 	}
 
+	int setUpdateJaccobian(bool ifUpdate){
+		if_Jacobbian_update = ifUpdate;
+		return 1;
+	}
+
+	int setPulsePert(bool ispulse){
+		is_pulse_pert = ispulse; 
+		return 1;
+	}
 
 protected:
 	double	input_time;
@@ -244,6 +264,7 @@ protected:
 	cf_type f_pretOutput;
 	double output_iteration;
     double pert_mag; //impulse-perturbation magnitude (Newton)
+	double pert_pos_mag; //impulse-perturbation magnitude (m)
 	int 	rdt; 
 	bool 	if_set_JImp;
 	bool 	if_set_Imp;
@@ -252,6 +273,8 @@ protected:
 	bool    pert_count_enable;
     bool  	atpert; 
 	bool  	if_pert_finish;
+	bool    if_Jacobbian_update;
+	bool 	is_pulse_pert;
 	int 	pert_time; // randomize a time in the burtRTMA.h to cound down perturbation.
 
 	// Initialize variables 
@@ -283,6 +306,7 @@ protected:
 	Matrix_3x1 f_pret;
 	Matrix_6x4 J_tot;
 	Matrix_3x4 J_x;
+	Matrix_3x1 f_offset;
 
 	virtual void operate() {
 		
@@ -328,8 +352,12 @@ protected:
 		x_dot[2] = input_x_dot[2];
 
 		// Import Jacobian
-		J_tot.block(0,0,6,4) = wam.getToolJacobian(); // Entire 6D Jacobian
-		J_x.block(0,0,3,4) = J_tot.block(0,0,3,4); // 3D Translational Jacobian
+		
+		if(if_Jacobbian_update){
+      		J_tot.block(0,0,6,4) = wam.getToolJacobian(); // Entire 6D Jacobian
+			J_x.block(0,0,3,4) = J_tot.block(0,0,3,4); // 3D Translational Jacobian
+
+		}
 
 		// Joint impedance controller
 		if ((input_time-input_time0) < rampTime ) {
@@ -346,33 +374,41 @@ protected:
 		else {
 			tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 
 		}
-
 		// Control Law Implamentation
 
 		// iteration_MAX - stochastic perturbation
-		if (IS_PULSE_PERT) { // inpulse perturbation here
+		if (is_pulse_pert) 
+		{ // inpulse perturbation here
 
-			if (pert_count_enable || atpert){ 
+			if (pert_count_enable || atpert)
+			{ 
 				// if starting count, or already perturb the first pulse:
 				iteration++;
 			}
-        
-      		if ((iteration <= pert_time) || (iteration >= pert_time + 150)){ // no pulse --- perturbation duration
+    if ((iteration <= pert_time) || (iteration >= pert_time + 150))
+			  { // no pulse --- perturbation duration
 //      if ((iteration <= pert_time) || (iteration >= pert_time + 400)){ // no pulse
+//      if ((iteration <= pert_time) || (iteration >= pert_time + 1000)){ // no pulse
        			f_pretOutput[0] = 0;
         		f_pretOutput[1] = 0;
        			f_pretOutput[2] = 0;
-            atpert = false;
+            	atpert = false;
       		}
-			else { 	// halve pulse
-        		f_pretOutput[0] = 0;
+			else 
+			{ 	// halve pulse
+				f_pretOutput[0] = 0;
 				f_pretOutput[1] = pert_mag;
 				f_pretOutput[2] = 0; 
-            	atpert = true;
+
+				x_0[0] = input_x_0[0];
+				x_0[1] = input_x_0[1] + pert_pos_mag;
+				x_0[2] = input_x_0[2];
+        		atpert = true;
       		        
 			}
 
-			if (iteration >= pert_time + 500) {
+			if (iteration >= pert_time + 500) 
+			{
 				if_pert_finish = true;
 			}
 
@@ -434,9 +470,10 @@ protected:
 		}
 		tau_pret = J_x.transpose()*(f_pret);
 
-
+    
 		// Sum torque commands
 		tau = tau_q + tau_x + tau_pret;
+    	//tau = tau_x + tau_pret;
 		// Save outputs
 		// Save outputs
 		prevPret[0] = f_pretOutput[0];
@@ -540,6 +577,22 @@ class ControllerWarper{
 
 	void startController(){
 		// connect 
+	}
+
+	int setK1(double K_input){
+		K_x1(0,0) = K_input;
+		K_x1(1,1) = K_input;
+		K_x1(2,2) = K_input;
+		//printf("cw: setKx to %f \n", K_input);
+		return 1;
+	}
+
+	int setB1(double B_input){
+		B_x1(0,0) = B_input;
+		B_x1(1,1) = B_input;
+		B_x1(2,2) = B_input;
+		//printf("cw: setBx to %f \n", B_input);
+		return 1;
 	}
 
 	void setForceMet(bool wasMet){
