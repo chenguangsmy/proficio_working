@@ -116,7 +116,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   bool readyToMove_nosent;
   double pert_small = 5; //5N
   double pert_big = -15;   //25N
-  double force_thresh = 0; // force_tar in ballistic release
+  double force_thresh = 15; // force_tar in ballistic release
   double robot_x0 = 0; // should be: robot_x0 = force_tar/300; //(300 as the robot stiffness)
 
   while (true)  // Allow the user to stop and resume with pendant buttons
@@ -205,6 +205,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           robot_center[1] = task_state_data.target[1];
           robot_center[2] = task_state_data.target[2];
 
+          force_thresh = task_state_data.target[7]; 
+          
           taskJ_center[0] = task_state_data.target[8];
           taskJ_center[1] = task_state_data.target[9];
           taskJ_center[2] = task_state_data.target[10];
@@ -273,7 +275,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           // after the perturbation, send messages to the GatingForceJudge. 
           cout << " ST 3, ";
           target_dir = task_state_data.target[4];
-          force_thresh = task_state_data.target[7]; 
+          
           printf("\n Direction: %d, force: %f\n\n", target_dir, force_thresh); 
           if (ifPert){ // should perturb
             cw.jj.setpretAmp(); // used in stochastic pert
