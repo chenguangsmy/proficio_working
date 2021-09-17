@@ -143,10 +143,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       
 
       // Get Joint position, velocity and toque
-      //For some reason, setting wam.getJointTorques to a variable of type jt_type Does not work. 
-      //During make, will report error.
-          
-      burt_status_data.jt_1 = wam.getJointTorques()[0];
+      burt_status_data.jt_1 = wam.getJointTorques()[0]; // for loop does not work here, write one by one
       burt_status_data.jt_2 = wam.getJointTorques()[1];
       burt_status_data.jt_3 = wam.getJointTorques()[2];
       burt_status_data.jt_4 = wam.getJointTorques()[3];
@@ -161,7 +158,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       burt_status_data.jp_3 = wam.getJointPositions()[2];
       burt_status_data.jp_4 = wam.getJointPositions()[3];
       
-      // Get Position Data  TODO: MOVE CONVERSION ELSEWHERE
+      // Get Position Data 
       cp = barrett::math::saturate(wam.getToolPosition(), 9.999);
       burt_status_data.pos_x = cp[0]; // * 1280 / 0.2; // Assume this is accurate
       burt_status_data.pos_y = cp[1]; // * 1280 / 0.2; // TODO: check that cp has the right value
@@ -217,24 +214,33 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           monkey_center[1] = task_state_data.target[31];
           monkey_center[2] = task_state_data.target[32];  
           
-          pert_big = task_state_data.pert_mag;
-
           printf("force for this target: %f N \n", force_thresh);
           robot_x0 = force_thresh/300;
           switch(target_dir)
           {
               case 0: // right 
-                robot_center[0] -= robot_x0;
+                robot_center[1] += robot_x0;
                 break;
               case 2: // front
                 robot_center[1] -= robot_x0;
                 break;
               case 4: // left 
-                robot_center[0] += robot_x0;
+                robot_center[1] -= robot_x0;
                 break;
               case 6: 
                 robot_center[1] += robot_x0;
                 break;
+          }
+          switch(target_dir)
+          {
+              case 0:
+              case 6:
+                pert_big = -task_state_data.pert_mag;
+              break;
+              case 2:
+              case 4:
+                pert_big = task_state_data.pert_mag;
+              break;
           }
           pert_big = pert_big;
 
@@ -262,15 +268,14 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 3: //ForceRamp
           // stiff the Wam and wait for perturb, 
           // after the perturbation, send messages to the GatingForceJudge. 
-          // cw.jj.setUpdateJaccobian(false);
           cout << " ST 3, ";
           target_dir = task_state_data.target[4];
           force_thresh = task_state_data.target[7]; 
           printf("\n Direction: %d, force: %f\n\n", target_dir, force_thresh); 
           if (ifPert){ // should perturb
             cw.jj.setpretAmp(); // used in stochastic pert
-            cw.jj.setPertMag(task_state_data.pert_mag); //
-            cw.jj.setPertPositionMag(0); //cw.jj.setPertPositionMag(task_state_data.pertdx0_mag);
+            cw.jj.setPertMag(pert_big); //
+            cw.jj.setPertPositionMag(0); //cw.jj.setPertPositionMag(task_state_data.pertdx0_mag); // only when position perturb
             perturbed_center = monkey_center;
             perturbed_center[1] += task_state_data.pertdx0_mag;
             //wam.moveTo(perturbed_center, false, task_state_data.pert_mag/5.0); // what about the velocity?  
@@ -389,7 +394,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   {
     readyToMove(wam, robot_center, mod);   // boardcast readyToMove so that the `GatingForceJudge` knows
     readyToMoveIter++;
-  
   }
   }
   if (fnameInit && fdirInit)

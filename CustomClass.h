@@ -354,9 +354,6 @@ protected:
 			J_x.block(0,0,3,4) = J_tot.block(0,0,3,4); // 3D Translational Jacobian
 
 		}
-    else {
-
-    }
 
 		// Joint impedance controller
 		if ((input_time-input_time0) < rampTime ) {
@@ -373,9 +370,6 @@ protected:
 		else {
 			tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 
 		}
-    
-    //tau_x = J_x.transpose()*f_offset; // a  offset force
-
 		// Control Law Implamentation
 
 		// iteration_MAX - stochastic perturbation
@@ -387,11 +381,10 @@ protected:
 				// if starting count, or already perturb the first pulse:
 				iteration++;
 			}
-        
-//      		if ((iteration <= pert_time) || (iteration >= pert_time + 150))
-//			  { // no pulse --- perturbation duration
+    if ((iteration <= pert_time) || (iteration >= pert_time + 150))
+			  { // no pulse --- perturbation duration
 //      if ((iteration <= pert_time) || (iteration >= pert_time + 400)){ // no pulse
-      if ((iteration <= pert_time) || (iteration >= pert_time + 1000)){ // no pulse
+//      if ((iteration <= pert_time) || (iteration >= pert_time + 1000)){ // no pulse
        			f_pretOutput[0] = 0;
         		f_pretOutput[1] = 0;
        			f_pretOutput[2] = 0;
@@ -406,8 +399,6 @@ protected:
 				x_0[0] = input_x_0[0];
 				x_0[1] = input_x_0[1] + pert_pos_mag;
 				x_0[2] = input_x_0[2];
-				tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); //over-write tau_x
-        		//printf("p");
         		atpert = true;
       		        
 			}
@@ -478,7 +469,7 @@ protected:
     
 		// Sum torque commands
 		tau = tau_q + tau_x + tau_pret;
-    //tau = tau_x + tau_pret;
+    	//tau = tau_x + tau_pret;
 		// Save outputs
 		// Save outputs
 		prevPret[0] = f_pretOutput[0];
@@ -588,7 +579,7 @@ class ControllerWarper{
 		K_x1(0,0) = K_input;
 		K_x1(1,1) = K_input;
 		K_x1(2,2) = K_input;
-		printf("cw: setKx to .2%f \n", K_input);
+		//printf("cw: setKx to %f \n", K_input);
 		return 1;
 	}
 
@@ -596,7 +587,7 @@ class ControllerWarper{
 		B_x1(0,0) = B_input;
 		B_x1(1,1) = B_input;
 		B_x1(2,2) = B_input;
-		printf("cw: setBx to .2%f \n", B_input);
+		//printf("cw: setBx to %f \n", B_input);
 		return 1;
 	}
 
