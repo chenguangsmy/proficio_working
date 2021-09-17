@@ -190,7 +190,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       //cout << "task id : " << task_state_data.id << "pert_time:" <<task_state_data.pert_time<<endl;
       freeMoving = false;
       
-      cw.jj.setTaskState(task_state_data.id);
+      //cw.jj.setTaskState(task_state_data.id);
       task_state = task_state_data.id;
       switch(task_state_data.id)
       {
@@ -250,6 +250,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           //cw.setCenter_joint(taskJ_center);
           //cw.setCenter_endpoint(monkey_center);
           ifPert = int(task_state_data.ifpert) == 0 ? false : true;
+          cw.jj.setPulsePert( int(task_state_data.ifpert) == 1); // if task_state_data_ifpert ~=1, stoc pert
           //pert_time = int(double(task_state_data.pert_time) * 500.0); // to double
           //printf("task_state_data.ifpert is: %d, pert_time: %d\n", ifPert, pert_time);
           readyToMove_nosent = true;
@@ -257,6 +258,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.setx0Gradual(robot_center);
           cw.setK1(task_state_data.wamKp);
           cw.setB1(task_state_data.wamBp);
+          cw.jj.setTaskState(1);
           break;
         case 2: // Present
           //cw.jj.setPertTime(pert_time);
@@ -264,6 +266,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.setFoffset(-0.0);
           sendData = true;
           cout << " ST 2, ";
+          cw.jj.setTaskState(2);
           break;
         case 3: //ForceRamp
           // stiff the Wam and wait for perturb, 
@@ -285,8 +288,10 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
             // a direct moveto command
           }
           else{
+            cw.jj.resetpretAmp();
             cw.jj.setPertMag(0.0);
           }
+          cw.jj.setTaskState(3);
           break;
         case 4: //Move
           cout << " ST 4, ";
@@ -294,17 +299,20 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.setPertMag(0.0);
           readyToMove_nosent = false;  // have sent, hence no longer send the message.
           cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
+          cw.jj.setTaskState(4);
           cw.jj.updateImpedanceWait();
           cw.jj.setFoffset(0.0);
           break;
         case 5: // hold
           cout << " ST 5, ";
+          cw.jj.setTaskState(5);
           break;
         case 6:
           cout << " ST 6, ";
           cw.jj.resetpretAmp();
           cw.jj.setUpdateJaccobian(true);
           sendData  = false;
+          cw.jj.setTaskState(6);
           break;
         case 7:
           cout << " ST 7, " << endl;
@@ -313,6 +321,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.disablePertCount(); // avoid perturbation at this time
           freeMoving = true;
           cw.moveToq0(); //make sure on the right joint position
+          cw.jj.setTaskState(7);
           break;
         default:
           break;

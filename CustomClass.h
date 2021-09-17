@@ -16,8 +16,6 @@
 #include <boost/tuple/tuple.hpp>
 #include <barrett/log.h>
 
-#define IS_PULSE_PERT 1
-
 typedef typename ::barrett::math::Matrix<4,4> Matrix_4x4; //self-def matrix type
 typedef typename ::barrett::math::Matrix<4,1> Matrix_4x1; //self-def matrix type
 typedef typename ::barrett::math::Matrix<2,1> Matrix_2x1; //self-def matrix type
@@ -237,6 +235,11 @@ public:
 		return 1;
 	}
 
+	int setPulsePert(bool ispulse){
+		is_pulse_pert = ispulse; 
+		return 1;
+	}
+
 protected:
 	double	input_time;
 	double  input_time0;	 // give a time offset when increase
@@ -271,6 +274,7 @@ protected:
     bool  	atpert; 
 	bool  	if_pert_finish;
 	bool    if_Jacobbian_update;
+	bool 	is_pulse_pert;
 	int 	pert_time; // randomize a time in the burtRTMA.h to cound down perturbation.
 
 	// Initialize variables 
@@ -373,7 +377,7 @@ protected:
 		// Control Law Implamentation
 
 		// iteration_MAX - stochastic perturbation
-		if (IS_PULSE_PERT) 
+		if (is_pulse_pert) 
 		{ // inpulse perturbation here
 
 			if (pert_count_enable || atpert)
