@@ -256,11 +256,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           //pert_time = int(double(task_state_data.pert_time) * 500.0); // to double
           //printf("task_state_data.ifpert is: %d, pert_time: %d\n", ifPert, pert_time);
           readyToMove_nosent = true;
-          // set input x0  
-          cw.jj.setx0Gradual(robot_center);
           cw.setK1(task_state_data.wamKp);
           cw.setB1(task_state_data.wamBp);
-          cw.jj.setTaskState(1);
           break;
         case 2: // Present
           //cw.jj.setPertTime(pert_time);
@@ -268,6 +265,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.setFoffset(-0.0);
           sendData = true;
           cout << " ST 2, ";
+          // set input x0  
+          cw.jj.setx0Gradual(robot_center);
+          cw.jj.setTaskState(1);
           cw.jj.setTaskState(2);
           break;
         case 3: //ForceRamp
