@@ -105,7 +105,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   char subject_name[TAG_LENGTH];
   int session_num; 
   double pert_small = 5; //5N
-  double pert_big = 20;   //20N
+  double pert_big = 35;   //20N
 
   while (true)  // Allow the user to stop and resume with pendant buttons
   {
@@ -287,6 +287,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         file_dir.replace(6,2,"robot");
         printf("data_dir is: %s", data_dir);
         fnameInit = true;
+        cw.setForceMet(false); // keep the impedance at a high level at initial to avoid potential damage
     }
 
     else if (Consumer_M.msg_type == MT_XM_START_SESSION)
