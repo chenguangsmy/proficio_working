@@ -27,11 +27,16 @@ classdef importWAM < handle
             this.q0 = [-pi/2,0,0,pi/2];
             this.W_Tranform =[0 1 0 0; 0 0 1 0; 1 0 0 0; 0 0 0 1];
                             %[1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1];
-            filee = 'dataFile_notTracked/noTorquePret.csv';
+            filee = 'dataFile_notTracked/KingKongWAM02883.csv';
             this.importWAMData(filee);
 %             check_stiffness(this);
 %             import_WAM_model(this);
             get_robotJointPlot(this);
+            
+            figure;
+            ax1 = subplot(2,1,1); plot(this.X(:,2));
+            ax2 = subplot(2,1,2); plot(this.F_pret);
+            linkaxes([ax1,ax2],'x');
             
             % Post Check Point Constraint
             % Use move joint postion
