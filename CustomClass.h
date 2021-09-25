@@ -91,7 +91,7 @@ public:
 		 	if_set_JImp = false; 	// 
 			if_set_Imp = false;
 			K_qQuantum = (K_q1 - K_q0)/double(loop_itMax);
-			iteration_MAX = 8;
+			iteration_MAX = 4;
 			iteration = 0;
 			task_state = 0;
 			setx0flag = false; 
@@ -169,8 +169,8 @@ public:
 	}
 
 	int setpretAmp(){ // used in stochastic perturbation
-		pretAmplitude_x = 5.0;
-		pretAmplitude_y = 5.0;
+		pretAmplitude_x = 4.0;
+		pretAmplitude_y = 4.0;
 	}
 
 	int resetpretAmp(){ // used in stochastic perturbation
@@ -385,7 +385,9 @@ protected:
 				// if starting count, or already perturb the first pulse:
 				iteration++;
 			}
-    if ((iteration <= pert_time) || (iteration >= pert_time + 150))
+    //if ((iteration <= pert_time) || (iteration >= pert_time + 150))
+    //if ((iteration <= pert_time) || (iteration >= pert_time + 40))
+    if ((iteration <= pert_time) || (iteration >= pert_time + 20))
 			  { // no pulse --- perturbation duration
 //      if ((iteration <= pert_time) || (iteration >= pert_time + 400)){ // no pulse
 //      if ((iteration <= pert_time) || (iteration >= pert_time + 1000)){ // no pulse

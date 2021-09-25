@@ -195,6 +195,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       switch(task_state_data.id)
       {
         case 1:   // set joint center and endpoint center
+        cw.jj.setTaskState(1);
           cout << " ST 1, ";
           barrett::btsleep(0.2); // the allocated time is to make sure the Netbox have calibrated the net force. 
           freeMoving = true;
@@ -258,8 +259,10 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           readyToMove_nosent = true;
           cw.setK1(task_state_data.wamKp);
           cw.setB1(task_state_data.wamBp);
+          
           break;
         case 2: // Present
+          cw.jj.setTaskState(2);
           //cw.jj.setPertTime(pert_time);
           cw.jj.disablePertCount();
           cw.jj.setFoffset(-0.0);
@@ -267,10 +270,11 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cout << " ST 2, ";
           // set input x0  
           cw.jj.setx0Gradual(robot_center);
-          cw.jj.setTaskState(1);
-          cw.jj.setTaskState(2);
+          
+          
           break;
         case 3: //ForceRamp
+          cw.jj.setTaskState(3);
           // stiff the Wam and wait for perturb, 
           // after the perturbation, send messages to the GatingForceJudge. 
           cout << " ST 3, ";
@@ -293,15 +297,16 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
             cw.jj.resetpretAmp();
             cw.jj.setPertMag(0.0);
           }
-          cw.jj.setTaskState(3);
+          
           break;
         case 4: //Move
+          cw.jj.setTaskState(4);
           cout << " ST 4, ";
-          
+          cw.jj.resetpretAmp();
           cw.jj.setPertMag(0.0);
           readyToMove_nosent = false;  // have sent, hence no longer send the message.
           cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
-          cw.jj.setTaskState(4);
+          
           cw.jj.updateImpedanceWait();
           cw.jj.setFoffset(0.0);
           break;
@@ -310,20 +315,21 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.setTaskState(5);
           break;
         case 6:
+          cw.jj.setTaskState(6);
           cout << " ST 6, ";
           cw.jj.resetpretAmp();
           cw.jj.setUpdateJaccobian(true);
           sendData  = false;
-          cw.jj.setTaskState(6);
+          
           break;
         case 7:
+          cw.jj.setTaskState(7);
           cout << " ST 7, " << endl;
           cw.jj.setx0(robot_center);
           cw.setForceMet(false);
           cw.jj.disablePertCount(); // avoid perturbation at this time
           freeMoving = true;
           cw.moveToq0(); //make sure on the right joint position
-          cw.jj.setTaskState(7);
           break;
         default:
           break;
