@@ -390,10 +390,10 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         fdirInit = true;
     }
 
-    else if(Consumer_M.msg_type == MT_FORCE_FEEDBACK)
+    else if(Consumer_M.msg_type == MT_JUDGE_FEEDBACK)
     {
       // scan the Force Feedback, nothing to do here actually:
-        MDF_FORCE_FEEDBACK frc_fb; 
+        MDF_JUDGE_FEEDBACK frc_fb; 
         Consumer_M.GetData(&frc_fb);
     }
 
