@@ -282,7 +282,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           
           printf("\n Direction: %d, force: %f\n\n", target_dir, force_thresh); 
           if (ifPert){ // should perturb
-            cw.jj.setpretAmp(); // used in stochastic pert
             cw.jj.setPertMag(pert_big); //
             cw.jj.setPertPositionMag(0); //cw.jj.setPertPositionMag(task_state_data.pertdx0_mag); // only when position perturb
             perturbed_center = monkey_center;
@@ -405,6 +404,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       if (ifPert && pert_sat.perturb_start){
         cw.jj.enablePertCount();
         cw.jj.setPertTime(0); // start perturbation immediately
+        cw.jj.setpretAmp(); // used in stochastic pert
       }
     }
   if (cw.jj.getPertFinish() && readyToMove_nosent && readyToMoveIter<5) // finished the perturbation 
