@@ -49,6 +49,8 @@
 #include <barrett/standard_main_function.h>
 #define BARRETT_SMF_VALIDATE_ARGS
 
+// ... TODO... GIVE ME A FUNCTION OF HAVING TIME
+
 //#include <proficio/standard_proficio_main.h>
 typedef typename ::barrett::math::Matrix<4,4> Matrix_4x4; //self-def matrix type
 typedef typename ::barrett::math::Matrix<4,1> Matrix_4x1; //self-def matrix type

@@ -57,6 +57,13 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 
+// parport
+#include <sys/ioctl.h>
+#include <linux/parport.h>
+#include <linux/ppdev.h>
+#include <fcntl.h>
+#include <stdlib.h>
+
 //#include <proficio/systems/utilities.h>
 
 BARRETT_UNITS_FIXED_SIZE_TYPEDEFS;
@@ -68,6 +75,52 @@ extern bool forceMet; //thresholdMet;
 //extern double forceThreshold;
 extern std::string fname_rtma;
 extern bool fname_init; 
+
+// for the sending hardware signals 
+char dataL = 0x00;
+char dataH = 0xFF;
+int fd;
+int running = 1;
+void signalHandler(int sig){
+    running = 0;
+}
+void parportinit(){
+    printf("Parallel Port Interface Init\n");
+    signal(SIGINT, signalHandler);
+
+    // Open the parallel port for reading and writting
+    fd = open("/dev/parport0", O_RDWR);
+
+    if (fd == -1)
+    {
+      perror("Could not open parallel port");
+    }
+
+    // Try to claim port
+    if (ioctl(fd, PPCLAIM, NULL)){
+      perror("Could not claim parallel port");
+      close(fd);
+    }
+
+    // Set the Mode
+    int mode = IEEE1284_MODE_BYTE;
+    if (ioctl(fd, PPSETMODE, &mode)){
+      perror("Could not set mode");
+      ioctl(fd, PPRELEASE);
+      close(fd);
+    }
+
+    int dir = 0x00;
+    if (ioctl(fd, PPDATADIR, &dir)){
+      perror("Could not set parallel port direction");
+      ioctl(fd, PPRELEASE);
+      close(fd);
+    }
+}
+void parportclose(){
+  ioctl(fd, PPRELEASE);
+  close(fd);
+}
 
 /**
  * Thread funtion to handle messages from RTMA 
@@ -97,6 +150,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   jv_type jv;
   jt_type jt;
   double taskJ_center[4]; // task send joint position
+  double twam, ternie, tleading, tlasting;  // serve as a temp save for time
   int     trial_count = 0;    // as a marker for counting which trial perturb
   int     readyToMoveIter = 0;    // mark as send ready to move tiems
   int     task_state = 0;
@@ -114,6 +168,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   char subject_name[TAG_LENGTH];
   int session_num; 
   bool readyToMove_nosent;
+  bool sync_time_flag = false;
   double pert_small = 5; //5N
   double pert_big = -15;   //25N
   double force_thresh = 15; // force_tar in ballistic release
@@ -175,6 +230,12 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       burt_status_data.center_y = system_center[1];
       burt_status_data.center_z = system_center[2];
 
+
+      // ... TODO... GET BOTH ROBOT TIME AND COMPUTER TIME
+      cw.jj.gettime(&twam, &ternie);
+      burt_status_data.wamt   = twam;
+      burt_status_data.erniet = ternie;
+
       // Send Message
       CMessage M( MT_BURT_STATUS );
       M.SetData( &burt_status_data, sizeof(burt_status_data) );
@@ -195,8 +256,15 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       switch(task_state_data.id)
       {
         case 1:   // set joint center and endpoint center
-        cw.jj.setTaskState(1);
+          cw.jj.setTaskState(1);
           cout << " ST 1, ";
+          // ...TODO... RECORD TIME ONCE, GIVE OUT THE POSITIVE PULSE, RECORD AGAIN
+          tleading = getTime(); 
+          // change the bits here
+          ioctl(fd, PPWDATA, &dataH);
+          tlasting = getTime(); 
+          sync_time_flag = true;
+          // MAKE THE SENT_FLAG 0;
           barrett::btsleep(0.2); // the allocated time is to make sure the Netbox have calibrated the net force. 
           freeMoving = true;
           sendData = false;
@@ -254,6 +322,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           //cw.setCenter_endpoint(monkey_center);
           ifPert = int(task_state_data.ifpert) == 0 ? false : true;
           cw.jj.setPulsePert( int(task_state_data.ifpert) == 1); // if task_state_data_ifpert ~=1, stoc pert
+          cw.jj.disablePertCount();
           //pert_time = int(double(task_state_data.pert_time) * 500.0); // to double
           //printf("task_state_data.ifpert is: %d, pert_time: %d\n", ifPert, pert_time);
           readyToMove_nosent = true;
@@ -263,8 +332,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
         case 2: // Present
           cw.jj.setTaskState(2);
+          //...TODO... SET THE PULSE NEGATIVE 
+          ioctl(fd, PPWDATA, &dataL);
           //cw.jj.setPertTime(pert_time);
-          cw.jj.disablePertCount();
           cw.jj.setFoffset(-0.0);
           sendData = true;
           cout << " ST 2, ";
@@ -407,6 +477,20 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         cw.jj.setpretAmp(); // used in stochastic pert
       }
     }
+  if (sync_time_flag){
+    // pack Message
+    MDF_TIME_SYNC sync_time_data;
+    sync_time_data.tleading = tleading;
+    sync_time_data.tlasting = tlasting;
+    // Send Message
+    CMessage M_timer( MT_TIME_SYNC );
+    sync_time_flag = false;
+    M_timer.SetData( &sync_time_data, sizeof(sync_time_data) );
+    mod.SendMessage( &M_timer );
+    printf("time data has been sent! \n"); // debug code 
+
+  }
+
   if (cw.jj.getPertFinish() && readyToMove_nosent && readyToMoveIter<5) // finished the perturbation 
   {
     readyToMove(wam, robot_center, mod);   // boardcast readyToMove so that the `GatingForceJudge` knows
