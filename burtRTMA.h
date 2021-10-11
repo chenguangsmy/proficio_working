@@ -259,10 +259,10 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.setTaskState(1);
           cout << " ST 1, ";
           // ...TODO... RECORD TIME ONCE, GIVE OUT THE POSITIVE PULSE, RECORD AGAIN
-          tleading = getTime(); 
+          tleading = GetAbsTime(); 
           // change the bits here
           ioctl(fd, PPWDATA, &dataH);
-          tlasting = getTime(); 
+          tlasting = GetAbsTime(); 
           sync_time_flag = true;
           // MAKE THE SENT_FLAG 0;
           barrett::btsleep(0.2); // the allocated time is to make sure the Netbox have calibrated the net force. 

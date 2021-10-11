@@ -52,16 +52,51 @@ double Pert_arr3[500] = {0.0283, 0.0295, 0.0306, 0.0318, 0.0331, 0.0344, 0.0357,
 
 int day; // really need this??? doubt it! 
 
-double getTime( ){
-	struct timespec t;
-	if( clock_gettime( CLOCK_REALTIME, &t) == -1 ) {
-      perror( "clock gettime" );
-      exit( EXIT_FAILURE );
-    } 
-	double t_val; 
-	t_val = t.tv_sec + t.tv_nsec/BILLION;
-	return t_val;
+// double getTime(){
+// 	struct timespec t;
+// 	if( clock_gettime( CLOCK_REALTIME, &t) == -1 ) {
+//       perror( "clock gettime" );
+//       exit( EXIT_FAILURE );
+//     } 
+// 	double t_val, tnsec; 
+// 	t_val = t.tv_sec + t.tv_nsec/BILLION;
+// 	return t_val;
+// }
+
+double GetAbsTime(void)
+{
+	//WIN: returns a seconds timestamp for a system counter
+	#ifdef _UNIX_C
+	
+	struct timeval tim;
+	if (gettimeofday(&tim, NULL) == 0)
+	{
+		double t = double(tim.tv_sec-(24*3600*day)) + (double(tim.tv_usec) / 1000000.0);
+	return t;
+	}
+	else{
+		return 0.0;
+	}
+	#else
+		LONGLONG current_time;
+		QueryPerformanceCounter((LARGE_INTEGER *)&current_time);
+		return (double)current_time / win_counter_freq;
+		cout<<"windows time: "<<(current_time/win_counter_freq)<<endl;
+	#endif
 }
+
+
+// int getTime(double * sec, long * nsec ){
+// 	struct timespec t;
+// 	if( clock_gettime( CLOCK_REALTIME, &t) == -1 ) {
+//       perror( "clock gettime" );
+//       exit( EXIT_FAILURE );
+//     } 
+	
+// 	*sec = t.tv_sec;
+// 	*nsec = t.tv_nsec;
+// 	return 1;
+// }
 
 template<size_t DOF>
 class JointControlClass : public systems::System{ 
@@ -127,6 +162,10 @@ public:
 			x0iterator = 0;
 			if_Jacobbian_update = true;
       		//printf("K_qQ is: %.3f, %.3f, %.3f, %.3f\n", K_qQuantum(0,0), K_qQuantum(1,1), K_qQuantum(2,2), K_qQuantum(3,3));
+			struct timeval tim0;
+			if (gettimeofday(&tim0, NULL) == 0){
+				day = int(tim0.tv_sec/(24*3600))-1;
+			}
 		}
 
 	virtual ~JointControlClass() { this->mandatoryCleanUp(); }
@@ -278,6 +317,7 @@ public:
 protected:
 	double	input_time;
 	double 	ernie_time; 	 // the computer time
+	// long 	ernie_time_nsec;
 	double  input_time0;	 // give a time offset when increase
 	double	input_iteration;
 	double 	pretAmplitude_x;
@@ -347,7 +387,7 @@ protected:
 	virtual void operate() {
 		
 		input_time = timeInput.getValue();
-		ernie_time = getTime();  // the computer time;
+		ernie_time = GetAbsTime();
 		input_q = wamJPInput.getValue();
  		input_q_dot = wamJVInput.getValue();
 		input_x = wamCPInput.getValue();
