@@ -309,8 +309,10 @@ public:
 	}
 
 	int gettime(double * t1, double * t2){
-		t1 = &input_time;
-		t2 = &ernie_time; 
+    //printf("Within gettime \n");
+		*t1 = input_time;
+		*t2 = ernie_time; 
+    //printf("inputT: %f,      ernieT: %f   \n", input_time, ernie_time);
 		return 1;
 	}
 

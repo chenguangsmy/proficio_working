@@ -150,7 +150,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   jv_type jv;
   jt_type jt;
   double taskJ_center[4]; // task send joint position
-  double twam, ternie, tleading, tlasting;  // serve as a temp save for time
+  double  tleading, tlasting;  // serve as a temp save for time
+  double *twam, *ternie;
   int     trial_count = 0;    // as a marker for counting which trial perturb
   int     readyToMoveIter = 0;    // mark as send ready to move tiems
   int     task_state = 0;
@@ -173,7 +174,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   double pert_big = -15;   //25N
   double force_thresh = 15; // force_tar in ballistic release
   double robot_x0 = 0; // should be: robot_x0 = force_tar/300; //(300 as the robot stiffness)
-
+  parportinit();
   while (true)  // Allow the user to stop and resume with pendant buttons
   {
     // Read Messages
@@ -232,9 +233,14 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 
 
       // ... TODO... GET BOTH ROBOT TIME AND COMPUTER TIME
-      cw.jj.gettime(&twam, &ternie);
-      burt_status_data.wamt   = twam;
-      burt_status_data.erniet = ternie;
+      //printf("before gettime \n");
+      //cw.jj.gettime(twam, ternie);
+      cw.jj.gettime(&(burt_status_data.wamt),  &(burt_status_data.erniet));
+      //printf("after gettime \n");
+      // alternative:
+      //burt_status_data.wamt   = *twam;
+      //burt_status_data.erniet = *ternie;
+      printf("wam_t is: %f, ernie_t is :%f", burt_status_data.wamt, burt_status_data.erniet); 
 
       // Send Message
       CMessage M( MT_BURT_STATUS );
@@ -431,6 +437,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     { // add finish recording here
       wam.moveHome();
       wam.idle();
+      parportclose();
       break;
     }
   
