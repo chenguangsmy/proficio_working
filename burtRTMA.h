@@ -76,6 +76,8 @@ extern bool forceMet; //thresholdMet;
 extern std::string fname_rtma;
 extern bool fname_init; 
 
+int ping_times = 5;
+
 // for the sending hardware signals 
 char dataL = 0x00;
 char dataH = 0xFF;
@@ -240,7 +242,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       // alternative:
       //burt_status_data.wamt   = *twam;
       //burt_status_data.erniet = *ternie;
-      printf("wam_t is: %f, ernie_t is :%f", burt_status_data.wamt, burt_status_data.erniet); 
+      //printf("wam_t is: %f, ernie_t is :%f", burt_status_data.wamt, burt_status_data.erniet); 
 
       // Send Message
       CMessage M( MT_BURT_STATUS );
@@ -435,6 +437,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     // Exit the function
     else if (Consumer_M.msg_type == MT_EXIT) 
     { // add finish recording here
+
       wam.moveHome();
       wam.idle();
       parportclose();
