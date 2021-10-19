@@ -77,6 +77,7 @@ extern std::string fname_rtma;
 extern bool fname_init; 
 
 int ping_times = 5;
+int trial_no = 0;
 
 // for the sending hardware signals 
 char dataL = 0x00;
@@ -294,7 +295,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           monkey_center[2] = task_state_data.target[32];  
           
           printf("force for this target: %f N \n", force_thresh);
-          robot_x0 = force_thresh/300;
+          robot_x0 = force_thresh/task_state_data.wamKp;
           switch(target_dir)
           {
               case 0: // right 
@@ -487,11 +488,18 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         cw.jj.setpretAmp(); // used in stochastic pert
       }
     }
+
+    else if(Consumer_M.msg_type == MT_TRIAL_CONFIG){
+      MDF_TRIAL_CONFIG trial_conf;
+      Consumer_M.GetData(&trial_conf);
+      trial_no = trial_conf.trial_no;
+    }
   if (sync_time_flag){
     // pack Message
     MDF_TIME_SYNC sync_time_data;
     sync_time_data.tleading = tleading;
     sync_time_data.tlasting = tlasting;
+    sync_time_data.trial_no = trial_no; 
     // Send Message
     CMessage M_timer( MT_TIME_SYNC );
     sync_time_flag = false;

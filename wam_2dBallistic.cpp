@@ -49,8 +49,6 @@
 #include <barrett/standard_main_function.h>
 #define BARRETT_SMF_VALIDATE_ARGS
 
-// ... TODO... GIVE ME A FUNCTION OF HAVING TIME
-
 //#include <proficio/standard_proficio_main.h>
 typedef typename ::barrett::math::Matrix<4,4> Matrix_4x4; //self-def matrix type
 typedef typename ::barrett::math::Matrix<4,1> Matrix_4x1; //self-def matrix type
@@ -214,6 +212,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 
   // Subscribe to executive messages
   mod.Subscribe( MT_TASK_STATE_CONFIG );
+  mod.Subscribe( MT_TRIAL_CONFIG );
   mod.Subscribe( MT_MOVE_HOME ); // ...check this? what this do? --cg
   mod.Subscribe( MT_SAMPLE_GENERATED );
   mod.Subscribe( MT_EXIT ); 
@@ -243,8 +242,8 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	K_q0(3,3) = 0.0;
   K_q1 = K_q0; 
 
-  B_q0 = 0.1 * K_q0;
-  B_q1 = 0.1 * K_q1;
+  B_q0 = 0.0 * K_q0;; //0.1 * K_q0;
+  B_q1 = 0.0 * K_q1;; //0.1 * K_q1;
 
 	K_x0(0,0) = 300.0;
 	K_x0(1,1) = 0.0;
@@ -254,9 +253,9 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	K_x1(2,2) = 300.0; //300
 
   B_x0 = 0.0 * K_x0;
-  B_x1(0,0) = 10.0; //20.0;
-  B_x1(1,1) = 10.0; //20.0;
-  B_x1(2,2) = 10.0; //20.0;
+  B_x1(0,0) = 0.0; //10.0; //20.0;
+  B_x1(1,1) = 0.0; //10.0; //20.0;
+  B_x1(2,2) = 0.0; //10.0; //20.0;
 
 	input_q_0[0] =-1.571;
 	input_q_0[1] = 0.0;
