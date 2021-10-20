@@ -484,8 +484,8 @@ protected:
 			{ 	// halve pulse
 				f_pretOutput[0] = 0;
 				//f_pretOutput[1] = pert_mag;
-				//f_pretOutput[1] = pert_mag * Pert_arr3[iteration-pert_time-1]; // Andy like this! 
-        f_pretOutput[1] = pert_mag * Pert_arr1[iteration-pert_time-1];  // me try slower
+				f_pretOutput[1] = pert_mag * Pert_arr3[iteration-pert_time-1]; // Andy like this! 
+        //f_pretOutput[1] = pert_mag * Pert_arr1[iteration-pert_time-1];  // me try slower
 				f_pretOutput[2] = 0; 
 
 				x_0[0] = input_x_0[0];
