@@ -7,7 +7,7 @@
  * recoverBurt -> recovers burt to home position upon error !!!!!! check that... !!!!!
  * 
  * 
- * Author(s): James, H., Chenguang Z. 2020
+ * Author(s): Chenguang Z. 2020
  * 
  */
 

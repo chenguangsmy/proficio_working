@@ -1,3 +1,8 @@
+/*
+* This file serves as a real-time wam controller.  
+* Author(s): James, H., Chenguang Z. 2020
+*/
+
 #include <iostream>
 #include <string>
 
