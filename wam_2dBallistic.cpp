@@ -1,27 +1,24 @@
 /*  
- * This file includes code to control asynchronous control of the robot
+ * This file start the main function to control the wam robot
  * 
- * included are:
+ * The function start two threads, one for WAM real-time control proram runs at 500Hz. 
+ * The other one is the RTMA respond thread charge with messages.
  * 
- * recoverBurt -> recovers burt to home position upon error
+ * recoverBurt -> recovers burt to home position upon error !!!!!! check that... !!!!!
  * 
- * movetoCenter -> moves the burt to a predefined center postion
  * 
- * moveAstep -> moves the burt one step toward a position
- * 
- * Author(s): Ivana Stevens 2019, Chenguang Z. 2020
+ * Author(s): James, H., Chenguang Z. 2020
  * 
  */
 
 //#include "wam_2dBalistic.h"  
 //#include "/home/robot/src/Proficio_Systems/magnitude.h"
 //#include "/home/robot/src/Proficio_Systems/normalize.h"
-#include "/home/robot/rg2/include/RTMA_config.h"
+#include "/home/robot/rg2/include/RTMA_config.h" // TODO... change to some environment variables
 #include <unistd.h>
 
 #include "recordTrajectory.h"
 #include "movingBurt.h"
-// #include "hapticsDemoClass.h"
 #include "burtRTMA.h"
 #include "CustomClass.h"
 
@@ -45,25 +42,20 @@
 #include <barrett/products/product_manager.h>
 #include <barrett/config.h>
 
-//#include <proficio/systems/utilities.h>
 #include <barrett/standard_main_function.h>
 #define BARRETT_SMF_VALIDATE_ARGS
 
-//#include <proficio/standard_proficio_main.h>
 typedef typename ::barrett::math::Matrix<4,4> Matrix_4x4; //self-def matrix type
-typedef typename ::barrett::math::Matrix<4,1> Matrix_4x1; //self-def matrix type
-typedef typename ::barrett::math::Matrix<2,1> Matrix_2x1; //self-def matrix type
-typedef typename ::barrett::math::Matrix<3,4> Matrix_3x4; //self-def matrix type
-typedef typename ::barrett::math::Matrix<3,3> Matrix_3x3; //self-def matrix type
-typedef typename ::barrett::math::Matrix<6,3, void> Matrix_6x3xv; //self-def matrix type
-typedef typename ::barrett::math::Matrix<3,1> Matrix_3x1; //self-def matrix type
-typedef typename ::barrett::math::Matrix<6,4> Matrix_6x4; //self-def matrix type
-
+typedef typename ::barrett::math::Matrix<4,1> Matrix_4x1; 
+typedef typename ::barrett::math::Matrix<2,1> Matrix_2x1; 
+typedef typename ::barrett::math::Matrix<3,4> Matrix_3x4; 
+typedef typename ::barrett::math::Matrix<3,3> Matrix_3x3; 
+typedef typename ::barrett::math::Matrix<6,3, void> Matrix_6x3xv; 
+typedef typename ::barrett::math::Matrix<3,1> Matrix_3x1; 
+typedef typename ::barrett::math::Matrix<6,4> Matrix_6x4; 
 using namespace barrett;
 using detail::waitForEnter;
 
-//BARRETT_UNITS_FIXED_SIZE_TYPEDEFS;
-//BARRETT_UNITS_TYPEDEFS(10);
 
 const char* remote_host = NULL;
 v_type msg_tmp;
@@ -72,9 +64,8 @@ barrett::systems::ExposedOutput<v_type> message;
 bool forceMet = false;
 std::string fname_rtma;
 bool fname_init = false; 
-bool trackOutput = false; // the variable prevent repeating printf -cg.
-//const jp_type center_pos1(-1.5, 0, 0, 1.5);
-cp_type center_pos(-0.513, 0.482, -0.002);
+bool trackOutput = false; // the variable prevent repeating printf 
+cp_type center_pos(-0.513, 0.482, -0.0);
 
 
 // end mutex
@@ -87,7 +78,7 @@ pthread_mutex_t rmLock;
  ****************************************************************************************/
 bool validate_args(int argc, char** argv) {
   if (argc != 2) {
-    remote_host = "127.0.0.1";  //actually this IP is local host
+    remote_host = "127.0.0.1";  //local host
     printf("Defaulting to 127.0.0.1\n");
   } else {
     remote_host = argv[1];
@@ -138,6 +129,7 @@ void * responderWrapper(void *arguments)
  * Useful in the old version proficio, but may not as useful in customclass by JH and CZ
  * consider to change latter -CZ
  ****************************************************************************************/
+/*
 template <size_t DOF>
 void * moveRobot(void *arguments)
 {
@@ -159,8 +151,7 @@ void * moveRobot(void *arguments)
         printf("isTrackRef: true, continue! \n");
         trackOutput = true;
         }
-      //moveToCenter(args->wam, args->system_center, args->mod);
-      //moveAStep(args->wam, args->system_center, args->mod);
+
     }
     bool shouldClose = false;
     if (shouldClose)
@@ -172,7 +163,7 @@ void * moveRobot(void *arguments)
   }
   return NULL;
 }
-
+*/
 
 /*****************************************************************************************
  * wam_main
@@ -289,8 +280,8 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   //Start threads
   pthread_create(&rtmaThread, NULL, &responderWrapper<DOF>, (void *)&args);
   printf("RTMA thread created! \n");
-  pthread_create(&robotMoverThread, NULL, &moveRobot<DOF>, (void *)&args);
-  printf("robotMoverThread created! \n");
+  //pthread_create(&robotMoverThread, NULL, &moveRobot<DOF>, (void *)&args);
+  //printf("robotMoverThread created! \n");
   // Wait for threads to finish
   pthread_join(rtmaThread, NULL );
   printf("The RTMA thread joined! \n");

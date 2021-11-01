@@ -56,17 +56,6 @@ double Pert_arr5[500] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 int day; // really need this??? doubt it! 
 
-// double getTime(){
-// 	struct timespec t;
-// 	if( clock_gettime( CLOCK_REALTIME, &t) == -1 ) {
-//       perror( "clock gettime" );
-//       exit( EXIT_FAILURE );
-//     } 
-// 	double t_val, tnsec; 
-// 	t_val = t.tv_sec + t.tv_nsec/BILLION;
-// 	return t_val;
-// }
-
 double GetAbsTime(void)
 {
 	//WIN: returns a seconds timestamp for a system counter
@@ -89,18 +78,6 @@ double GetAbsTime(void)
 	#endif
 }
 
-
-// int getTime(double * sec, long * nsec ){
-// 	struct timespec t;
-// 	if( clock_gettime( CLOCK_REALTIME, &t) == -1 ) {
-//       perror( "clock gettime" );
-//       exit( EXIT_FAILURE );
-//     } 
-	
-// 	*sec = t.tv_sec;
-// 	*nsec = t.tv_nsec;
-// 	return 1;
-// }
 
 template<size_t DOF>
 class JointControlClass : public systems::System{ 
@@ -164,7 +141,6 @@ public:
 			task_state = 0;
 			setx0flag = false; 
 			x0iterator = 0;
-			if_Jacobbian_update = true;
       		//printf("K_qQ is: %.3f, %.3f, %.3f, %.3f\n", K_qQuantum(0,0), K_qQuantum(1,1), K_qQuantum(2,2), K_qQuantum(3,3));
 			struct timeval tim0;
 			if (gettimeofday(&tim0, NULL) == 0){
@@ -180,38 +156,8 @@ public:
 		B_x = B_x1; 
 	}
 
-	void setImpedanceWait(Matrix_3x3 K_x1, Matrix_3x3 B_x1){ 
-		K_x0 = K_x1;
-		B_x0 = B_x1; 
-	}
-
-	void updateImpedanceWait(){ 
-    //	printf("release now! \n");
-		K_x = K_x0;
-		B_x = B_x0; 
-	}
-
 	void setTaskState(int ts){
 		task_state = ts;
-	}
-
-	void setJointImpedance(Matrix_4x4 K_q1, Matrix_3x3 B_q1){ //higher one, ST_HOLD
-		// how to avoid continuous increasing?
-		K_q = K_q1;
-		B_q = B_q1;
-	}
-
-	void setImpedance_inc(Matrix_3x3 K_x1, Matrix_3x3 B_x1){ 
-		K_xQuantum = (K_x1 - K_x)/loop_itMax;
-		B_xQuantum = (B_x1 - B_x)/loop_itMax;
-		if_set_Imp = true;
-	}
-
-	void setJointImpedance_inc(Matrix_4x4 K_q1, Matrix_3x3 B_q1){ //higher one, ST_HOLD
-		// how to avoid continuous increasing?
-		K_qQuantum = (K_q1 - K_q)/loop_itMax;
-		B_qQuantum = (B_q1 - B_q)/loop_itMax;
-		if_set_JImp = true;
 	}
 
 	void setx0(cp_type center_pos){
@@ -227,15 +173,11 @@ public:
 		setx0flag = true; 
 	}
 
-	void setq0(jp_type center_pos){
-		input_q_0 = center_pos;
-	}
-
 	int get_rdt(){
 		return rdt;
 	}
 
-	int update_input_time0(){
+	int rampImpedance_init(){
 		input_time0 = input_time;
 		return 1;
 	}
@@ -245,33 +187,13 @@ public:
 		pretAmplitude_y = 4.0;
 	}
 
-	int resetpretAmp(){ // used in stochastic perturbation
+	int resetpretAmp(){
 		pretAmplitude_x = 0.0;
 		pretAmplitude_y = 0.0;
 	}
 
-	int resetpretFlip(bool flip){
-		pert_flip = flip; // 0 for no pert, 1 for pert
-	}
-
-	int setFoffset(double Fy){
-		f_offset[0] = 0;
-		f_offset[1] = Fy;
-		f_offset[2] = 0;
-	}
-
-	int enablePert(){
-		pert_enable = true;
-	}
-	int disablePert(){
-    if (~atpert){ // to insure the perturb is not going to disrupted
-		pert_enable = false;
-    }
-	}
-	bool getAtpert(){
-		return atpert;
-	}
 	int enablePertCount(){
+		pert_time = 0; // start to count up
 		pert_count_enable = true;
 	}
 	int disablePertCount(){
@@ -279,22 +201,9 @@ public:
 		if_pert_finish = false;
 		iteration = 0;
 	}
-	int resetPertCount(){
-		iteration = 0;
-	}
+
 	int setPertMag(double mag){
 		pert_mag = mag;
-		return 1;
-	}
-
-	int setPertPositionMag(double mag){
-		pert_pos_mag = mag; 
-		printf("\n position perturbation %f\n", mag);
-		return 1;
-	}
-
-	int setPertTime(int time){
-		pert_time = time;
 		return 1;
 	}
 
@@ -302,28 +211,20 @@ public:
 		return if_pert_finish;
 	}
 
-	int setUpdateJaccobian(bool ifUpdate){
-		if_Jacobbian_update = ifUpdate;
-		return 1;
-	}
-
-	int setPulsePert(bool ispulse){
-		is_pulse_pert = ispulse; 
+	int setPertType(int pty){
+		pert_type = pty; 
 		return 1;
 	}
 
 	int gettime(double * t1, double * t2){
-    //printf("Within gettime \n");
 		*t1 = input_time;
 		*t2 = ernie_time; 
-    //printf("inputT: %f,      ernieT: %f   \n", input_time, ernie_time);
 		return 1;
 	}
 
 protected:
 	double	input_time;
 	double 	ernie_time; 	 // the computer time
-	// long 	ernie_time_nsec;
 	double  input_time0;	 // give a time offset when increase
 	double	input_iteration;
 	double 	pretAmplitude_x;
@@ -345,8 +246,8 @@ protected:
 	jt_type force2torqueOutput;
 	cf_type f_pretOutput;
 	double output_iteration;
-    double pert_mag; //impulse-perturbation magnitude (Newton)
-	double pert_pos_mag; //impulse-perturbation magnitude (m)
+    double pert_mag; 		//impulse-perturbation magnitude (Newton)
+	double pert_pos_mag; 	//impulse-perturbation magnitude (m)
 	int 	rdt; 
 	bool 	if_set_JImp;
 	bool 	if_set_Imp;
@@ -355,28 +256,28 @@ protected:
 	bool    pert_count_enable;
     bool  	atpert; 
 	bool  	if_pert_finish;
-	bool    if_Jacobbian_update;
-	bool 	is_pulse_pert;
-	int 	pert_time; // randomize a time in the burtRTMA.h to cound down perturbation.
+
+	int 	pert_type;		// 1: pulse, 2: stoc
+	int 	pert_time; 		// randomize a time in the burtRTMA.h to cound down perturbation.
 
 	// Initialize variables 
 	Matrix_4x4 K_q;
 	Matrix_4x4 B_q;
-	Matrix_4x4 K_q0; 	//lower value of K_q, because K_q would be set to 0 when forceMet.
+	Matrix_4x4 K_q0; 		//lower value of K_q, because K_q would be set to 0 when forceMet.
 	Matrix_4x4 B_q0;
-	Matrix_4x4 K_q1;	//higher value of K_q
+	Matrix_4x4 K_q1;		//higher value of K_q
 	Matrix_4x4 B_q1;
-	Matrix_4x4 K_qQuantum; // each small part
+	Matrix_4x4 K_qQuantum; 	// each small part
 	Matrix_4x4 B_qQuantum;
 	Matrix_3x3 K_xQuantum;
 	Matrix_3x3 B_xQuantum;
 	Matrix_3x3 K_x; 
 	Matrix_3x3 B_x; 
-	Matrix_3x3 K_x0;	// wait impedance, after enable release, it will become current impedance. 
+	Matrix_3x3 K_x0;		// wait impedance, after enable release, it will become current impedance. 
 	Matrix_3x3 B_x0; 
-	Matrix_3x1 x_0; 	//Matrix_4x1 x_0;
-	Matrix_3x1 x;   	//Matrix_4x1 x; 
-	Matrix_3x1 x_dot;	//Matrix_4x1 x_dot;
+	Matrix_3x1 x_0; 		//Matrix_4x1 x_0;
+	Matrix_3x1 x;   		//Matrix_4x1 x; 
+	Matrix_3x1 x_dot;		//Matrix_4x1 x_dot;
 	Matrix_4x1 q_0;
 	Matrix_4x1 q; 
 	Matrix_4x1 q_dot;
@@ -391,7 +292,7 @@ protected:
 	Matrix_3x1 f_offset;
 
 	virtual void operate() {
-		
+		//*********************** Input values ********************************//
 		input_time = timeInput.getValue();
 		ernie_time = GetAbsTime();
 		input_q = wamJPInput.getValue();
@@ -434,14 +335,10 @@ protected:
 		x_dot[1] = input_x_dot[1];
 		x_dot[2] = input_x_dot[2];
 
-		// Import Jacobian
-		
-		if(if_Jacobbian_update){
-      		J_tot.block(0,0,6,4) = wam.getToolJacobian(); // Entire 6D Jacobian
-			J_x.block(0,0,3,4) = J_tot.block(0,0,3,4); // 3D Translational Jacobian
+		J_tot.block(0,0,6,4) = wam.getToolJacobian(); // Entire 6D Jacobian
+		J_x.block(0,0,3,4) = J_tot.block(0,0,3,4); // 3D Translational Jacobian
 
-		}
-
+		//****************** Joint Impedance Controller *********************//
 		// Joint impedance controller
 		if ((input_time-input_time0) < rampTime ) {
 			tau_q = ((input_time-input_time0)/rampTime)*K_q*(q_0 - q) - B_q*(q_dot);
@@ -450,49 +347,39 @@ protected:
 			tau_q = K_q*(q_0 - q) - B_q*(q_dot);
 		}
 
-		// End-effector impedance controller
+		//****************** Joint Impedance Controller *********************//
 		if ((input_time-input_time0) < rampTime ) {
 			tau_x = J_x.transpose()*(((input_time-input_time0)/rampTime)*K_x*(x_0 - x) - B_x*(x_dot)); 	
 		}
 		else {
 			tau_x = J_x.transpose()*(K_x*(x_0 - x) - B_x*(x_dot)); 
 		}
-		// Control Law Implamentation
 
-		// iteration_MAX - stochastic perturbation
-		if (is_pulse_pert) 
-		{ // inpulse perturbation here
-
+		//****************** Perturbation Controller *********************//
+		if (pert_type == 1) // !!!!!!!!!!!!!!!! PULSE HERE !!!!!!!!!!!!!!!!//
+		{ 
 			if (pert_count_enable || atpert)
 			{ 
-				// if starting count, or already perturb the first pulse:
 				iteration++;
 			}
-    //if ((iteration <= pert_time) || (iteration >= pert_time + 150))
-	if ((iteration <= pert_time) || (iteration >= pert_time + 500))
-    //if ((iteration <= pert_time) || (iteration >= pert_time + 40))
-    //if ((iteration <= pert_time) || (iteration >= pert_time + 20)) // good short perturbation
-			  { // no pulse --- perturbation duration
-//      if ((iteration <= pert_time) || (iteration >= pert_time + 400)){ // no pulse
-//      if ((iteration <= pert_time) || (iteration >= pert_time + 1000)){ // no pulse
-       			f_pretOutput[0] = 0;
+			if ((iteration <= pert_time) || (iteration >= pert_time + 500))		  
+			{ 	// no pulse
+				f_pretOutput[0] = 0;
         		f_pretOutput[1] = 0;
        			f_pretOutput[2] = 0;
             	atpert = false;
       		}
 			else 
-			{ 	// halve pulse
+			{ 	// pulse
 				f_pretOutput[0] = 0;
-				//f_pretOutput[1] = pert_mag;
-				f_pretOutput[1] = pert_mag * Pert_arr3[iteration-pert_time-1]; // Andy like this! 
-        //f_pretOutput[1] = pert_mag * Pert_arr1[iteration-pert_time-1];  // me try slower
+				// magnified union-hight gaussian
+				f_pretOutput[1] = pert_mag * Pert_arr3[iteration-pert_time-1];
 				f_pretOutput[2] = 0; 
 
 				x_0[0] = input_x_0[0];
 				x_0[1] = input_x_0[1] + pert_pos_mag;
 				x_0[2] = input_x_0[2];
         		atpert = true;
-      		        
 			}
 
 			if (iteration >= pert_time + 500) 
@@ -504,7 +391,7 @@ protected:
 			f_pret[1] = f_pretOutput[1];
 			f_pret[2] = f_pretOutput[2];
 		}
-		else{ // stochastic perturbation here
+		else if (pert_type == 2){  // !!!!!!!!!!!!!!!! STOC HERE !!!!!!!!!!!!!!!!//
 		if (iteration < iteration_MAX){
 			iteration++;
 			f_pretOutput[0] = prevPret[0];
@@ -526,22 +413,16 @@ protected:
 			f_pretOutput[2] = 0.0;
 
 			// Make Preturbation unifore amplitude
-			//pretAmplitude_x = 0.0;
 			if (f_pretOutput[0] >= 0 ) {
 				f_pretOutput[0] = pretAmplitude_x;
 			} else if (f_pretOutput[0] < 0 ){
 				f_pretOutput[0] = -pretAmplitude_x;
 			}
-			//pretAmplitude_y = 0.0;
 			if (f_pretOutput[1] >= 0 ) {
 				f_pretOutput[1] = pretAmplitude_y;
 			} else if (f_pretOutput[1] < 0 ){
 				f_pretOutput[1] = -pretAmplitude_y;
 			}
-
-			// only in x, y direction
-			// f_pretOutput[0] = 0;
-			// f_pretOutput[1] = 0;
 		
 			f_pret[0] = f_pretOutput[0];
 			f_pret[1] = f_pretOutput[1];
@@ -561,8 +442,6 @@ protected:
     
 		// Sum torque commands
 		tau = tau_q + tau_x + tau_pret;
-    	//tau = tau_x + tau_pret;
-		// Save outputs
 		// Save outputs
 		prevPret[0] = f_pretOutput[0];
 		prevPret[1] = f_pretOutput[1];
@@ -629,7 +508,6 @@ class ControllerWarper{
 	printf("Move to joint controller position, in CustomClass:: Controller Wrapper.");
 	wam.moveTo(jj.input_q_0);
 	barrett::btsleep(5.0);
-  //pert_on = 0;
 	}
 
 	~ControllerWarper(){}
@@ -654,21 +532,7 @@ class ControllerWarper{
 		jj.setx0(center_pos);
 	}
 
-	void setCenter_joint(double *jointCenter) {
-		// copy the value of each element
-		input_q_00[0] = jointCenter[0];
-		input_q_00[1] = jointCenter[1];
-		input_q_00[2] = jointCenter[2];
-		input_q_00[3] = jointCenter[3]; 
-		// set to jj
-		jj.setq0(input_q_00);
-	}
-
-	void startController(){
-		// connect 
-	}
-
-	int setK1(double K_input){
+	int setK1(double K_input){ // value when having perturbation
 		K_x1(0,0) = K_input;
 		K_x1(1,1) = K_input;
 		K_x1(2,2) = K_input;
@@ -689,12 +553,12 @@ class ControllerWarper{
 		
 		if (wasMet){
 			// change the K_q to a low value here
-			jj.setImpedanceWait(K_x0, B_x0);
+			jj.setImpedance(K_x0, B_x0);
 			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x0(0,0), K_x0(1,1), K_x0(2,2));
 		}
 		else {
 			// change the K_q to a high value here
-			jj.update_input_time0();			// initializing ramp
+			jj.rampImpedance_init();			// initializing ramp up
 			jj.setImpedance(K_x1, B_x1);
 			printf("\nset impedance to: %.3f, %.3f, %.3f\n", K_x1(0,0), K_x1(1,1), K_x1(2,2));
 			
