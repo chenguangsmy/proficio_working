@@ -147,7 +147,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   jt_type jt;
   double taskJ_center[4];     // task send joint position     ------------cg: will it change across trials? if not, why not delete it???
   double  tleading, tlasting; // saving hardware time for time alignment
-  int     readyToMoveIter = 0;// mark as send ready to move tiems
   int     task_state = 0;
   int     target_dir = 0;
 
@@ -253,11 +252,10 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           barrett::btsleep(0.2);          // allow the Netbox have calibrated the net force. ------------cg: rethink the time---------------
           freeMoving = true;
           sendData = false;
-          readyToMoveIter = 0;
           // target: XYZ-IJK-0123456789, refer to `executive module`
-          robot_center[0] = task_state_data.target[0]; // use this to calculate robot x0
-          robot_center[1] = task_state_data.target[1];
-          robot_center[2] = task_state_data.target[2];
+          robot_center[0] = task_state_data.target[30]; // use this to calculate robot x0
+          robot_center[1] = task_state_data.target[31];
+          robot_center[2] = task_state_data.target[32];
 
           force_thresh = task_state_data.target[7]; 
           
@@ -268,6 +266,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           
           printf("force for this target: %f N \n", force_thresh);
           robot_x0 = force_thresh/task_state_data.wamKp;
+          target_dir = task_state_data.target[4];
+          printf("\n Direction: %d, force: %f\n\n", target_dir, force_thresh); 
+
           switch(target_dir)
           {
               case 0: // right 
@@ -295,7 +296,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
               break;
           }
 
-          readyToMove_nosent = true;
           cw.setK1(task_state_data.wamKp);  // the value at hold ---> THINK CHANGE IT INTO A MORE SMOOTH ONE
           cw.setB1(task_state_data.wamBp);
           break;
@@ -315,8 +315,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 4: //ForceHold, perturbation only in this state
           ifPert = int(task_state_data.ifpert) == 0 ? false : true;
           cw.jj.setPertType( int(task_state_data.ifpert));  // let JJ know
-          target_dir = task_state_data.target[4];
-          printf("\n Direction: %d, force: %f\n\n", target_dir, force_thresh); 
 
           if (ifPert){ // should perturb
             switch (int (task_state_data.ifpert))
@@ -340,7 +338,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 5: //Move
           cw.jj.resetpretAmp();
           cw.jj.setPertMag(0.0);
-          readyToMove_nosent = false;  // have sent, hence no longer send the message.
           cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
           break;
 
@@ -349,6 +346,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 
         case 7:
           sendData  = false;
+          cw.jj.resetpretAmp(); // in case of trial stop at state 4
           break;
 
         case 8:
@@ -386,8 +384,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     else if (Consumer_M.msg_type == MT_EXIT) 
     { // add finish recording here
 
-      wam.moveHome();
-      wam.idle();
+      //wam.moveHome();
+      //wam.idle();
       parportclose();
       break;
     }
@@ -431,6 +429,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 
       if (ifPert && pert_sat.perturb_start){
         cw.jj.enablePertCount();    // start perturbation immediately
+        readyToMove_nosent = true;
         cw.jj.setpretAmp();         // used in stochastic pert
       }
     }
@@ -455,10 +454,10 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 
   }
 
-  if (cw.jj.getPertFinish() && readyToMove_nosent && readyToMoveIter<5) // finished the perturbation 
+  if (cw.jj.getPertFinish() && readyToMove_nosent) // finished the perturbation 
   {
-    readyToMove(wam, robot_center, mod);   // boardcast readyToMove so that the `GatingForceJudge` knows
-    readyToMoveIter++;
+    readyToMove(wam, robot_center, mod);    // boardcast readyToMove so that the `GatingForceJudge` knows
+    readyToMove_nosent = false;             // have sent, hence no longer send the message.
   }
   }
   if (fnameInit && fdirInit)

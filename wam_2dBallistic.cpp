@@ -66,6 +66,9 @@ std::string fname_rtma;
 bool fname_init = false; 
 bool trackOutput = false; // the variable prevent repeating printf 
 cp_type center_pos(-0.513, 0.482, -0.0);
+//jp_type ready_pos0(0, 1.57, 0, 1.57);
+//jp_type ready_pos1(0, 0, 0,1.57);
+//jp_type ready_pos2(-1.57, 0, 0, 1.57);
 
 
 // end mutex
@@ -214,7 +217,8 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   printf("Module Supscription succeed!\n");  //
 
   wam.gravityCompensate();
-  // wam.moveTo(center_pos);
+
+  //wam.moveTo(center_pos);
   // set a series of initial value for the CustomController;
   Matrix_4x4 K_q0;  // joint_stiffness,     loose
 	Matrix_4x4 K_q1;  //                      stiff
@@ -224,6 +228,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   Matrix_3x3 K_x1;  //                      stiff
   Matrix_3x3 B_x0;
   Matrix_3x3 B_x1;
+  jp_type prep_q_0, prep_q_1, prep_q_2;
 	jp_type input_q_0;
 	cp_type input_x_0;
 
@@ -256,6 +261,22 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	input_x_0[1] = 0.482;
 	input_x_0[2] =-0.000;
 
+  prep_q_0[0] = 0;
+  prep_q_0[1] = 1.57;
+  prep_q_0[2] = 0;
+  prep_q_0[3] = 1.57;
+  prep_q_1[0] = 0;
+  prep_q_1[1] = 0;
+  prep_q_1[2] = 0;
+  prep_q_1[3] = 1.57;
+  prep_q_2[0] = -1.57;
+  prep_q_2[1] = 0;
+  prep_q_2[2] = 0;
+  prep_q_2[3] = 1.57;
+
+  wam.moveTo(prep_q_0);
+  wam.moveTo(prep_q_1);
+  wam.moveTo(prep_q_2);
   ControllerWarper<DOF> cw1(product_manager_, wam, K_q0, K_q1, B_q0, B_q1, K_x0, K_x1, B_x0, B_x1, input_q_0, input_x_0); 
   LoggerClass<DOF> log1(product_manager_, wam, loggerfname, logtmpFile, cw1);
 
@@ -289,6 +310,11 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   log1.datalogger_end();
   cout << "Finished trials" << endl;
   barrett::btsleep(0.1);
+  
+  wam.moveTo(prep_q_2);
+  wam.moveTo(prep_q_1);
+  wam.moveTo(prep_q_0);
+  wam.moveHome();
 
   mod.DisconnectFromMMM();
   product_manager_.getPuck(1)->setProperty(product_manager_.getPuck(1)->getBus(), 1, 8, 3);
@@ -296,7 +322,8 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   product_manager_.getPuck(3)->setProperty(product_manager_.getPuck(3)->getBus(), 3, 8, 3);
   barrett::systems::disconnect(wam.input);
 
-  wam.moveHome();
+
+
   printf("\n\n");
   return 0;
 }
