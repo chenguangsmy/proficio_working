@@ -320,11 +320,14 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
             switch (int (task_state_data.ifpert))
             {
               case 1: // pulse
+              case 3:
+              case 4:
               cw.jj.setPertMag(pert_big);                             // set mag 
               cw.jj.disablePertCount();                               // set the pulse 
               break;
             
               case 2: // stoc
+              cw.jj.presetpretAmp(pert_big);
               // only wait for trigger
               break;
             }
