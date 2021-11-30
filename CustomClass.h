@@ -272,7 +272,7 @@ protected:
     bool  	atpert; 
 	bool  	if_pert_finish;
 
-	int 	pert_type;		// 1: pulse, 2: stoc
+	int 	pert_type;		// 1: pulse, 2: stoc, 3: slow step, 4. square pulse, 5. pulse ending.
 	int 	pert_time; 		// randomize a time in the burtRTMA.h to cound down perturbation.
 
 	// Initialize variables 
@@ -371,7 +371,7 @@ protected:
 		}
 
 		//****************** Perturbation Controller *********************//
-		if (pert_type == 1 || pert_type == 3 || pert_type == 4) // !!!!!!!!!!!!!!!! PULSE HERE !!!!!!!!!!!!!!!!//
+		if (pert_type == 1 || pert_type == 3 || pert_type == 4 || pert_type == 5) // !!!!!!!!!!!!!!!! PULSE HERE !!!!!!!!!!!!!!!!//
 		{ 
 			if (pert_count_enable || atpert)
 			{ 
@@ -391,7 +391,7 @@ protected:
 			{ 	// pulse
 				f_pretOutput[0] = 0;
 				// magnified union-hight gaussian
-				if (pert_type == 1){
+				if (pert_type == 1 || pert_type == 5){
 					f_pretOutput[1] = pert_mag * Pert_arr3[iteration-pert_time-1];
 				}
 				else if (pert_type == 3){

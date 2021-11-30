@@ -228,7 +228,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   Matrix_3x3 K_x1;  //                      stiff
   Matrix_3x3 B_x0;
   Matrix_3x3 B_x1;
-  jp_type prep_q_0, prep_q_1, prep_q_2;
+  jp_type prep_q_0, prep_q_1, prep_q_2, prep_q_3;
 	jp_type input_q_0;
 	cp_type input_x_0;
 
@@ -268,15 +268,20 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   prep_q_1[0] = 0;
   prep_q_1[1] = 0;
   prep_q_1[2] = 0;
-  prep_q_1[3] = 1.57;
+  prep_q_1[3] = 0;
   prep_q_2[0] = -1.57;
   prep_q_2[1] = 0;
   prep_q_2[2] = 0;
-  prep_q_2[3] = 1.57;
+  prep_q_2[3] = 0;
+  prep_q_3[0] = -1.57;
+  prep_q_3[1] = 0;
+  prep_q_3[2] = 0;
+  prep_q_3[3] = 1.57;
 
   wam.moveTo(prep_q_0);
   wam.moveTo(prep_q_1);
   wam.moveTo(prep_q_2);
+  wam.moveTo(prep_q_3);
   ControllerWarper<DOF> cw1(product_manager_, wam, K_q0, K_q1, B_q0, B_q1, K_x0, K_x1, B_x0, B_x1, input_q_0, input_x_0); 
   LoggerClass<DOF> log1(product_manager_, wam, loggerfname, logtmpFile, cw1);
 
@@ -311,6 +316,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   cout << "Finished trials" << endl;
   barrett::btsleep(0.1);
   
+  wam.moveTo(prep_q_3);
   wam.moveTo(prep_q_2);
   wam.moveTo(prep_q_1);
   wam.moveTo(prep_q_0);

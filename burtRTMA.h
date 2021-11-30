@@ -160,6 +160,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   char file_name[20];
   char subject_name[TAG_LENGTH];
   int session_num; 
+  int pert_type;                            // perturbation type: 1-pulse, 2-stoc, 3-slowRamp, 4-square, 5-pulseNoRelease 
   bool readyToMove_nosent;
   bool sync_time_flag = false;
   double pert_big = -15;                    // pert magnitude
@@ -244,7 +245,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 1:   // Initialize, set center and make the hardware pulse
           // make hardware pulse 
           tleading = GetAbsTime(); 
-          ioctl(fd, PPWDATA, &dataH);     // change the parports here
+          ioctl(fd, PPWDATA, &dataL);     // change the parports here
           tlasting = GetAbsTime(); 
           sync_time_flag = true;
           
@@ -268,6 +269,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           robot_x0 = force_thresh/task_state_data.wamKp;
           target_dir = task_state_data.target[4];
           printf("\n Direction: %d, force: %f\n\n", target_dir, force_thresh); 
+          pert_type = int(task_state_data.ifpert);
 
           switch(target_dir)
           {
@@ -301,7 +303,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
 
         case 2: // Present
-          ioctl(fd, PPWDATA, &dataL);     //set pulse back
+          ioctl(fd, PPWDATA, &dataH);     //set pulse back
           
           sendData = true;
           
@@ -322,6 +324,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
               case 1: // pulse
               case 3:
               case 4:
+              case 5:
               cw.jj.setPertMag(pert_big);                             // set mag 
               cw.jj.disablePertCount();                               // set the pulse 
               break;
@@ -341,7 +344,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 5: //Move
           cw.jj.resetpretAmp();
           cw.jj.setPertMag(0.0);
-          cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
+          if (pert_type != 5){
+            cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
+          }
           break;
 
         case 6: // hold
@@ -350,6 +355,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 7:
           sendData  = false;
           cw.jj.resetpretAmp(); // in case of trial stop at state 4
+          ioctl(fd, PPWDATA, &dataH);     //set pulse back
           break;
 
         case 8:
