@@ -198,7 +198,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   catch (exception &e){
     std::cout << "cannot assign logger fname" << e.what() <<std::endl;
   }
-  char logtmpFile[] = "bt20200904XXXXXX";
+  char logtmpFile[] = "datatmp/bt20200904XXXXXX";
 	if (mkstemp(logtmpFile) == -1) {
 		printf("ERROR: Couldn't create temporary file!\n");
 	return 1;
@@ -293,9 +293,9 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   message.setValue(msg_tmp); //.. this is confusing, what do this do?
 
   cw1.connectForces();
-  log1.datalogger_connect();
-  log1.datalogger_start();
   cout << "Connected Forces" << endl;
+  log1.datalogger_connect();
+  //log1.datalogger_start();
 
   // Spawn 2 threads for listening to RTMA and moving robot
   pthread_t rtmaThread, robotMoverThread;
@@ -312,7 +312,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   pthread_join(rtmaThread, NULL );
   printf("The RTMA thread joined! \n");
   // pthread_join(robotMoverThread, NULL );
-  log1.datalogger_end();
+  //log1.datalogger_end();
   cout << "Finished trials" << endl;
   barrett::btsleep(0.1);
   

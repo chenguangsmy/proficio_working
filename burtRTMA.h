@@ -149,7 +149,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   double  tleading, tlasting; // saving hardware time for time alignment
   int     task_state = 0;
   int     target_dir = 0;
-
+  int     num_pressEnd = 0;
+  string session_num_s;
   cp_type robot_center(system_center);
   cp_type target;
 	CMessage Consumer_M;
@@ -392,11 +393,17 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     // Exit the function
     else if (Consumer_M.msg_type == MT_EXIT) 
     { // add finish recording here
+      num_pressEnd = num_pressEnd + 1;
+      if(1) { // just end session
+       cw.jj.moveAway();
+       lg.datalogger_end();
 
-      //wam.moveHome();
-      //wam.idle();
-      parportclose();
-      break;
+      }
+      
+      if (num_pressEnd>5) { // truly exit
+        parportclose();
+        break;
+      }
     }
   
     else if (Consumer_M.msg_type == MT_SESSION_CONFIG)
@@ -406,22 +413,28 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         Consumer_M.GetData(&ssconfig);
         strcpy(data_dir, ssconfig.data_dir);
         file_dir = data_dir;
+        string fdir(data_dir);
+        session_num_s = fdir.substr(fdir.size()-5);
+        session_num = atoi(session_num_s.c_str());
         file_dir.replace(6,2,"robot");
         printf("data_dir is: %s", data_dir);
         fnameInit = true;
+        sprintf(file_name, "%sWAM%d.csv", subject_name, session_num);
+        cout << "filename: " << file_name << endl;
+        fdirInit = true;
+        lg.tmpFileName = file_name;
         cw.setForceMet(false);
     }
 
     else if (Consumer_M.msg_type == MT_XM_START_SESSION)
     {
+        num_pressEnd = 0; // reset
+        lg.datalogger_start();
         printf("MT_XM_START_SESSION receieved! \n");
         MDF_XM_START_SESSION stsession;
         Consumer_M.GetData(&stsession);
         strcpy(subject_name, stsession.subject_name);
-        session_num = stsession.calib_session_id;
-        sprintf(file_name, "%sWAM%d.csv", subject_name, session_num);
-        cout << "filename: " << file_name << endl;
-        fdirInit = true;
+
     }
 
     else if(Consumer_M.msg_type == MT_JUDGE_FEEDBACK)

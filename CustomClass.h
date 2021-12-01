@@ -108,6 +108,7 @@ public:
 	int     x0iterator; 			// from 0 to 512
 	cp_type input_x0_stt;
 	cp_type input_x0_edn;
+	jp_type away_q;  
 	systems::Ramp time;
 	Output<int>	wamTaskState;
 
@@ -155,6 +156,10 @@ public:
 			if (gettimeofday(&tim0, NULL) == 0){
 				day = int(tim0.tv_sec/(24*3600))-1;
 			}
+			away_q[0] = -1.57;
+			away_q[1] = 0;
+			away_q[2] = 0;
+ 			away_q[3] = 0;
 		}
 
 	virtual ~JointControlClass() { this->mandatoryCleanUp(); }
@@ -163,6 +168,10 @@ public:
 		printf("x0: %f, %f, %f", input_x_0[0], input_x_0[1], input_x_0[2]);
 		K_x = K_x1;
 		B_x = B_x1; 
+	}
+
+	int moveAway(){
+		wam.moveTo(away_q);
 	}
 
 	void setTaskState(int ts){
@@ -546,7 +555,8 @@ class ControllerWarper{
   		wam.moveTo(jj.input_q_0); //center_pos
 		TrackRef = false;
   		barrett::btsleep(0.5);
-		
+
+
   		wam.idle();
   		//printf("Begin idle \n");
   		return true;
@@ -637,7 +647,8 @@ public:
 	typedef boost::tuple<double, jp_type, jv_type, cp_type, cv_type, jt_type, cf_type, int, int, int> tuple_type;
 	const size_t PERIOD_MULTIPLIER;
 	char *tmpFile;
-	const char* tmpFileName;
+	//const char* tmpFileName;
+	char* tmpFileName;
 	systems::PeriodicDataLogger<tuple_type> logger;
   ControllerWarper<DOF> & controller1; 
 	explicit LoggerClass(ProductManager& pm, systems::Wam<DOF>& wam, char *fname, char *tmpfname, ControllerWarper<DOF>& controller):
@@ -655,6 +666,7 @@ public:
 	virtual ~LoggerClass(){}
 
 public:
+
 	void datalogger_connect(){
 		printf("Start connecting! \n");
 		systems::connect(controller1.jj.time.output, tg.template getInput<0>());
@@ -689,8 +701,9 @@ public:
 			printf("Output written to %s.\n", tmpFileName);
 		}
 		
-		std::remove(tmpFile);
+		//std::remove(tmpFile);
 	}
+
 };
 
 #endif
