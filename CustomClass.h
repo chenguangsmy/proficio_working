@@ -659,16 +659,17 @@ public:
 				pm(pm), wam(wam), 
   				controller1(controller),
 				tmpFileName(fname){
-    	printf("Entered the class Constructor!\n");
-		printf("Fished the Constructor.");
+		printf("logger constructed! \t.");
 	}
 	
-	virtual ~LoggerClass(){}
+	virtual ~LoggerClass(){
+
+	}
 
 public:
 
-	void datalogger_connect(){
-		printf("Start connecting! \n");
+	void datalogger_connect1(){
+		printf("logger connected1... ");
 		systems::connect(controller1.jj.time.output, tg.template getInput<0>());
 		systems::connect(wam.jpOutput, tg.template getInput<1>());
 		systems::connect(wam.jvOutput, tg.template getInput<2>());
@@ -682,26 +683,27 @@ public:
 	}
 
 	void datalogger_start(){
-		printf("Start timming! \n");
 		controller1.jj.time.start();
-		printf("Connect input! \n");
+		printf("logger started.\n");
+	}
+	void datalogger_connect2(){
+		printf("2... \n");
 		connect(tg.output, logger.input);
-		printf("Logging started.\n");
 	}
 	void datalogger_end(){
 		logger.closeLog();
-		printf("Logging stopped.\n");
+		printf("logger: stopped.\n");
 		log::Reader<tuple_type> lr(tmpFile);
-		if (fname_init){
-			lr.exportCSV(fname_rtma.c_str());
-			printf("save to: %s",fname_rtma.c_str());
-		}
-		else{
-			lr.exportCSV(tmpFileName);
-			printf("Output written to %s.\n", tmpFileName);
-		}
+		lr.exportCSV(tmpFileName);
+		printf("Output written to %s.\t", tmpFileName);
+		std::ifstream src(tmpFileName, std::ios::binary);
+		std::ofstream dest(fname_rtma.c_str(), std::ios::binary);
+		dest << src.rdbuf();
+		//lr.exportCSV(fname_rtma.c_str());
+		printf("save copy to: %s",fname_rtma.c_str());
+
 		
-		//std::remove(tmpFile);
+		std::remove(tmpFile);
 	}
 
 };

@@ -66,9 +66,6 @@ std::string fname_rtma;
 bool fname_init = false; 
 bool trackOutput = false; // the variable prevent repeating printf 
 cp_type center_pos(-0.513, 0.482, -0.0);
-//jp_type ready_pos0(0, 1.57, 0, 1.57);
-//jp_type ready_pos1(0, 0, 0,1.57);
-//jp_type ready_pos2(-1.57, 0, 0, 1.57);
 
 
 // end mutex
@@ -98,20 +95,17 @@ struct arg_struct {
   RTMA_Module &mod;
   barrett::ProductManager& product_manager;
   ControllerWarper<DOF>& cw;
-  LoggerClass<DOF>& lg;
 
   arg_struct(barrett::systems::Wam<DOF>& wam,
               cp_type system_center,
               RTMA_Module &mod,
               barrett::ProductManager& product_manager,
-              ControllerWarper<DOF>& cw,
-              LoggerClass<DOF>& lg
+              ControllerWarper<DOF>& cw
               ) : wam(wam), 
                 system_center(system_center), 
                 mod(mod), 
                 product_manager(product_manager),
-                cw(cw),
-                lg(lg) {}
+                cw(cw){}
 };
 
 
@@ -122,7 +116,7 @@ template <size_t DOF>
 void * responderWrapper(void *arguments)
 {
   struct arg_struct<DOF> *args = (arg_struct<DOF> *)arguments;
-  respondToRTMA(args->wam, args->system_center, args->mod, args->cw, args->lg);
+  respondToRTMA(args->wam, args->system_center, args->mod, args->product_manager, args->cw);
   return NULL;
 }
 
@@ -283,7 +277,6 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   wam.moveTo(prep_q_2);
   wam.moveTo(prep_q_3);
   ControllerWarper<DOF> cw1(product_manager_, wam, K_q0, K_q1, B_q0, B_q1, K_x0, K_x1, B_x0, B_x1, input_q_0, input_x_0); 
-  LoggerClass<DOF> log1(product_manager_, wam, loggerfname, logtmpFile, cw1);
 
   if (!cw1.init()) {
     printf("hptics_demo init failure!");
@@ -294,14 +287,13 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 
   cw1.connectForces();
   cout << "Connected Forces" << endl;
-  log1.datalogger_connect();
-  //log1.datalogger_start();
+
 
   // Spawn 2 threads for listening to RTMA and moving robot
   pthread_t rtmaThread, robotMoverThread;
 
   // Create thread arguments
-  struct arg_struct<DOF> args(wam, center_pos, mod, product_manager_, cw1, log1);
+  struct arg_struct<DOF> args(wam, center_pos, mod, product_manager_, cw1);
 
   //Start threads
   pthread_create(&rtmaThread, NULL, &responderWrapper<DOF>, (void *)&args);
@@ -312,7 +304,6 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   pthread_join(rtmaThread, NULL );
   printf("The RTMA thread joined! \n");
   // pthread_join(robotMoverThread, NULL );
-  //log1.datalogger_end();
   cout << "Finished trials" << endl;
   barrett::btsleep(0.1);
   

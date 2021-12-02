@@ -128,9 +128,8 @@ template <size_t DOF>
 void respondToRTMA(barrett::systems::Wam<DOF>& wam,
               cp_type system_center,
               RTMA_Module &mod,
-              //HapticsDemo<DOF> &ball)
-              ControllerWarper<DOF> &cw,
-              LoggerClass<DOF> &lg)
+              barrett::ProductManager& product_manager,
+              ControllerWarper<DOF> &cw)
 { 
   cf_type cforce;
   bool read_rlt = false;
@@ -154,6 +153,10 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   cp_type robot_center(system_center);
   cp_type target;
 	CMessage Consumer_M;
+  
+  char logtmpFile[] = "datatmp/bt20200904XXXXXX";
+  char loggerfname[] = "";
+  LoggerClass<DOF> *log1;
 
   // variables for save filename 
   char data_dir[MAX_DATA_DIR_LEN];
@@ -391,13 +394,14 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     }
 
     // Exit the function
-    else if (Consumer_M.msg_type == MT_EXIT) 
+    else if (read_rlt & Consumer_M.msg_type == MT_EXIT) 
     { // add finish recording here
       num_pressEnd = num_pressEnd + 1;
-      if(1) { // just end session
+      if(num_pressEnd<=5) { // just end session
        cw.jj.moveAway();
-       lg.datalogger_end();
-
+       log1->datalogger_end();
+       barrett::btsleep(0.2);
+       delete log1;
       }
       
       if (num_pressEnd>5) { // truly exit
@@ -418,18 +422,27 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         session_num = atoi(session_num_s.c_str());
         file_dir.replace(6,2,"robot");
         printf("data_dir is: %s", data_dir);
-        fnameInit = true;
-        sprintf(file_name, "%sWAM%d.csv", subject_name, session_num);
+        sprintf(file_name, "datatmp/%sWAM%05d.csv", subject_name, session_num);
         cout << "filename: " << file_name << endl;
+        fnameInit = true;
         fdirInit = true;
-        lg.tmpFileName = file_name;
+        log1->tmpFileName = file_name;
         cw.setForceMet(false);
+
+        fname_rtma = file_dir + '/' + file_name;
+        cout << "fname should be" << fname_rtma << endl;
+        fname_init = true;
     }
 
     else if (Consumer_M.msg_type == MT_XM_START_SESSION)
     {
+        //LoggerClass<DOF> log1(product_manager, wam, loggerfname, logtmpFile, cw);
+        log1 = new LoggerClass<DOF>(product_manager, wam, loggerfname, logtmpFile, cw);
+        log1->datalogger_connect1();
+        log1->datalogger_connect2();
         num_pressEnd = 0; // reset
-        lg.datalogger_start();
+        //lg.datalogger_start();
+        log1->datalogger_start();
         printf("MT_XM_START_SESSION receieved! \n");
         MDF_XM_START_SESSION stsession;
         Consumer_M.GetData(&stsession);
@@ -482,11 +495,4 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     readyToMove_nosent = false;             // have sent, hence no longer send the message.
   }
   }
-  if (fnameInit && fdirInit)
-  {
-        fname_rtma = file_dir + '/' + file_name;
-        cout << "fname should be" << fname_rtma << endl;
-        fname_init = true;
-  }
-  
 }
