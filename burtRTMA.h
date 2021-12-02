@@ -68,7 +68,6 @@ BARRETT_UNITS_TYPEDEFS(6);
 
 
 extern bool forceMet; //thresholdMet;
-extern std::string fname_rtma;
 extern bool fname_init; 
 
 int ping_times = 5;
@@ -128,7 +127,7 @@ template <size_t DOF>
 void respondToRTMA(barrett::systems::Wam<DOF>& wam,
               cp_type system_center,
               RTMA_Module &mod,
-              barrett::ProductManager& product_manager,
+//              barrett::ProductManager& product_manager,
               ControllerWarper<DOF> &cw)
 { 
   cf_type cforce;
@@ -136,8 +135,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   
   bool freeMoving = false; 
   bool sendData = true;
-  bool fnameInit = false;
-  bool fdirInit = false;
   bool ifPert = false;        // only perturb at certain trials
   cp_type cp;
   cv_type cv;
@@ -154,9 +151,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   cp_type target;
 	CMessage Consumer_M;
   
-  char logtmpFile[] = "datatmp/bt20200904XXXXXX";
-  char loggerfname[] = "";
-  LoggerClass<DOF> *log1;
+
+  //LoggerClass<DOF> *log1;
+//  LoggerClass<DOF> log1(product_manager, wam, loggerfname, logtmpFile, cw);
 
   // variables for save filename 
   char data_dir[MAX_DATA_DIR_LEN];
@@ -397,18 +394,20 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     else if (read_rlt & Consumer_M.msg_type == MT_EXIT) 
     { // add finish recording here
       num_pressEnd = num_pressEnd + 1;
-      if(num_pressEnd<=5) { // just end session
+//      if(num_pressEnd<=5) { // just end session
        cw.jj.moveAway();
-       log1->datalogger_end();
+//       log1.datalogger_end();
+       //log1->datalogger_end();
+       cw.closeLogger();
        barrett::btsleep(0.2);
-       delete log1;
-      }
+       //delete log1;
+//      }
       
-      if (num_pressEnd>5) { // truly exit
+//      if (num_pressEnd>5) { // truly exit
         parportclose();
         break;
       }
-    }
+//    }
   
     else if (Consumer_M.msg_type == MT_SESSION_CONFIG)
     {
@@ -423,12 +422,12 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         file_dir.replace(6,2,"robot");
         printf("data_dir is: %s", data_dir);
         sprintf(file_name, "datatmp/%sWAM%05d.csv", subject_name, session_num);
-        cout << "filename: " << file_name << endl;
-        fnameInit = true;
-        fdirInit = true;
-        log1->tmpFileName = file_name;
+        //cw.log1->tmpFileName = file_name;
+        cw.log1->setTmpFileName(file_name);
+        cout << "filename: " << cw.log1->tmpFileName << endl;
+        
         cw.setForceMet(false);
-
+        sprintf(file_name, "%sWAM%05d.csv", subject_name, session_num);
         fname_rtma = file_dir + '/' + file_name;
         cout << "fname should be" << fname_rtma << endl;
         fname_init = true;
@@ -436,13 +435,18 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 
     else if (Consumer_M.msg_type == MT_XM_START_SESSION)
     {
-        //LoggerClass<DOF> log1(product_manager, wam, loggerfname, logtmpFile, cw);
+       /*
         log1 = new LoggerClass<DOF>(product_manager, wam, loggerfname, logtmpFile, cw);
         log1->datalogger_connect1();
         log1->datalogger_connect2();
-        num_pressEnd = 0; // reset
-        //lg.datalogger_start();
         log1->datalogger_start();
+        */
+       cw.setupLogger();
+        num_pressEnd = 0; // reset
+//        log1.datalogger_connect1();
+//        log1.datalogger_connect2();
+//        log1.datalogger_start();
+        
         printf("MT_XM_START_SESSION receieved! \n");
         MDF_XM_START_SESSION stsession;
         Consumer_M.GetData(&stsession);

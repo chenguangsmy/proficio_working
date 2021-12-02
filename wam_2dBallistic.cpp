@@ -62,9 +62,9 @@ v_type msg_tmp;
 barrett::systems::ExposedOutput<v_type> message;
 
 bool forceMet = false;
-std::string fname_rtma;
 bool fname_init = false; 
 bool trackOutput = false; // the variable prevent repeating printf 
+std::string fname_rtma;
 cp_type center_pos(-0.513, 0.482, -0.0);
 
 
@@ -116,7 +116,8 @@ template <size_t DOF>
 void * responderWrapper(void *arguments)
 {
   struct arg_struct<DOF> *args = (arg_struct<DOF> *)arguments;
-  respondToRTMA(args->wam, args->system_center, args->mod, args->product_manager, args->cw);
+  //respondToRTMA(args->wam, args->system_center, args->mod, args->product_manager, args->cw);
+  respondToRTMA(args->wam, args->system_center, args->mod, args->cw);
   return NULL;
 }
 
