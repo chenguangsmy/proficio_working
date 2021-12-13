@@ -68,7 +68,7 @@ std::string fname_rtma;
 cp_type center_pos(-0.513, 0.482, -0.0);
 
 
-// end mutex
+// end mutex 
 pthread_mutex_t beLock;
 // Move mutex
 pthread_mutex_t rmLock;
