@@ -268,7 +268,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   prep_q_1[0] = 0;
   prep_q_1[1] = 0;
   prep_q_1[2] = 0;
-  prep_q_1[3] = 0;
+  prep_q_1[3] = 1.57;
   prep_q_2[0] = -1.57;
   prep_q_2[1] = 0;
   prep_q_2[2] = 0;
