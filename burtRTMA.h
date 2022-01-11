@@ -147,6 +147,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   jt_type jt;
   double taskJ_center[4];     // task send joint position     ------------cg: will it change across trials? if not, why not delete it???
   double  tleading, tlasting; // saving hardware time for time alignment
+  double  pert_delayt;        //pertdx0_mag;, // the delay time (ms) for perturb during movement 
   int     task_state = 0;
   int     target_dir = 0;
 
@@ -246,7 +247,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           tleading = GetAbsTime(); 
           ioctl(fd, PPWDATA, &dataL);     // change the parports here
           tlasting = GetAbsTime(); 
-          ioctl(fd, PPWDATA, &dataH);     //set pulse back
           sync_time_flag = true;
           
           // task-related staff:
@@ -264,6 +264,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           taskJ_center[1] = task_state_data.target[9];
           taskJ_center[2] = task_state_data.target[10];
           taskJ_center[3] = task_state_data.target[11];
+
+          pert_delayt = task_state_data.pertdx0_mag;
+          cw.jj.setPertTime(int(pert_delayt/2)); // convert ms to iteration
           
           printf("force for this target: %f N \n", force_thresh);
           robot_x0 = force_thresh/task_state_data.wamKp;
@@ -302,7 +305,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
 
         case 2: // Present
-          
+          ioctl(fd, PPWDATA, &dataH);     //set pulse back
           sendData = true;
           
           // set robot x0  
@@ -344,6 +347,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese  
           // newly added: trying perturb durign the movement
           cw.jj.setPertMag(pert_big);
+          cw.jj.disablePertCount();
           cw.jj.enablePertCount();
           break;
 

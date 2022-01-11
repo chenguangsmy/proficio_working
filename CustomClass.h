@@ -213,8 +213,12 @@ public:
 		pretAmplitude_y = 0.0;
 	}
 
+	int setPertTime(int time_iter){ // each iter 2ms
+		pert_time = time_iter;
+	}
+
 	int enablePertCount(){
-		pert_time = 0; // start to count up
+		//pert_time = 0; // start to count up
 		pert_count_enable = true;
 		if_pert_finish = false;
 	}
@@ -281,7 +285,7 @@ protected:
 	bool  	if_pert_finish;
 
 	int 	pert_type;		// 1: pulse, 2: stoc, 3: slow step, 4. square pulse, 5. pulse ending.
-	int 	pert_time; 		// randomize a time in the burtRTMA.h to cound down perturbation.
+	int 	pert_time; 		// randomize a time in the burtRTMA.h to count down perturbation.
 
 	// Initialize variables 
 	Matrix_4x4 K_q;
@@ -401,7 +405,7 @@ protected:
 				// magnified union-hight gaussian
 				if (pert_type == 1){
 					//f_pretOutput[1] = pert_mag * Pert_arr3[iteration-pert_time-1];
-					f_pretOutput[1] = pert_mag * Pert_arr51[iteration-pert_time-1];
+					f_pretOutput[1] = pert_mag * Pert_arr50[iteration-pert_time-1];
 				}
 				else if (pert_type == 3){
 					f_pretOutput[1] = pert_mag * Pert_arr6[iteration-pert_time-1];
