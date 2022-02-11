@@ -325,7 +325,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
               case 1: // pulse
               case 3:
               case 4:
-              cw.jj.setPertMag(pert_big);                             // set mag 
+              //cw.jj.setPertMag(pert_big);                             // set mag
+              cw.jj.setPertMag(0);                                    // not perturb during hold 
               cw.jj.disablePertCount();                               // set the pulse 
               break;
             
@@ -363,6 +364,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.setx0(robot_center);
           cw.setForceMet(false);
           cw.jj.disablePertCount(); // avoid perturbation at this time
+          cw.jj.setPertMag(0);
           freeMoving = true;
           cw.moveToq0(); //make sure on the right joint position
           break;
