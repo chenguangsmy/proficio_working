@@ -362,6 +362,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.setx0(robot_center);
           cw.setForceMet(false);
           cw.jj.disablePertCount(); // avoid perturbation at this time
+          cw.jj.setPertMag(0);
           freeMoving = true;
           cw.moveToq0(); //make sure on the right joint position
           break;
