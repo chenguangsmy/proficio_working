@@ -404,6 +404,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.setTaskState(7);
           cout << " ST 7, " << endl;
           cw.jj.setx0(robot_center);
+          cw.jj.setPertMag(0);
           cw.setForceMet(false);
           cw.jj.disablePertCount(); // avoid perturbation at this time
           freeMoving = true;
