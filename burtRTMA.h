@@ -246,6 +246,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           // make hardware pulse 
           tleading = GetAbsTime(); 
           ioctl(fd, PPWDATA, &dataL);     // change the parports here
+          printf("CHANGE PARPORT VOLTAGE LOW\n"); // cg to test parport voltage setting working.
           tlasting = GetAbsTime(); 
           sync_time_flag = true;
           
@@ -272,6 +273,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           robot_x0 = force_thresh/task_state_data.wamKp;
           target_dir = task_state_data.target[4];
           printf("\n Direction: %d, force: %f\n\n", target_dir, force_thresh); 
+          
 
           switch(target_dir)
           {
@@ -306,6 +308,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 
         case 2: // Present
           ioctl(fd, PPWDATA, &dataH);     //set pulse back
+          printf("CHANGE PARPORT VOLTAGE HIGH\n"); // cg to test parport voltage setting working.
           sendData = true;
           
           // set robot x0  
@@ -325,7 +328,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
               case 1: // pulse
               case 3:
               case 4:
-              //cw.jj.setPertMag(pert_big);                             // set mag
+              cw.jj.setPertMag(pert_big);                             // set mag
               cw.jj.setPertMag(0);                                    // not perturb during hold 
               cw.jj.disablePertCount();                               // set the pulse 
               break;
@@ -364,8 +367,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.setx0(robot_center);
           cw.setForceMet(false);
           cw.jj.disablePertCount(); // avoid perturbation at this time
-          cw.jj.setPertMag(0);
+          cw.jj.setPertMag(0); 
           freeMoving = true;
+          // commit when testing the WAM position error
           cw.moveToq0(); //make sure on the right joint position
           break;
 
