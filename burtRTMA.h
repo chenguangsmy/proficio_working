@@ -161,6 +161,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   char file_name[20];
   char subject_name[TAG_LENGTH];
   int session_num; 
+  int pert_type; 
   bool readyToMove_nosent;
   bool sync_time_flag = false;
   double pert_big = -15;                    // pert magnitude
@@ -278,13 +279,15 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           switch(target_dir)
           {
               case 0: // right 
-                robot_center[1] += robot_x0;
+                //robot_center[1] += robot_x0;
+                robot_center[0] -= robot_x0;
                 break;
               case 2: // front
                 robot_center[1] -= robot_x0;
                 break;
               case 4: // left 
-                robot_center[1] -= robot_x0;
+                //robot_center[1] -= robot_x0;
+                robot_center[0] -= robot_x0;
                 break;
               case 6: 
                 robot_center[1] += robot_x0;
@@ -294,7 +297,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           {
               case 0:
               case 6:
-                pert_big = -task_state_data.pert_mag;
+                pert_big = task_state_data.pert_mag;
               break;
               case 2:
               case 4:
@@ -321,13 +324,18 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 4: //ForceHold, perturbation only in this state
           ifPert = int(task_state_data.ifpert) == 0 ? false : true;
           cw.jj.setPertType( int(task_state_data.ifpert));  // let JJ know
-
+          pert_type = task_state_data.ifpert;
           if (ifPert){ // should perturb
             switch (int (task_state_data.ifpert))
             {
-              case 1: // pulse
+              case 1: // pulse before release
+                    cw.jj.disablePertCount();                               // set the pulse 
+                    cw.jj.setPertMag(pert_big);                             // set mag
+                    cw.jj.enablePertCount();
+                    printf("enable perturbation before movement! ");
+              break;  
               case 3:
-              case 4:
+              case 4: // pulse after release
               cw.jj.setPertMag(pert_big);                             // set mag
               cw.jj.setPertMag(0);                                    // not perturb during hold 
               cw.jj.disablePertCount();                               // set the pulse 
@@ -347,12 +355,15 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 
         case 5: //Move
           cw.jj.resetpretAmp();
-          cw.jj.setPertMag(0.0);
           cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese  
-          // newly added: trying perturb durign the movement
-          cw.jj.setPertMag(pert_big);
-          cw.jj.disablePertCount();
-          cw.jj.enablePertCount();
+          cw.jj.setPertMag(0.0);
+          if (pert_type == 4){//task_state_data.ifpert == 4){
+              // newly added: trying perturb durign the movement
+              cw.jj.setPertMag(pert_big);
+              cw.jj.disablePertCount();
+              cw.jj.enablePertCount();
+              printf("enable perturbation during movement! ");
+          }
           break;
 
         case 6: // hold
