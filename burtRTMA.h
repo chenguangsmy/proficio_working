@@ -213,7 +213,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       burt_status_data.pos_z = cp[2]; // * 1280 / 0.2; // and is set properly
       
       //populate velocity here
-      cv = barrett::math::saturate(wam.getToolVelocity(), 19.999);
+      //cv = barrett::math::saturate(wam.getToolVelocity(), 1.999);
+      cv = wam.getToolVelocity();
+
       burt_status_data.vel_x = cv[0]; // * 1280 / 0.2; // Assume this is accurate
       burt_status_data.vel_y = cv[1]; // * 1280 / 0.2; // TODO: check that cp has the right value
       burt_status_data.vel_z = cv[2]; // * 1280 / 0.2; // and is set properly
@@ -271,9 +273,10 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.setPertTime(int(pert_delayt/2)); // convert ms to iteration
           
           printf("force for this target: %f N \n", force_thresh);
+          printf("pert_type for this trial: %d \n", task_state_data.ifpert);
           robot_x0 = force_thresh/task_state_data.wamKp;
           target_dir = task_state_data.target[4];
-          printf("\n Direction: %d, force: %f\n\n", target_dir, force_thresh); 
+          //printf("\n Direction: %d, force: %f\n\n", target_dir, force_thresh); 
           
 
           switch(target_dir)
@@ -287,7 +290,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
                 break;
               case 4: // left 
                 //robot_center[1] -= robot_x0;
-                robot_center[0] -= robot_x0;
+                robot_center[0] += robot_x0;
                 break;
               case 6: 
                 robot_center[1] += robot_x0;
@@ -329,14 +332,16 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
             switch (int (task_state_data.ifpert))
             {
               case 1: // pulse before release
+                      // release 0.5s before after perturb finished 
                     cw.jj.disablePertCount();                               // set the pulse 
                     cw.jj.setPertMag(pert_big);                             // set mag
-                    cw.jj.enablePertCount();
+                    //cw.jj.enablePertCount();
+                    cw.jj.presetRelease(0.5*500);                           // presetRelease to be exact time after perturb                  
                     printf("enable perturbation before movement! ");
               break;  
               case 3:
               case 4: // pulse after release
-              cw.jj.setPertMag(pert_big);                             // set mag
+              //cw.jj.setPertMag(pert_big);                             // set mag
               cw.jj.setPertMag(0);                                    // not perturb during hold 
               cw.jj.disablePertCount();                               // set the pulse 
               break;
@@ -345,6 +350,12 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
               cw.jj.presetpretAmp(pert_big);
               // only wait for trigger
               break;
+
+              case 6: //perturb after hold 
+              cw.jj.setPertMag(pert_big); 
+              cw.jj.disablePertCount();
+              break;
+
             }
           }
           else{
@@ -367,6 +378,13 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           break;
 
         case 6: // hold
+              if (pert_type == 6){//task_state_data.ifpert == 4){
+              // newly added: trying perturb durign the movement
+              cw.jj.setPertMag(pert_big);
+              cw.jj.disablePertCount();
+              cw.jj.enablePertCount();
+              printf("enable perturbation during movement! ");
+          }
           break;
 
         case 7:
@@ -482,11 +500,18 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   }
 
   if (cw.jj.getPertFinish() && readyToMove_nosent) // finished the perturbation 
-  {
+  {                                                // telling that ready to move, but not move yet. 
     readyToMove(wam, robot_center, mod);    // boardcast readyToMove so that the `GatingForceJudge` knows
     readyToMove_nosent = false;             // have sent, hence no longer send the message.
+  } 
+
+  if (cw.jj.getReadyToRelease()){
+    cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese  
+    cw.jj.setPertMag(0.0);
+    cw.jj.setReadyToRelease(false);
   }
   }
+
   if (fnameInit && fdirInit)
   {
         fname_rtma = file_dir + '/' + file_name;
