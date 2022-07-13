@@ -262,9 +262,9 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	input_x_0[2] =-0.000;
 
   prep_q_0[0] = 0;
-  prep_q_0[1] = 1.57;
-  prep_q_0[2] = 0;
-  prep_q_0[3] = 1.57;
+  prep_q_0[1] = -1.57;
+  prep_q_0[2] = -1.57;
+  prep_q_0[3] = 0;
   prep_q_1[0] = 0;
   prep_q_1[1] = 0;
   prep_q_1[2] = 0;
@@ -278,7 +278,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   prep_q_3[2] = 0;
   prep_q_3[3] = 1.57;
 
-//  wam.moveTo(prep_q_0);
+  wam.moveTo(prep_q_0);
 //  wam.moveTo(prep_q_1);
 //  wam.moveTo(prep_q_2);
 //  wam.moveTo(prep_q_3);
