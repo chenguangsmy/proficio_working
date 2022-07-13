@@ -395,20 +395,20 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     else if (read_rlt & Consumer_M.msg_type == MT_EXIT) 
     { // add finish recording here
       num_pressEnd = num_pressEnd + 1;
-//      if(num_pressEnd<=5) { // just end session
+      if(num_pressEnd<=5) { // just end session
        cw.jj.moveAway();
 //       log1.datalogger_end();
        //log1->datalogger_end();
        cw.closeLogger();
        barrett::btsleep(0.2);
        //delete log1;
-//      }
+      }
       
-//      if (num_pressEnd>5) { // truly exit
+      if (num_pressEnd>5) { // truly exit
         parportclose();
         break;
       }
-//    }
+    }
   
     else if (Consumer_M.msg_type == MT_SESSION_CONFIG)
     {
