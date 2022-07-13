@@ -160,10 +160,10 @@ public:
 			if (gettimeofday(&tim0, NULL) == 0){
 				day = int(tim0.tv_sec/(24*3600))-1;
 			}
-			away_q[0] = -1.57;
-			away_q[1] = 0;
-			away_q[2] = 0;
- 			away_q[3] = 0;
+			away_q[0] = -1.571;
+			away_q[1] = -1.571;
+			away_q[2] = 0.0;
+ 			away_q[3] = 0.0;
 		}
 
 	virtual ~JointControlClass() { this->mandatoryCleanUp(); }

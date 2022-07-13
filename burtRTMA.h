@@ -162,6 +162,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   char subject_name[TAG_LENGTH];
   int session_num; 
   int pert_type;                            // perturbation type: 1-pulse, 2-stoc, 3-slowRamp, 4-square, 5-pulseNoRelease 
+  int loggerFlag = 0;                       // no logging yet.
   bool readyToMove_nosent;
   bool sync_time_flag = false;
   double pert_big = -15;                    // pert magnitude
@@ -399,14 +400,29 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
        cw.jj.moveAway();
 //       log1.datalogger_end();
        //log1->datalogger_end();
-       cw.closeLogger();
+       if (loggerFlag == 1)
+       {
+         /* code */
+         cw.closeLogger();
+         loggerFlag = 0;
+       }
+       else
+       {
+         std::cout<<"File already being closed!"<<std::endl;
+//         std::cerr << e.what() << '\n';
+       }
+       
+        
        barrett::btsleep(0.2);
        //delete log1;
       }
       
-      if (num_pressEnd>5) { // truly exit
+      if (num_pressEnd==6) { // truly exit
         printf("Hit 5 Ends, True Stop!\n");
+        wam.moveHome();
+        wam.idle();
         parportclose();
+        printf("parport was closed! \n");
         break;
       }
     }
@@ -433,6 +449,10 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         fname_rtma = file_dir + '/' + file_name;
         cout << "fname should be" << fname_rtma << endl;
         fname_init = true;
+
+        cw.moveToq0();
+        barrett::btsleep(0.2);
+
     }
 
     else if (Consumer_M.msg_type == MT_XM_START_SESSION)
@@ -443,7 +463,11 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         log1->datalogger_connect2();
         log1->datalogger_start();
         */
-       cw.setupLogger();
+       //cw.setupLogger();
+       if (loggerFlag == 0){
+         cw.setupLogger();
+         loggerFlag = 1;
+       }
         num_pressEnd = 0; // reset
 //        log1.datalogger_connect1();
 //        log1.datalogger_connect2();
@@ -501,4 +525,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     readyToMove_nosent = false;             // have sent, hence no longer send the message.
   }
   }
+
+  printf("End of RTMA program");
 }
