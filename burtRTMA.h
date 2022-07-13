@@ -520,3 +520,4 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   }
   
 }
+ 
