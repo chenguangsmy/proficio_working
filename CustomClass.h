@@ -28,6 +28,8 @@
 
 #define BILLION  1000000000L;
 
+
+
 typedef typename ::barrett::math::Matrix<4,4> Matrix_4x4; //self-def matrix type
 typedef typename ::barrett::math::Matrix<4,1> Matrix_4x1; //self-def matrix type
 typedef typename ::barrett::math::Matrix<2,1> Matrix_2x1; //self-def matrix type
@@ -43,8 +45,9 @@ using detail::waitForEnter;
 #ifndef CONTROLLERWARPER_STUFF
 #define CONTROLLERWARPER_STUFF
 
-extern std::string fname_rtma;
 extern bool fname_init; 
+extern std::string fname_rtma;
+char logtmpFile[] = "datatmp/bt20200904XXXXXX"; 
 
 // squreWave
 double Pert_arr0[500] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -95,6 +98,7 @@ double GetAbsTime(void)
 }
 
 
+//***********************JC: JOINTCONTROLCLASS**********************************//
 template<size_t DOF>
 class JointControlClass : public systems::System{ 
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
@@ -115,6 +119,7 @@ public:
 	int     x0iterator; 			// from 0 to 512
 	cp_type input_x0_stt;
 	cp_type input_x0_edn;
+	jp_type away_q;  
 	systems::Ramp time;
 	Output<int>	wamTaskState;
 
@@ -162,6 +167,10 @@ public:
 			if (gettimeofday(&tim0, NULL) == 0){
 				day = int(tim0.tv_sec/(24*3600))-1;
 			}
+			away_q[0] = -1.571;
+			away_q[1] = -1.571;
+			away_q[2] = 0.0;
+ 			away_q[3] = 0.0;
 		}
 
 	virtual ~JointControlClass() { this->mandatoryCleanUp(); }
@@ -170,6 +179,10 @@ public:
 		printf("x0: %f, %f, %f", input_x_0[0], input_x_0[1], input_x_0[2]);
 		K_x = K_x1;
 		B_x = B_x1; 
+	}
+
+	int moveAway(){
+		wam.moveTo(away_q);
 	}
 
 	void setTaskState(int ts){
@@ -532,7 +545,83 @@ private:
 	DISALLOW_COPY_AND_ASSIGN(JointControlClass);
 };
 
+//***********************LG: LOGGERCLASS**********************************//
+template<size_t DOF>
+class LoggerClass{
+	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
+public:
+  	ProductManager& pm;
+	systems::Wam<DOF>& wam;
+	//systems::Ramp time;
+	systems::TupleGrouper<double, jp_type, jv_type, cp_type, cv_type, jt_type, cf_type, int, int, int> tg;
+	typedef boost::tuple<double, jp_type, jv_type, cp_type, cv_type, jt_type, cf_type, int, int, int> tuple_type;
+	const size_t PERIOD_MULTIPLIER;
+	char* tmpFileName;
+	//char* logtmpFile;
+	systems::PeriodicDataLogger<tuple_type> logger;
+  JointControlClass<DOF> & jj1; 
+	explicit LoggerClass(ProductManager& pm, systems::Wam<DOF>& wam, JointControlClass<DOF>& jj):
+  				PERIOD_MULTIPLIER(1), 
+				//time(pm.getExecutionManager(), 1.0),
 
+  				logger(pm.getExecutionManager(), new log::RealTimeWriter<tuple_type>(logtmpFile, PERIOD_MULTIPLIER * pm.getExecutionManager()->getPeriod()), PERIOD_MULTIPLIER),
+				pm(pm), wam(wam), 
+  				jj1(jj){
+		printf("logger constructed! \t.");
+	}
+	
+	virtual ~LoggerClass(){
+
+	}
+
+public:
+
+	void datalogger_connect1(){
+		printf("logger connected1... ");
+		systems::connect(jj1.time.output, tg.template getInput<0>());
+		systems::connect(wam.jpOutput, tg.template getInput<1>());
+		systems::connect(wam.jvOutput, tg.template getInput<2>());
+		systems::connect(wam.toolPosition.output, tg.template getInput<3>());
+		systems::connect(wam.toolVelocity.output, tg.template getInput<4>());
+		systems::connect(jj1.wamJTOutput, tg.template getInput<5>());
+		systems::connect(jj1.wamCFPretOutput, tg.template getInput<6>());
+		systems::connect(jj1.wamIterationOutput, tg.template getInput<7>());
+		systems::connect(jj1.wamRDTOutput, tg.template getInput<8>());
+		systems::connect(jj1.wamTaskState, tg.template getInput<9>());
+	}
+
+	void datalogger_start(){
+		jj1.time.start();
+		printf("logger started.\n");
+	}
+	void datalogger_connect2(){
+		printf("2... \n");
+		connect(tg.output, logger.input);
+	}
+
+	void setTmpFileName(char *name){
+		tmpFileName = name;
+	}
+
+	void datalogger_end(){
+		logger.closeLog();
+		printf("logger: stopped.\n");
+		log::Reader<tuple_type> lr(logtmpFile); // probabily stuck here
+		lr.exportCSV(tmpFileName);
+		printf("Output written to %s.\t", tmpFileName);
+		std::ifstream src(tmpFileName, std::ios::binary);
+		std::ofstream dest(fname_rtma.c_str(), std::ios::binary);
+		dest << src.rdbuf();
+		//lr.exportCSV(fname_rtma.c_str());
+		printf("save copy to: %s",fname_rtma.c_str());
+
+		
+		std::remove(logtmpFile);
+	}
+
+};
+
+//***********************CW: CONTROLLERWARPER**********************************//
 template<size_t DOF>
 class ControllerWarper{
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
@@ -559,6 +648,7 @@ class ControllerWarper{
 	bool forceMet;
 	bool TrackRef;
 	public:
+	LoggerClass<DOF> *log1;
 	JointControlClass<DOF> jj;
 	ControllerWarper(ProductManager& pm, systems::Wam<DOF>& wam, 
 		Matrix_4x4 K_q0, Matrix_4x4 K_q1, Matrix_4x4 B_q0, Matrix_4x4 B_q1,
@@ -586,7 +676,8 @@ class ControllerWarper{
   		wam.moveTo(jj.input_q_0); //center_pos
 		TrackRef = false;
   		barrett::btsleep(0.5);
-		
+
+
   		wam.idle();
   		//printf("Begin idle \n");
   		return true;
@@ -664,72 +755,17 @@ class ControllerWarper{
 		return TrackRef;
 	}
 
-};
+	void setupLogger(){
 
-template<size_t DOF>
-class LoggerClass{
-	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
-public:
-  	ProductManager& pm;
-	systems::Wam<DOF>& wam;
-	//systems::Ramp time;
-	systems::TupleGrouper<double, jp_type, jv_type, cp_type, cv_type, jt_type, cf_type, int, int, int> tg;
-	typedef boost::tuple<double, jp_type, jv_type, cp_type, cv_type, jt_type, cf_type, int, int, int> tuple_type;
-	const size_t PERIOD_MULTIPLIER;
-	char *tmpFile;
-	const char* tmpFileName;
-	systems::PeriodicDataLogger<tuple_type> logger;
-  ControllerWarper<DOF> & controller1; 
-	explicit LoggerClass(ProductManager& pm, systems::Wam<DOF>& wam, char *fname, char *tmpfname, ControllerWarper<DOF>& controller):
-  				PERIOD_MULTIPLIER(1), 
-				//time(pm.getExecutionManager(), 1.0),
-				tmpFile(tmpfname),
-  				logger(pm.getExecutionManager(), new log::RealTimeWriter<tuple_type>(tmpFile, PERIOD_MULTIPLIER * pm.getExecutionManager()->getPeriod()), PERIOD_MULTIPLIER),
-				pm(pm), wam(wam), 
-  				controller1(controller),
-				tmpFileName(fname){
-    	printf("Entered the class Constructor!\n");
-		printf("Fished the Constructor.");
-	}
-	
-	virtual ~LoggerClass(){}
-
-public:
-	void datalogger_connect(){
-		printf("Start connecting! \n");
-		systems::connect(controller1.jj.time.output, tg.template getInput<0>());
-		systems::connect(wam.jpOutput, tg.template getInput<1>());
-		systems::connect(wam.jvOutput, tg.template getInput<2>());
-		systems::connect(wam.toolPosition.output, tg.template getInput<3>());
-		systems::connect(wam.toolVelocity.output, tg.template getInput<4>());
-		systems::connect(controller1.jj.wamJTOutput, tg.template getInput<5>());
-		systems::connect(controller1.jj.wamCFPretOutput, tg.template getInput<6>());
-		systems::connect(controller1.jj.wamIterationOutput, tg.template getInput<7>());
-		systems::connect(controller1.jj.wamRDTOutput, tg.template getInput<8>());
-		systems::connect(controller1.jj.wamTaskState, tg.template getInput<9>());
+		log1 = new LoggerClass<DOF>(pm, wam, jj);
+        log1->datalogger_connect1();
+        log1->datalogger_connect2();
+        log1->datalogger_start();
 	}
 
-	void datalogger_start(){
-		printf("Start timming! \n");
-		controller1.jj.time.start();
-		printf("Connect input! \n");
-		connect(tg.output, logger.input);
-		printf("Logging started.\n");
-	}
-	void datalogger_end(){
-		logger.closeLog();
-		printf("Logging stopped.\n");
-		log::Reader<tuple_type> lr(tmpFile);
-		if (fname_init){
-			lr.exportCSV(fname_rtma.c_str());
-			printf("save to: %s",fname_rtma.c_str());
-		}
-		else{
-			lr.exportCSV(tmpFileName);
-			printf("Output written to %s.\n", tmpFileName);
-		}
-		
-		std::remove(tmpFile);
+	void closeLogger(){
+		log1->datalogger_end();
+		delete log1;
 	}
 };
 
