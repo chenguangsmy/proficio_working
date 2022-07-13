@@ -68,7 +68,6 @@ BARRETT_UNITS_TYPEDEFS(6);
 
 
 extern bool forceMet; //thresholdMet;
-extern std::string fname_rtma;
 extern bool fname_init; 
 
 int ping_times = 5;
@@ -128,17 +127,14 @@ template <size_t DOF>
 void respondToRTMA(barrett::systems::Wam<DOF>& wam,
               cp_type system_center,
               RTMA_Module &mod,
-              //HapticsDemo<DOF> &ball)
-              ControllerWarper<DOF> &cw,
-              LoggerClass<DOF> &lg)
+//              barrett::ProductManager& product_manager,
+              ControllerWarper<DOF> &cw)
 { 
   cf_type cforce;
   bool read_rlt = false;
   
   bool freeMoving = false; 
   bool sendData = true;
-  bool fnameInit = false;
-  bool fdirInit = false;
   bool ifPert = false;        // only perturb at certain trials
   cp_type cp;
   cv_type cv;
@@ -147,12 +143,18 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   jt_type jt;
   double taskJ_center[4];     // task send joint position     ------------cg: will it change across trials? if not, why not delete it???
   double  tleading, tlasting; // saving hardware time for time alignment
+  double  pert_delayt;        //pertdx0_mag;, // the delay time (ms) for perturb during movement 
   int     task_state = 0;
   int     target_dir = 0;
-
+  int     num_pressEnd = 0;
+  string session_num_s;
   cp_type robot_center(system_center);
   cp_type target;
 	CMessage Consumer_M;
+  
+
+  //LoggerClass<DOF> *log1;
+//  LoggerClass<DOF> log1(product_manager, wam, loggerfname, logtmpFile, cw);
 
   // variables for save filename 
   char data_dir[MAX_DATA_DIR_LEN];
@@ -160,7 +162,10 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   char file_name[20];
   char subject_name[TAG_LENGTH];
   int session_num; 
+
   int pert_type;                            // perturbation type: 1-pulse, 2-stoc, 3-slowRamp, 4-square, 5-pulseNoRelease 
+  int loggerFlag = 0;                       // no logging yet.
+
   bool readyToMove_nosent;
   bool sync_time_flag = false;
   double pert_big = -15;                    // pert magnitude
@@ -212,7 +217,9 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       burt_status_data.pos_z = cp[2]; // * 1280 / 0.2; // and is set properly
       
       //populate velocity here
-      cv = barrett::math::saturate(wam.getToolVelocity(), 19.999);
+      //cv = barrett::math::saturate(wam.getToolVelocity(), 1.999);
+      cv = wam.getToolVelocity();
+
       burt_status_data.vel_x = cv[0]; // * 1280 / 0.2; // Assume this is accurate
       burt_status_data.vel_y = cv[1]; // * 1280 / 0.2; // TODO: check that cp has the right value
       burt_status_data.vel_z = cv[2]; // * 1280 / 0.2; // and is set properly
@@ -246,6 +253,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           // make hardware pulse 
           tleading = GetAbsTime(); 
           ioctl(fd, PPWDATA, &dataL);     // change the parports here
+          printf("CHANGE PARPORT VOLTAGE LOW\n"); // cg to test parport voltage setting working.
           tlasting = GetAbsTime(); 
           sync_time_flag = true;
           
@@ -264,23 +272,29 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           taskJ_center[1] = task_state_data.target[9];
           taskJ_center[2] = task_state_data.target[10];
           taskJ_center[3] = task_state_data.target[11];
+
+          pert_delayt = task_state_data.pertdx0_mag;
+          cw.jj.setPertTime(int(pert_delayt/2)); // convert ms to iteration
           
           printf("force for this target: %f N \n", force_thresh);
+          printf("pert_type for this trial: %d \n", task_state_data.ifpert);
           robot_x0 = force_thresh/task_state_data.wamKp;
           target_dir = task_state_data.target[4];
-          printf("\n Direction: %d, force: %f\n\n", target_dir, force_thresh); 
-          pert_type = int(task_state_data.ifpert);
+          //printf("\n Direction: %d, force: %f\n\n", target_dir, force_thresh); 
+          
 
           switch(target_dir)
           {
               case 0: // right 
-                robot_center[1] += robot_x0;
+                //robot_center[1] += robot_x0;
+                robot_center[0] -= robot_x0;
                 break;
               case 2: // front
                 robot_center[1] -= robot_x0;
                 break;
               case 4: // left 
-                robot_center[1] -= robot_x0;
+                //robot_center[1] -= robot_x0;
+                robot_center[0] += robot_x0;
                 break;
               case 6: 
                 robot_center[1] += robot_x0;
@@ -290,7 +304,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           {
               case 0:
               case 6:
-                pert_big = -task_state_data.pert_mag;
+                pert_big = task_state_data.pert_mag;
               break;
               case 2:
               case 4:
@@ -304,7 +318,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 
         case 2: // Present
           ioctl(fd, PPWDATA, &dataH);     //set pulse back
-          
+          printf("CHANGE PARPORT VOLTAGE HIGH\n"); // cg to test parport voltage setting working.
           sendData = true;
           
           // set robot x0  
@@ -317,15 +331,22 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         case 4: //ForceHold, perturbation only in this state
           ifPert = int(task_state_data.ifpert) == 0 ? false : true;
           cw.jj.setPertType( int(task_state_data.ifpert));  // let JJ know
-
+          pert_type = task_state_data.ifpert;
           if (ifPert){ // should perturb
             switch (int (task_state_data.ifpert))
             {
-              case 1: // pulse
+              case 1: // pulse before release
+                      // release 0.5s before after perturb finished 
+                    cw.jj.disablePertCount();                               // set the pulse 
+                    cw.jj.setPertMag(pert_big);                             // set mag
+                    //cw.jj.enablePertCount();
+                    cw.jj.presetRelease(0.5*500);                           // presetRelease to be exact time after perturb                  
+                    printf("enable perturbation before movement! ");
+              break;  
               case 3:
-              case 4:
-              case 5:
-              cw.jj.setPertMag(pert_big);                             // set mag 
+              case 4: // pulse after release
+              //cw.jj.setPertMag(pert_big);                             // set mag
+              cw.jj.setPertMag(0);                                    // not perturb during hold 
               cw.jj.disablePertCount();                               // set the pulse 
               break;
             
@@ -333,6 +354,12 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
               cw.jj.presetpretAmp(pert_big);
               // only wait for trigger
               break;
+
+              case 6: //perturb after hold 
+              cw.jj.setPertMag(pert_big); 
+              cw.jj.disablePertCount();
+              break;
+
             }
           }
           else{
@@ -343,27 +370,40 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
 
         case 5: //Move
           cw.jj.resetpretAmp();
+          cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese  
           cw.jj.setPertMag(0.0);
-          if (pert_type != 5){
-            cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese
+          if (pert_type == 4){//task_state_data.ifpert == 4){
+              // newly added: trying perturb durign the movement
+              cw.jj.setPertMag(pert_big);
+              cw.jj.disablePertCount();
+              cw.jj.enablePertCount();
+              printf("enable perturbation during movement! ");
           }
           break;
 
         case 6: // hold
+              if (pert_type == 6){//task_state_data.ifpert == 4){
+              // newly added: trying perturb durign the movement
+              cw.jj.setPertMag(pert_big);
+              cw.jj.disablePertCount();
+              cw.jj.enablePertCount();
+              printf("enable perturbation during movement! ");
+          }
           break;
 
         case 7:
           sendData  = false;
           cw.jj.resetpretAmp(); // in case of trial stop at state 4
-          ioctl(fd, PPWDATA, &dataH);     //set pulse back
           break;
 
         case 8:
           cw.jj.setx0(robot_center);
           cw.setForceMet(false);
           cw.jj.disablePertCount(); // avoid perturbation at this time
+
           cw.jj.setPertMag(0);
           freeMoving = true;
+          // commit when testing the WAM position error
           cw.moveToq0(); //make sure on the right joint position
           break;
 
@@ -391,13 +431,38 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     }
 
     // Exit the function
-    else if (Consumer_M.msg_type == MT_EXIT) 
+    else if (read_rlt & Consumer_M.msg_type == MT_EXIT) 
     { // add finish recording here
-
-      //wam.moveHome();
-      //wam.idle();
-      parportclose();
-      break;
+      num_pressEnd = num_pressEnd + 1;
+      if(num_pressEnd<=5) { // just end session
+       cw.jj.moveAway();
+//       log1.datalogger_end();
+       //log1->datalogger_end();
+       if (loggerFlag == 1)
+       {
+         /* code */
+         cw.closeLogger();
+         loggerFlag = 0;
+       }
+       else
+       {
+         std::cout<<"File already being closed!"<<std::endl;
+//         std::cerr << e.what() << '\n';
+       }
+       
+        
+       barrett::btsleep(0.2);
+       //delete log1;
+      }
+      
+      if (num_pressEnd==6) { // truly exit
+        printf("Hit 5 Ends, True Stop!\n");
+        wam.moveHome();
+        wam.idle();
+        parportclose();
+        printf("parport was closed! \n");
+        break;
+      }
     }
   
     else if (Consumer_M.msg_type == MT_SESSION_CONFIG)
@@ -407,22 +472,50 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         Consumer_M.GetData(&ssconfig);
         strcpy(data_dir, ssconfig.data_dir);
         file_dir = data_dir;
+        string fdir(data_dir);
+        session_num_s = fdir.substr(fdir.size()-5);
+        session_num = atoi(session_num_s.c_str());
         file_dir.replace(6,2,"robot");
         printf("data_dir is: %s", data_dir);
-        fnameInit = true;
+        sprintf(file_name, "datatmp/%sWAM%05d.csv", subject_name, session_num);
+        //cw.log1->tmpFileName = file_name;
+        cw.log1->setTmpFileName(file_name);
+        cout << "filename: " << cw.log1->tmpFileName << endl;
+        
         cw.setForceMet(false);
+        sprintf(file_name, "%sWAM%05d.csv", subject_name, session_num);
+        fname_rtma = file_dir + '/' + file_name;
+        cout << "fname should be" << fname_rtma << endl;
+        fname_init = true;
+
+        cw.moveToq0();
+        barrett::btsleep(0.2);
+
     }
 
     else if (Consumer_M.msg_type == MT_XM_START_SESSION)
     {
+       /*
+        log1 = new LoggerClass<DOF>(product_manager, wam, loggerfname, logtmpFile, cw);
+        log1->datalogger_connect1();
+        log1->datalogger_connect2();
+        log1->datalogger_start();
+        */
+       //cw.setupLogger();
+       if (loggerFlag == 0){
+         cw.setupLogger();
+         loggerFlag = 1;
+       }
+        num_pressEnd = 0; // reset
+//        log1.datalogger_connect1();
+//        log1.datalogger_connect2();
+//        log1.datalogger_start();
+        
         printf("MT_XM_START_SESSION receieved! \n");
         MDF_XM_START_SESSION stsession;
         Consumer_M.GetData(&stsession);
         strcpy(subject_name, stsession.subject_name);
-        session_num = stsession.calib_session_id;
-        sprintf(file_name, "%sWAM%d.csv", subject_name, session_num);
-        cout << "filename: " << file_name << endl;
-        fdirInit = true;
+
     }
 
     else if(Consumer_M.msg_type == MT_JUDGE_FEEDBACK)
@@ -465,16 +558,23 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   }
 
   if (cw.jj.getPertFinish() && readyToMove_nosent) // finished the perturbation 
-  {
+  {                                                // telling that ready to move, but not move yet. 
     readyToMove(wam, robot_center, mod);    // boardcast readyToMove so that the `GatingForceJudge` knows
     readyToMove_nosent = false;             // have sent, hence no longer send the message.
+  } 
+
+  if (cw.jj.getReadyToRelease()){
+    cw.setForceMet(true); // save the release in the buffer, wait finish pert to relese  
+    cw.jj.setPertMag(0.0);
+    cw.jj.setReadyToRelease(false);
   }
   }
+
   if (fnameInit && fdirInit)
   {
         fname_rtma = file_dir + '/' + file_name;
         cout << "fname should be" << fname_rtma << endl;
         fname_init = true;
   }
-  
+    printf("End of RTMA program");
 }

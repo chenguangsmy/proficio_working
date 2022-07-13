@@ -62,16 +62,13 @@ v_type msg_tmp;
 barrett::systems::ExposedOutput<v_type> message;
 
 bool forceMet = false;
-std::string fname_rtma;
 bool fname_init = false; 
 bool trackOutput = false; // the variable prevent repeating printf 
+std::string fname_rtma;
 cp_type center_pos(-0.513, 0.482, -0.0);
-//jp_type ready_pos0(0, 1.57, 0, 1.57);
-//jp_type ready_pos1(0, 0, 0,1.57);
-//jp_type ready_pos2(-1.57, 0, 0, 1.57);
 
 
-// end mutex
+// end mutex 
 pthread_mutex_t beLock;
 // Move mutex
 pthread_mutex_t rmLock;
@@ -98,20 +95,17 @@ struct arg_struct {
   RTMA_Module &mod;
   barrett::ProductManager& product_manager;
   ControllerWarper<DOF>& cw;
-  LoggerClass<DOF>& lg;
 
   arg_struct(barrett::systems::Wam<DOF>& wam,
               cp_type system_center,
               RTMA_Module &mod,
               barrett::ProductManager& product_manager,
-              ControllerWarper<DOF>& cw,
-              LoggerClass<DOF>& lg
+              ControllerWarper<DOF>& cw
               ) : wam(wam), 
                 system_center(system_center), 
                 mod(mod), 
                 product_manager(product_manager),
-                cw(cw),
-                lg(lg) {}
+                cw(cw){}
 };
 
 
@@ -122,7 +116,8 @@ template <size_t DOF>
 void * responderWrapper(void *arguments)
 {
   struct arg_struct<DOF> *args = (arg_struct<DOF> *)arguments;
-  respondToRTMA(args->wam, args->system_center, args->mod, args->cw, args->lg);
+  //respondToRTMA(args->wam, args->system_center, args->mod, args->product_manager, args->cw);
+  respondToRTMA(args->wam, args->system_center, args->mod, args->cw);
   return NULL;
 }
 
@@ -198,7 +193,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   catch (exception &e){
     std::cout << "cannot assign logger fname" << e.what() <<std::endl;
   }
-  char logtmpFile[] = "bt20200904XXXXXX";
+  char logtmpFile[] = "datatmp/bt20200904XXXXXX";
 	if (mkstemp(logtmpFile) == -1) {
 		printf("ERROR: Couldn't create temporary file!\n");
 	return 1;
@@ -232,17 +227,17 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 	jp_type input_q_0;
 	cp_type input_x_0;
 
-	K_q0(0,0) = 20.0; // keep wam upright
+	K_q0(0,0) = 0;//20.0; // keep wam upright
 	K_q0(1,1) = 0.0;
-	K_q0(2,2) = 10.0;
+	K_q0(2,2) = 0;//10.0;
 	K_q0(3,3) = 0.0;
   K_q1 = K_q0; 
 
   B_q0 = 0.0 * K_q0;; //0.1 * K_q0;
   B_q1 = 0.0 * K_q1;; //0.1 * K_q1;
 
-	K_x0(0,0) = 300.0;
-	K_x0(1,1) = 0.0;
+	K_x0(0,0) = 0.0;
+	K_x0(1,1) = 300.0;
 	K_x0(2,2) = 300.0;
   K_x1(0,0) = 300.0; //300
 	K_x1(1,1) = 300.0; //300
@@ -253,22 +248,23 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   B_x1(1,1) = 0.0; //10.0; //20.0;
   B_x1(2,2) = 0.0; //10.0; //20.0;
 
-	input_q_0[0] =-1.571;
-	input_q_0[1] = 0.0;
-	input_q_0[2] = 0.0;
-	input_q_0[3] = 1.571;
-	input_x_0[0] =-0.513;
-	input_x_0[1] = 0.482;
+
+	input_q_0[0] = 0;
+	input_q_0[1] =-1.5708;
+	input_q_0[2] =-1.5708;
+	input_q_0[3] = 1.5708;
+	input_x_0[0] =-0.482;
+	input_x_0[1] =-0.516;
 	input_x_0[2] =-0.000;
 
   prep_q_0[0] = 0;
-  prep_q_0[1] = 1.57;
-  prep_q_0[2] = 0;
-  prep_q_0[3] = 1.57;
+  prep_q_0[1] = -1.57;
+  prep_q_0[2] = -1.57;
+  prep_q_0[3] = 0;
   prep_q_1[0] = 0;
   prep_q_1[1] = 0;
   prep_q_1[2] = 0;
-  prep_q_1[3] = 0;
+  prep_q_1[3] = 1.57;
   prep_q_2[0] = -1.57;
   prep_q_2[1] = 0;
   prep_q_2[2] = 0;
@@ -278,12 +274,13 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   prep_q_3[2] = 0;
   prep_q_3[3] = 1.57;
 
+
   wam.moveTo(prep_q_0);
-  wam.moveTo(prep_q_1);
-  wam.moveTo(prep_q_2);
-  wam.moveTo(prep_q_3);
+//  wam.moveTo(prep_q_1);
+//  wam.moveTo(prep_q_2);
+//  wam.moveTo(prep_q_3);
+
   ControllerWarper<DOF> cw1(product_manager_, wam, K_q0, K_q1, B_q0, B_q1, K_x0, K_x1, B_x0, B_x1, input_q_0, input_x_0); 
-  LoggerClass<DOF> log1(product_manager_, wam, loggerfname, logtmpFile, cw1);
 
   if (!cw1.init()) {
     printf("hptics_demo init failure!");
@@ -293,15 +290,14 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   message.setValue(msg_tmp); //.. this is confusing, what do this do?
 
   cw1.connectForces();
-  log1.datalogger_connect();
-  log1.datalogger_start();
   cout << "Connected Forces" << endl;
+
 
   // Spawn 2 threads for listening to RTMA and moving robot
   pthread_t rtmaThread, robotMoverThread;
 
   // Create thread arguments
-  struct arg_struct<DOF> args(wam, center_pos, mod, product_manager_, cw1, log1);
+  struct arg_struct<DOF> args(wam, center_pos, mod, product_manager_, cw1);
 
   //Start threads
   pthread_create(&rtmaThread, NULL, &responderWrapper<DOF>, (void *)&args);
@@ -312,14 +308,15 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   pthread_join(rtmaThread, NULL );
   printf("The RTMA thread joined! \n");
   // pthread_join(robotMoverThread, NULL );
-  log1.datalogger_end();
   cout << "Finished trials" << endl;
   barrett::btsleep(0.1);
   
-  wam.moveTo(prep_q_3);
-  wam.moveTo(prep_q_2);
-  wam.moveTo(prep_q_1);
-  wam.moveTo(prep_q_0);
+
+//  wam.moveTo(prep_q_3);
+//  wam.moveTo(prep_q_2);
+//  wam.moveTo(prep_q_1);
+//  wam.moveTo(prep_q_0);
+
   wam.moveHome();
 
   mod.DisconnectFromMMM();
