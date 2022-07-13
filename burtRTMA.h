@@ -405,6 +405,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       }
       
       if (num_pressEnd>5) { // truly exit
+        printf("Hit 5 Ends, True Stop!\n");
         parportclose();
         break;
       }
