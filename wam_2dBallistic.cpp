@@ -276,7 +276,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
 
 
   wam.moveTo(prep_q_0);
-//  wam.moveTo(prep_q_1);
+//  wam.moveTo(prep_q_1); 
 //  wam.moveTo(prep_q_2);
 //  wam.moveTo(prep_q_3);
 
