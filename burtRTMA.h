@@ -400,6 +400,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
           cw.jj.setx0(robot_center);
           cw.setForceMet(false);
           cw.jj.disablePertCount(); // avoid perturbation at this time
+          
           cw.jj.setPertMag(0);
           freeMoving = true;
           // commit when testing the WAM position error
@@ -435,7 +436,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       num_pressEnd = num_pressEnd + 1;
       if(num_pressEnd<=5) { // just end session
        cw.jj.moveAway();
-//       log1.datalogger_end();
+       //log1.datalogger_end();
        //log1->datalogger_end();
        if (loggerFlag == 1)
        {
@@ -578,6 +579,6 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         cout << "fname should be" << fname_rtma << endl;
         fname_init = true;
   }
-  
+    printf("End of RTMA program");
 }
  

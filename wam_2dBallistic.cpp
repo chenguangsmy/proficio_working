@@ -248,6 +248,7 @@ int wam_main(int argc, char** argv, barrett::ProductManager& product_manager_, b
   B_x1(1,1) = 0.0; //10.0; //20.0;
   B_x1(2,2) = 0.0; //10.0; //20.0;
 
+
 	input_q_0[0] = 0;
 	input_q_0[1] =-1.5708;
 	input_q_0[2] =-1.5708;
