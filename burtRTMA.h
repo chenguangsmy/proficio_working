@@ -124,10 +124,11 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   double  pert_delayt;        //pertdx0_mag;, // the delay time (ms) for perturb during movement 
   int     task_state = 0;
   int     target_dir = 0;
-  int     num_pressEnd = 0;
+  int     num_pressEnd;
   cp_type robot_center(system_center);
   cp_type target;
 	CMessage Consumer_M;
+  string session_num_s; 
   // variables for save filename 
   char data_dir[MAX_DATA_DIR_LEN];
   std::string file_dir;
@@ -146,6 +147,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
   {
     // Read Messages
     read_rlt = mod.ReadMessage( &Consumer_M, 0.1);
+    if(read_rlt){
     // Send Position Data
     if (Consumer_M.msg_type == MT_SAMPLE_GENERATED && sendData)
     {
@@ -387,9 +389,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       num_pressEnd = num_pressEnd + 1;
       if(num_pressEnd<=5) { // just end session
        cw.jj.moveAway();
-//       log1.datalogger_end();
-       //log1->datalogger_end();
-       if (loggerFlag == 1)
+       if (loggerFlag == 1 && num_pressEnd == 1)
        {
          /* code */
          cw.closeLogger();
@@ -398,12 +398,8 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
        else
        {
          std::cout<<"File already being closed!"<<std::endl;
-//         std::cerr << e.what() << '\n';
        }
-       
-        
-       barrett::btsleep(0.2);
-       //delete log1;
+       barrett::btsleep(2);
       }
       
       if (num_pressEnd==6) { // truly exit
@@ -429,11 +425,10 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
         file_dir.replace(6,2,"robot");
         printf("data_dir is: %s", data_dir);
         sprintf(file_name, "datatmp/%sWAM%05d.csv", subject_name, session_num);
-        fnameInit = true;
+        fname_init = true;
         //cw.log1->tmpFileName = file_name;
         cw.log1->setTmpFileName(file_name);
         cout << "filename: " << cw.log1->tmpFileName << endl;
-        
         cw.setForceMet(false);
         sprintf(file_name, "%sWAM%05d.csv", subject_name, session_num);
         fname_rtma = file_dir + '/' + file_name;
@@ -489,6 +484,7 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
       Consumer_M.GetData(&trial_conf);
       trial_no = trial_conf.trial_no;
     }
+    }
   if (sync_time_flag){
     // pack Message
     MDF_TIME_SYNC sync_time_data;
@@ -513,11 +509,11 @@ void respondToRTMA(barrett::systems::Wam<DOF>& wam,
     cw.jj.setReadyToRelease(false);
   }
   }
-  if (fnameInit && fdirInit)
-  {
-        fname_rtma = file_dir + '/' + file_name;
-        cout << "fname should be" << fname_rtma << endl;
-        fname_init = true;
-  }
-
+ // if (fname_init && fdirInit)
+ // {
+ //       fname_rtma = file_dir + '/' + file_name;
+ //       cout << "fname should be" << fname_rtma << endl;
+ //       fname_init = true;
+ // }
+  printf("End of while loop!\n");
 }
